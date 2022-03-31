@@ -1,0 +1,13 @@
+project: repo
+registry: data/registry.db
+provider: local
+online_store:
+    type: sqlite
+    path: data/online_store.db
+offline_store:
+    type: feast_pyspark.SparkOfflineStore
+    spark_conf:
+        spark.master: "local[*]"
+        spark.ui.enabled: "false"
+        spark.eventLog.enabled: "false"
+        spark.sql.session.timeZone: "UTC"
