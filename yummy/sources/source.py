@@ -8,7 +8,8 @@ from feast.protos.feast.core.DataSource_pb2 import DataSource as DataSourceProto
 from feast.repo_config import RepoConfig
 from feast.value_type import ValueType
 import pyarrow
-
+import pandas as pd
+from yummy.backends.backend import Backend
 
 class YummyDataSource(DataSource):
     """Custom data source class for local files"""
@@ -86,7 +87,7 @@ class YummyDataSourceReader(ABC):
         self,
         data_source,
         features: List[str],
-        backend_type: BackendType,
+        backend: Backend,
         entity_df: Optional[Union[pd.DataFrame, Any]] = None,
     ) -> Union[pyarrow.Table, pd.DataFrame, Any]:
         ...

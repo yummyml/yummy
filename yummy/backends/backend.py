@@ -36,11 +36,23 @@ class BackendType(str, Enum):
     spark = "spark"
     polars = "polars"
 
+
+class BackendConfig(FeastConfigBaseModel):
+    ...
+
+
 class Backend(ABC):
     """
     Backend implements all operations required to process all offline store steps using
     selected engine
     """
+    def __init__(self, backend_config: BackendConfig):
+        self._backend_config = backend_config
+
+    @abstractmethod
+    @property
+    def backend_type(self) -> BackendType:
+        ...
 
     @abstractmethod
     def prepare_entity_df(
@@ -97,7 +109,7 @@ class Backend(ABC):
         self,
         data_source,
         features: List[str],
-        backend_type: BackendType,
+        backend: Backend,
         entity_df: Optional[Union[pd.DataFrame, Any]] = None,
     ) -> Union[pyarrow.Table, pd.DataFrame, Any]:
         """
@@ -105,7 +117,7 @@ class Backend(ABC):
         """
         reader: YummyDataSourceReader = data_source.reader_type()
         assert issubclass(reader, YummyDataSourceReader)
-        return reader.read_datasource(data_source, features, backend_type, entity_df)
+        return reader.read_datasource(data_source, features, backend, entity_df)
 
 
     @abstractmethod
@@ -209,25 +221,27 @@ class Backend(ABC):
 class BackendFactory:
 
     @staticmethod
-    def create(backend_type: BackendType) -> Backend:
+    def create(
+        backend_type: BackendType,
+        backend_config: BackendConfig)) -> Backend:
         if backend_type == BackendType.dask:
             from yummy.backends.dask import DaskBackend
-            return DaskBackend()
+            return DaskBackend(backend_config)
         elif backend_type == BackendType.ray:
             import ray
             import dask
             ray.init(ignore_reinit_error=True)
             dask.config.set(scheduler=ray_dask_get)
             from yummy.backends.dask import DaskBackend
-            return DaskBackend()
+            return DaskBackend(backend_config)
         elif backend_type == BackendType.spark:
             from yummy.backends.spark import SparkBackend
-            return SparkBackend()
+            return SparkBackend(backend_config)
         elif backend_type == BackendType.polars:
             from yummy.backends.polars import PolarsBackend
-            return PolarsBackend()
+            return PolarsBackend(backend_config)
 
-        return PolarsBackend()
+        return PolarsBackend(backend_config)
 
 class YummyOfflineStoreConfig(FeastConfigBaseModel):
     """Offline store config for local (file-based) store"""
@@ -250,7 +264,7 @@ class YummyOfflineStore(OfflineStore):
     ) -> RetrievalJob:
 
         backend_type = config.offline_store.backend
-        backend = BackendFactory.create(backend_type)
+        backend = BackendFactory.create(backend_type, config.offline_store)
         entity_df_event_timestamp_col, entity_df = backend.prepare_entity_df(entity_df)
         all_columns = backend.columns_list(entity_df_event_timestamp_col)
 
@@ -304,7 +318,7 @@ class YummyOfflineStore(OfflineStore):
 
                 all_join_keys = list(set(all_join_keys + join_keys))
 
-                df_to_join = backend.read_datasource(feature_view.batch_source, features, backend_type, entity_df_with_features)
+                df_to_join = backend.read_datasource(feature_view.batch_source, features, backend, entity_df_with_features)
 
                 df_to_join, event_timestamp_column = backend.field_mapping(
                     df_to_join,
@@ -375,11 +389,11 @@ class YummyOfflineStore(OfflineStore):
     ) -> RetrievalJob:
 
         backend_type = config.offline_store.backend
-        backend = BackendFactory.create(backend_type)
+        backend = BackendFactory.create(backend_type, config.offline_store)
 
         # Create lazy function that is only called from the RetrievalJob object
         def evaluate_offline_job():
-            source_df = backend.read_datasource(data_source, feature_name_columns, backend_type)
+            source_df = backend.read_datasource(data_source, feature_name_columns, backend)
 
             source_df = backend.normalize_timestamp(
                 source_df, event_timestamp_column, created_timestamp_column

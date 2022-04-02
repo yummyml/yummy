@@ -27,10 +27,38 @@ from pydantic.typing import Literal
 from pyspark.sql.functions import col, expr, lit
 from pyspark.sql import SparkSession
 from pyspark import SparkConf
-from yummy.backends.backend import Backend
+from yummy.backends.backend import Backend, BackendType
 
 class SparkBackend(Backend):
-    ...
+    def __init__(self, backend_config: BackendConfig):
+        super().__init__(backend_config)
+        self._spark_session = _get_spark_session(backend_config)
+
+    @property
+    def backend_type(self) -> BackendType:
+        return BackendType.spark
+
+    @property
+    def spark_session(self) -> SparkSession:
+        return _spark_session
+
+    def _get_spark_session(
+        store_config: SparkOfflineStoreConfig,
+    ) -> SparkSession:
+        spark_session = SparkSession.getActiveSession()
+
+        if not spark_session:
+            spark_builder = SparkSession.builder
+            spark_conf = store_config.spark_conf
+
+            if spark_conf:
+                spark_builder = spark_builder.config(
+                    conf=SparkConf().setAll(spark_conf.items())
+                )  # noqa
+
+            spark_session = spark_builder.getOrCreate()
+
+        return spark_session
 
 def _run_spark_field_mapping(
     table: sd.DataFrame,
@@ -353,20 +381,4 @@ class SparkOfflineStore(OfflineStore):
     ) -> RetrievalJob:
         pass
 
-def _get_spark_session(
-    store_config: SparkOfflineStoreConfig,
-) -> SparkSession:
-    spark_session = SparkSession.getActiveSession()
 
-    if not spark_session:
-        spark_builder = SparkSession.builder
-        spark_conf = store_config.spark_conf
-
-        if spark_conf:
-            spark_builder = spark_builder.config(
-                conf=SparkConf().setAll(spark_conf.items())
-            )  # noqa
-
-        spark_session = spark_builder.getOrCreate()
-
-    return spark_session

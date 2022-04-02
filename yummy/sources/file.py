@@ -7,7 +7,9 @@ from feast.data_source import DataSource
 from feast.protos.feast.core.DataSource_pb2 import DataSource as DataSourceProto
 from feast.repo_config import RepoConfig
 from feast.value_type import ValueType
-from yummy.sources.source import YummyDataSource
+from yummy.sources.source import YummyDataSource, YummyDataSourceReader
+from yummy.backends.backend import BackendType
+
 
 class YummyFileDataSource(YummyDataSource):
     """Custom data source class for local files"""
@@ -29,6 +31,14 @@ class YummyFileDataSource(YummyDataSource):
         )
         self._path = path
         self._s3_endpoint_override = s3_endpoint_override
+
+    @abstractmethod
+    @property
+    def reader_type(self):
+        """
+        Returns the reader type which will read data source
+        """
+        ...
 
     @property
     def path(self):
@@ -98,6 +108,7 @@ class YummyFileDataSource(YummyDataSource):
     def source_datatype_to_feast_value_type() -> Callable[[str], ValueType]:
         return type_map.pa_to_feast_value_type
 
+
 class ParquetDataSource(YummyFileDataSource):
     """Custom data source class for parquets files"""
 
@@ -118,6 +129,14 @@ class ParquetDataSource(YummyFileDataSource):
             field_mapping=field_mapping,
             date_partition_column=date_partition_column,
         )
+
+    @abstractmethod
+    @property
+    def reader_type(self):
+        """
+        Returns the reader type which will read data source
+        """
+        return ParquetDataSourceReader
 
 
 class CsvDataSource(YummyFileDataSource):
@@ -140,4 +159,73 @@ class CsvDataSource(YummyFileDataSource):
             field_mapping=field_mapping,
             date_partition_column=date_partition_column,
         )
+
+
+class ParquetDataSourceReader(YummyDataSourceReader):
+
+    def read_datasource(
+        self,
+        data_source,
+        features: List[str],
+        backend: Backend,
+        entity_df: Optional[Union[pd.DataFrame, Any]] = None,
+    ) -> Union[pyarrow.Table, pd.DataFrame, Any]:
+        backend_type = backend.backend_type
+        if backend_type == BackendType.spark:
+            from yummy.backends.spark import SparkBackend
+            spark_backend: SparkBackend = backend
+            spark_session = spark_backend.spark_session
+            #TODO: add s3 endpoint override support
+            path = data_source.path
+            if "s3://" in path:
+                path = path.replace('s3://','s3a://')
+
+            return spark_session.read.parquet(path)
+
+        elif backend_type in [BackendType.ray, BackendType.dask]:
+            import dask.dataframe as dd
+        elif backend_type == BackendType.polars:
+            import polars as dd
+
+        return dd.read_parquet(data_source.path, storage_options=self._storage_options(data_source),)
+
+    def _storage_options(self, data_source):
+        return (
+            {
+                "client_kwargs": {
+                    "endpoint_url": data_source.file_options.s3_endpoint_override
+                }
+            }
+            if data_source.file_options.s3_endpoint_override
+            else None
+        )
+
+
+class CsvDataSourceReader(ParquetDataSourceReader):
+
+    def read_datasource(
+        self,
+        data_source,
+        features: List[str],
+        backend: Backend,
+        entity_df: Optional[Union[pd.DataFrame, Any]] = None,
+    ) -> Union[pyarrow.Table, pd.DataFrame, Any]:
+        backend_type = backend.backend_type
+        if backend_type == BackendType.spark:
+            from yummy.backends.spark import SparkBackend
+            spark_backend: SparkBackend = backend
+            spark_session = spark_backend.spark_session
+            #TODO: add s3 endpoint override support
+            path = data_source.path
+            if "s3://" in path:
+                path = path.replace('s3://','s3a://')
+
+            return spark_session.read.csv(path)
+
+        elif backend_type in [BackendType.ray, BackendType.dask]:
+            import dask.dataframe as dd
+        elif backend_type == BackendType.polars:
+            import polars as dd
+
+        return dd.read_csv(data_source.path, storage_options=self._storage_options(data_source),)
 

@@ -27,7 +27,7 @@ from feast.registry import Registry
 from feast.repo_config import FeastConfigBaseModel, RepoConfig
 from feast.saved_dataset import SavedDatasetStorage
 from feast.usage import log_exceptions_and_usage
-from yummy.backends.backend import Backend
+from yummy.backends.backend import Backend, BackendType
 
 
 
@@ -42,7 +42,12 @@ def _run_dask_field_mapping(
     return table
 
 class DaskBackend(Backend):
-    ...
+    def __init__(self, backend_config: BackendConfig):
+        super().__init__(backend_config)
+
+    @property
+    def backend_type(self) -> BackendType:
+        return BackendType.dask
 
 
 class DaskOfflineStoreConfig(FeastConfigBaseModel):

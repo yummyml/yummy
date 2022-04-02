@@ -23,10 +23,16 @@ from feast.repo_config import FeastConfigBaseModel, RepoConfig
 from feast.saved_dataset import SavedDatasetStorage
 from feast.usage import log_exceptions_and_usage
 from pydantic.typing import Literal
-from yummy.backends.backend import Backend
+from yummy.backends.backend import Backend, BackendType
 
 class PolarsBackend(Backend):
-    ...
+    def __init__(self, backend_config: BackendConfig):
+        super().__init__(backend_config)
+
+    @property
+    def backend_type(self) -> BackendType:
+        return BackendType.polars
+
 
 def _run_polars_field_mapping(
     table: sd.DataFrame,
