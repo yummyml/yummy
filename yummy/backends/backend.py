@@ -55,6 +55,11 @@ class Backend(ABC):
         ...
 
     @abstractmethod
+    @property
+    def retrival_job_type(self):
+        ...
+
+    @abstractmethod
     def prepare_entity_df(
         self,
         entity_df: Union[pd.DataFrame, Any],
@@ -104,21 +109,6 @@ class Backend(ABC):
         Sorts entity df by selected column
         """
         ...
-
-    def read_datasource(
-        self,
-        data_source,
-        features: List[str],
-        backend: Backend,
-        entity_df: Optional[Union[pd.DataFrame, Any]] = None,
-    ) -> Union[pyarrow.Table, pd.DataFrame, Any]:
-        """
-        Reads data source
-        """
-        reader: YummyDataSourceReader = data_source.reader_type()
-        assert issubclass(reader, YummyDataSourceReader)
-        return reader.read_datasource(data_source, features, backend, entity_df)
-
 
     @abstractmethod
     def field_mapping(
@@ -208,7 +198,6 @@ class Backend(ABC):
     ) -> Union[pd.DataFrame, Any]:
         ...
 
-    @abstractmethod
     def create_retrival_job(
         self,
         evaluation_function: Callable,
@@ -216,7 +205,28 @@ class Backend(ABC):
         on_demand_feature_views: Optional[List[OnDemandFeatureView]] = None,
         metadata: Optional[RetrievalMetadata] = None,
     ) -> RetrievalJob:
-        ...
+        self.retrival_job_type()
+        return self.retrival_job_type(
+            evaluation_function=evaluate_historical_retrieval,
+            full_feature_names=full_feature_names,
+            on_demand_feature_views=on_demand_feature_views,
+            metadata=metadata,
+        )
+
+    def read_datasource(
+        self,
+        data_source,
+        features: List[str],
+        backend: Backend,
+        entity_df: Optional[Union[pd.DataFrame, Any]] = None,
+    ) -> Union[pyarrow.Table, pd.DataFrame, Any]:
+        """
+        Reads data source
+        """
+        reader: YummyDataSourceReader = data_source.reader_type()
+        assert issubclass(reader, YummyDataSourceReader)
+        return reader.read_datasource(data_source, features, backend, entity_df)
+
 
 class BackendFactory:
 
@@ -248,6 +258,9 @@ class YummyOfflineStoreConfig(FeastConfigBaseModel):
 
     type: Literal["yummy.YummyOfflineStore"] = "yummy.YummyOfflineStore"
     """ Offline store type selector"""
+
+    config: Optional[Dict[str, str]] = None
+    """ Configuration """
 
 
 class YummyOfflineStore(OfflineStore):

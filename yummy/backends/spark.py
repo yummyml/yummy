@@ -27,7 +27,7 @@ from pydantic.typing import Literal
 from pyspark.sql.functions import col, expr, lit
 from pyspark.sql import SparkSession
 from pyspark import SparkConf
-from yummy.backends.backend import Backend, BackendType
+from yummy.backends.backend import Backend, BackendType, YummyOfflineStoreConfig
 
 class SparkBackend(Backend):
     def __init__(self, backend_config: BackendConfig):
@@ -39,17 +39,160 @@ class SparkBackend(Backend):
         return BackendType.spark
 
     @property
+    def retrival_job_type(self):
+        return SparkRetrievalJob
+
+    @property
     def spark_session(self) -> SparkSession:
         return _spark_session
 
+    @abstractmethod
+    def prepare_entity_df(
+        self,
+        entity_df: Union[pd.DataFrame, Any],
+    ) -> Tuple[str, Union[pd.DataFrame, Any]]:
+        """
+        Maps entity_df to type required by backend and finds event timestamp column
+        """
+        ...
+
+    @abstractmethod
+    def columns_list(
+        self,
+        entity_df: Union[pd.DataFrame, Any],
+    ) -> List[str]:
+        """
+        Reads columns list
+        """
+        ...
+
+    @abstractmethod
+    def get_entity_df_event_timestamp_range(
+        self,
+        entity_df: Union[pd.DataFrame, Any],
+    ) -> Tuple[datetime, datetime]:
+        """
+        Finds min and max datetime in input entity_df data frame
+        """
+        ...
+
+    @abstractmethod
+    def normalize_timezone(
+        self,
+        entity_df: Union[pd.DataFrame, Any],
+    ) -> Union[pd.DataFrame, Any]:
+        """
+        Normalize timezon of input entity df to UTC
+        """
+        ...
+
+    @abstractmethod
+    def sort_values(
+        self,
+        entity_df: Union[pd.DataFrame, Any],
+        by: str,
+    ) -> Union[pd.DataFrame, Any]:
+        """
+        Sorts entity df by selected column
+        """
+        ...
+
+    @abstractmethod
+    def field_mapping(
+        self,
+        df_to_join: Union[pd.DataFrame, Any],
+        feature_view: FeatureView,
+        features: List[str],
+        right_entity_key_columns: List[str],
+        entity_df_event_timestamp_col: str,
+        event_timestamp_column: str,
+        full_feature_names: bool,
+    ) -> Union[pd.DataFrame, Any]:
+        ...
+
+    @abstractmethod
+    def merge(
+        self,
+        entity_df_with_features: Union[pd.DataFrame, Any],
+        df_to_join: Union[pd.DataFrame, Any],
+        join_keys: List[str],
+    ) -> Union[pd.DataFrame, Any]:
+        ...
+
+    @abstractmethod
+    def normalize_timestamp(
+        self,
+        df_to_join: Union[pd.DataFrame, Any],
+        event_timestamp_column: str,
+        created_timestamp_column: str,
+    ) -> Union[pd.DataFrame, Any]:
+        ...
+
+    @abstractmethod
+    def filter_ttl(
+        self,
+        df_to_join: Union[pd.DataFrame, Any],
+        feature_view: FeatureView,
+        entity_df_event_timestamp_col: str,
+        event_timestamp_column: str,
+    ) -> Union[pd.DataFrame, Any]:
+        ...
+
+    @abstractmethod
+    def filter_time_range(
+        self,
+        df_to_join: Union[pd.DataFrame, Any],
+        event_timestamp_column: str,
+        start_date: datetime,
+        end_date: datetime,
+    ) -> Union[pd.DataFrame, Any]:
+        ...
+
+    @abstractmethod
+    def drop_duplicates(
+        self,
+        df_to_join: Union[pd.DataFrame, Any],
+        all_join_keys: List[str],
+        event_timestamp_column: str,
+        created_timestamp_column: Optional[str],
+        entity_df_event_timestamp_col: Optional[str] = None,
+    ) -> Union[pd.DataFrame, Any]:
+        ...
+
+    @abstractmethod
+    def drop_columns(
+        self,
+        df_to_join: Union[pd.DataFrame, Any],
+        event_timestamp_column: str,
+        created_timestamp_column: str,
+    ) -> Union[pd.DataFrame, Any]:
+        ...
+
+    @abstractmethod
+    def add_static_column(
+        self,
+        df_to_join: Union[pd.DataFrame, Any],
+        column_name: str,
+        column_value: str,
+    ) -> Union[pd.DataFrame, Any]:
+        ...
+
+    @abstractmethod
+    def select(
+        self,
+        df_to_join: Union[pd.DataFrame, Any],
+        columns_list: List[str]
+    ) -> Union[pd.DataFrame, Any]:
+        ...
+
     def _get_spark_session(
-        store_config: SparkOfflineStoreConfig,
+        backend_config: YummyOfflineStoreConfig,
     ) -> SparkSession:
         spark_session = SparkSession.getActiveSession()
 
         if not spark_session:
             spark_builder = SparkSession.builder
-            spark_conf = store_config.spark_conf
+            spark_conf = backend_config.config
 
             if spark_conf:
                 spark_builder = spark_builder.config(
@@ -60,26 +203,17 @@ class SparkBackend(Backend):
 
         return spark_session
 
-def _run_spark_field_mapping(
-    table: sd.DataFrame,
-    field_mapping: Dict[str, str],
-):
-    if field_mapping:
-        return table.select(
-            [col(c).alias(field_mapping.get(c, c)) for c in table.columns]
-        )
-    else:
-        return table
-
-
-class SparkOfflineStoreConfig(FeastConfigBaseModel):
-    """Offline store config for local (file-based) store"""
-
-    type: Literal["feast_pyspark.SparkOfflineStore"] = "feast_pyspark.SparkOfflineStore"
-    """ Offline store type selector"""
-
-    spark_conf: Optional[Dict[str, str]] = None
-    """ Configuration overlay for the spark session """
+    def _run_spark_field_mapping(
+        self,
+        table: sd.DataFrame,
+        field_mapping: Dict[str, str],
+    ):
+        if field_mapping:
+            return table.select(
+                [col(c).alias(field_mapping.get(c, c)) for c in table.columns]
+            )
+        else:
+            return table
 
 
 class SparkRetrievalJob(RetrievalJob):
@@ -123,262 +257,6 @@ class SparkRetrievalJob(RetrievalJob):
         pass
 
     def persist(self, storage: SavedDatasetStorage):
-        pass
-
-
-class SparkOfflineStore(OfflineStore):
-
-    spark = None
-
-    @staticmethod
-    def get_historical_features(
-        config: RepoConfig,
-        feature_views: List[FeatureView],
-        feature_refs: List[str],
-        entity_df: Union[pd.DataFrame, str],
-        registry: Registry,
-        project: str,
-        full_feature_names: bool = False,
-    ) -> RetrievalJob:
-
-        spark_session = _get_spark_session(
-            config.offline_store
-        )
-
-        if not isinstance(entity_df, pd.DataFrame) and not isinstance(
-            entity_df, sd.DataFrame
-        ):
-            raise ValueError(
-                f"Please provide an entity_df of type {type(pd.DataFrame)} instead of type {type(entity_df)}"
-            )
-        entity_df_event_timestamp_col = DEFAULT_ENTITY_DF_EVENT_TIMESTAMP_COL  # local modifiable copy of global variable
-        if entity_df_event_timestamp_col not in entity_df.columns:
-            datetime_columns = entity_df.select_dtypes(
-                include=["datetime", "datetimetz"]
-            ).columns
-            if len(datetime_columns) == 1:
-                print(
-                    f"Using {datetime_columns[0]} as the event timestamp. To specify a column explicitly, please name it {DEFAULT_ENTITY_DF_EVENT_TIMESTAMP_COL}."
-                )
-                entity_df_event_timestamp_col = datetime_columns[0]
-            else:
-                raise ValueError(
-                    f"Please provide an entity_df with a column named {DEFAULT_ENTITY_DF_EVENT_TIMESTAMP_COL} representing the time of events."
-                )
-        (
-            feature_views_to_features,
-            on_demand_feature_views_to_features,
-        ) = _get_requested_feature_views_to_features_dict(
-            feature_refs,
-            feature_views,
-            registry.list_on_demand_feature_views(config.project),
-        )
-
-        # Create lazy function that is only called from the RetrievalJob object
-        def evaluate_historical_retrieval():
-
-            if isinstance(entity_df, pd.DataFrame):
-                # Create a copy of entity_df to prevent modifying the original
-                entity_df_with_features = spark_session.createDataFrame(
-                    entity_df
-                )
-            else:
-                entity_df_with_features = entity_df
-
-            # Sort event timestamp values
-            entity_df_with_features = entity_df_with_features.orderBy(
-                col(entity_df_event_timestamp_col)
-            )
-
-            # Load feature view data from sources and join them incrementally
-            for feature_view, features in feature_views_to_features.items():
-                event_timestamp_column = (
-                    feature_view.batch_source.event_timestamp_column
-                )
-                created_timestamp_column = (
-                    feature_view.batch_source.created_timestamp_column
-                )
-
-                # Build a list of entity columns to join on (from the right table)
-                join_keys = []
-                for entity_name in feature_view.entities:
-                    entity = registry.get_entity(entity_name, project)
-                    join_key = feature_view.projection.join_key_map.get(
-                        entity.join_key, entity.join_key
-                    )
-                    join_keys.append(join_key)
-
-                right_entity_key_columns = [
-                    event_timestamp_column,
-                    created_timestamp_column,
-                ] + join_keys
-                right_entity_key_columns = [c for c in right_entity_key_columns if c]
-
-                # feature_view.batch_source.s3_endpoint_override
-                df_to_join = DeltaTable.forPath(
-                    spark_session, feature_view.batch_source.path
-                ).toDF()
-
-                # Build a list of all the features we should select from this source
-                feature_names = []
-                columns_map = {}
-                for feature in features:
-                    # Modify the separator for feature refs in column names to double underscore. We are using
-                    # double underscore as separator for consistency with other databases like BigQuery,
-                    # where there are very few characters available for use as separators
-                    if full_feature_names:
-                        formatted_feature_name = (
-                            f"{feature_view.projection.name_to_use()}__{feature}"
-                        )
-                    else:
-                        formatted_feature_name = feature
-                    # Add the feature name to the list of columns
-                    feature_names.append(formatted_feature_name)
-
-                # Ensure that the source dataframe feature column includes the feature view name as a prefix
-                df_to_join = _run_spark_field_mapping(df_to_join, columns_map)
-
-                # Select only the columns we need to join from the feature dataframe
-                df_to_join = df_to_join.select(
-                    [col(c) for c in right_entity_key_columns + feature_names]
-                )
-
-                range_join = feature_view.batch_source.range_join
-                if range_join:
-                    df_to_join = df_to_join.hint("range_join", range_join)
-
-                df_to_join = entity_df_with_features.join(
-                    df_to_join, join_keys, "left"
-                )
-
-                # Get only data with requested entities
-                ttl_seconds = feature_view.ttl.total_seconds()
-
-                if ttl_seconds != 0:
-                    df_to_join= df_to_join.filter(
-                        (
-                            col(event_timestamp_column)
-                            >= col(entity_df_event_timestamp_col)
-                            - expr(f"INTERVAL {ttl_seconds} seconds")
-                        )
-                        & (
-                            col(event_timestamp_column)
-                            <= col(entity_df_event_timestamp_col)
-                        )
-                    )
-
-                if created_timestamp_column:
-                    df_to_join = df_to_join.orderBy(
-                        col(created_timestamp_column).desc(),
-                        col(event_timestamp_column).desc(),
-                    )
-                else:
-                    df_to_join = df_to_join.orderBy(col(event_timestamp_column).desc())
-
-                df_to_join = df_to_join.dropDuplicates(join_keys)
-
-                # Rename columns by the field mapping dictionary if it exists
-                if feature_view.batch_source.field_mapping is not None:
-                    df_to_join = _run_spark_field_mapping(
-                        df_to_join, feature_view.batch_source.field_mapping
-                    )
-                # Rename entity columns by the join_key_map dictionary if it exists
-                if feature_view.projection.join_key_map:
-                    df_to_join = _run_spark_field_mapping(
-                        df_to_join, feature_view.projection.join_key_map
-                    )
-
-                entity_df_with_features = df_to_join.drop(event_timestamp_column)
-
-                # Ensure that we delete dataframes to free up memory
-                del df_to_join
-
-            return entity_df_with_features.persist()
-
-        job = SparkRetrievalJob(
-            evaluation_function=evaluate_historical_retrieval,
-            full_feature_names=full_feature_names,
-            on_demand_feature_views=OnDemandFeatureView.get_requested_odfvs(
-                feature_refs, project, registry
-            ),
-        )
-        return job
-
-    @staticmethod
-    def pull_latest_from_table_or_query(
-        config: RepoConfig,
-        data_source: DataSource,
-        join_key_columns: List[str],
-        feature_name_columns: List[str],
-        event_timestamp_column: str,
-        created_timestamp_column: Optional[str],
-        start_date: datetime,
-        end_date: datetime,
-    ) -> RetrievalJob:
-
-        spark_session = _get_spark_session(
-            config.offline_store
-        )
-
-        # Create lazy function that is only called from the RetrievalJob object
-        def evaluate_offline_job():
-
-            source_df = DeltaTable.forPath(
-                    spark_session, data_source.path
-                ).toDF()
-
-            source_columns = set(source_df.columns)
-            if not set(join_key_columns).issubset(source_columns):
-                raise FeastJoinKeysDuringMaterialization(
-                    data_source.path, set(join_key_columns), source_columns
-                )
-
-            source_df= source_df.filter(
-                (col(event_timestamp_column) >= start_date)
-                & ( col(event_timestamp_column) <= end_date))
-
-            if created_timestamp_column:
-                source_df = source_df.orderBy(
-                    col(created_timestamp_column).desc(),
-                    col(event_timestamp_column).desc(),
-                )
-            else:
-                source_df = source_df.orderBy(col(event_timestamp_column).desc())
-
-            ts_columns = (
-                [event_timestamp_column, created_timestamp_column]
-                if created_timestamp_column
-                else [event_timestamp_column]
-            )
-
-            columns_to_extract = set(
-                join_key_columns + feature_name_columns + ts_columns
-            )
-
-            if join_key_columns:
-                source_df = source_df.dropDuplicates(join_key_columns)
-            else:
-                source_df.withColumn(DUMMY_ENTITY_ID, lit(DUMMY_ENTITY_VAL))
-                columns_to_extract.add(DUMMY_ENTITY_ID)
-
-            return source_df.select([col(c) for c in list(columns_to_extract)])
-
-        # When materializing a single feature view, we don't need full feature names. On demand transforms aren't materialized
-        return SparkRetrievalJob(
-            evaluation_function=evaluate_offline_job,
-            full_feature_names=False,
-        )
-
-    @staticmethod
-    def pull_all_from_table_or_query(
-        config: RepoConfig,
-        data_source: DataSource,
-        join_key_columns: List[str],
-        feature_name_columns: List[str],
-        event_timestamp_column: str,
-        start_date: datetime,
-        end_date: datetime,
-    ) -> RetrievalJob:
         pass
 
 
