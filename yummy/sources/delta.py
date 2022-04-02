@@ -7,9 +7,9 @@ from feast.data_source import DataSource
 from feast.protos.feast.core.DataSource_pb2 import DataSource as DataSourceProto
 from feast.repo_config import RepoConfig
 from feast.value_type import ValueType
+from yummy.sources.source import YummyDataSource
 
-
-class DeltaDataSource(DataSource):
+class DeltaDataSource(YummyDataSource):
     """Custom data source class for local files"""
 
     def __init__(
@@ -38,7 +38,7 @@ class DeltaDataSource(DataSource):
         Returns the file path of this feature data source.
         """
         return self._path
-    
+
     @property
     def range_join(self):
         """

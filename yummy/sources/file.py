@@ -7,9 +7,9 @@ from feast.data_source import DataSource
 from feast.protos.feast.core.DataSource_pb2 import DataSource as DataSourceProto
 from feast.repo_config import RepoConfig
 from feast.value_type import ValueType
+from yummy.sources.source import YummyDataSource
 
-
-class FileDataSource(DataSource):
+class YummyFileDataSource(YummyDataSource):
     """Custom data source class for local files"""
 
     def __init__(
@@ -98,7 +98,7 @@ class FileDataSource(DataSource):
     def source_datatype_to_feast_value_type() -> Callable[[str], ValueType]:
         return type_map.pa_to_feast_value_type
 
-class ParquetDataSource(DataSource):
+class ParquetDataSource(YummyFileDataSource):
     """Custom data source class for parquets files"""
 
     def __init__(
@@ -120,7 +120,7 @@ class ParquetDataSource(DataSource):
         )
 
 
-class CsvDataSource(DataSource):
+class CsvDataSource(YummyFileDataSource):
     """Custom data source class for parquets files"""
 
     def __init__(

@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Callable, List, Optional, Tuple, Union, Dict, Any
-
+from abc import ABC, abstractmethod
 import pandas as pd
 import pyarrow
 import pytz
@@ -26,7 +26,15 @@ from feast.registry import Registry
 from feast.repo_config import FeastConfigBaseModel, RepoConfig
 from feast.saved_dataset import SavedDatasetStorage
 from feast.usage import log_exceptions_and_usage
+from feast.importer import import_class
+from enum import Enum
+from yummy.sources.source import YummyDataSourceReader
 
+class BackendType(str, Enum):
+    dask = "dask"
+    ray = "ray"
+    spark = "spark"
+    polars = "polars"
 
 class Backend(ABC):
     """
@@ -85,17 +93,20 @@ class Backend(ABC):
         """
         ...
 
-    @abstractmethod
     def read_datasource(
         self,
         data_source,
         features: List[str],
+        backend_type: BackendType,
         entity_df: Optional[Union[pd.DataFrame, Any]] = None,
-    ) -> Union[pd.DataFrame, Any]:
+    ) -> Union[pyarrow.Table, pd.DataFrame, Any]:
         """
         Reads data source
         """
-        ...
+        reader: YummyDataSourceReader = data_source.reader_type()
+        assert issubclass(reader, YummyDataSourceReader)
+        return reader.read_datasource(data_source, features, backend_type, entity_df)
+
 
     @abstractmethod
     def field_mapping(
@@ -198,22 +209,21 @@ class Backend(ABC):
 class BackendFactory:
 
     @staticmethod
-    def create(config: RepoConfig) -> Backend:
-        backend_type = config.offline_store.backend
-        if backend_type == 'dask':
+    def create(backend_type: BackendType) -> Backend:
+        if backend_type == BackendType.dask:
             from yummy.backends.dask import DaskBackend
             return DaskBackend()
-        elif backend_type == 'ray':
+        elif backend_type == BackendType.ray:
             import ray
             import dask
             ray.init(ignore_reinit_error=True)
             dask.config.set(scheduler=ray_dask_get)
             from yummy.backends.dask import DaskBackend
             return DaskBackend()
-        elif backend_type == 'spark':
+        elif backend_type == BackendType.spark:
             from yummy.backends.spark import SparkBackend
             return SparkBackend()
-        elif backend_type == 'polars':
+        elif backend_type == BackendType.polars:
             from yummy.backends.polars import PolarsBackend
             return PolarsBackend()
 
@@ -239,7 +249,8 @@ class YummyOfflineStore(OfflineStore):
         full_feature_names: bool = False,
     ) -> RetrievalJob:
 
-        backend = BackendFactory.create(config)
+        backend_type = config.offline_store.backend
+        backend = BackendFactory.create(backend_type)
         entity_df_event_timestamp_col, entity_df = backend.prepare_entity_df(entity_df)
         all_columns = backend.columns_list(entity_df_event_timestamp_col)
 
@@ -293,7 +304,7 @@ class YummyOfflineStore(OfflineStore):
 
                 all_join_keys = list(set(all_join_keys + join_keys))
 
-                df_to_join = backend.read_datasource(feature_view.batch_source, features, entity_df_with_features)
+                df_to_join = backend.read_datasource(feature_view.batch_source, features, backend_type, entity_df_with_features)
 
                 df_to_join, event_timestamp_column = backend.field_mapping(
                     df_to_join,
@@ -363,11 +374,12 @@ class YummyOfflineStore(OfflineStore):
         end_date: datetime,
     ) -> RetrievalJob:
 
-        backend = BackendFactory.create(config)
+        backend_type = config.offline_store.backend
+        backend = BackendFactory.create(backend_type)
 
         # Create lazy function that is only called from the RetrievalJob object
         def evaluate_offline_job():
-            source_df = backend.read_datasource(data_source, feature_name_columns)
+            source_df = backend.read_datasource(data_source, feature_name_columns, backend_type)
 
             source_df = backend.normalize_timestamp(
                 source_df, event_timestamp_column, created_timestamp_column
@@ -399,10 +411,10 @@ class YummyOfflineStore(OfflineStore):
                 columns_to_extract.add(DUMMY_ENTITY_ID)
 
 
-            return source_df[list(columns_to_extract)].persist()
+            return backend.select(source_df, list(columns_to_extract))
 
         # When materializing a single feature view, we don't need full feature names. On demand transforms aren't materialized
-        return DaskRetrievalJob(
+        return backend.create_retrival_job(
             evaluation_function=evaluate_offline_job, full_feature_names=False,
         )
 
@@ -417,7 +429,7 @@ class YummyOfflineStore(OfflineStore):
         start_date: datetime,
         end_date: datetime,
     ) -> RetrievalJob:
-        return DaskOfflineStore.pull_latest_from_table_or_query(
+        return YummyOfflineStore.pull_latest_from_table_or_query(
             config=config,
             data_source=data_source,
             join_key_columns=join_key_columns
