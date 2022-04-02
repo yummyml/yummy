@@ -63,19 +63,9 @@ class Backend(ABC):
     def prepare_entity_df(
         self,
         entity_df: Union[pd.DataFrame, Any],
-    ) -> Tuple[str, Union[pd.DataFrame, Any]]:
+    ) -> Union[pd.DataFrame, Any]:
         """
         Maps entity_df to type required by backend and finds event timestamp column
-        """
-        ...
-
-    @abstractmethod
-    def columns_list(
-        self,
-        entity_df: Union[pd.DataFrame, Any],
-    ) -> List[str]:
-        """
-        Reads columns list
         """
         ...
 
@@ -198,6 +188,22 @@ class Backend(ABC):
     ) -> Union[pd.DataFrame, Any]:
         ...
 
+    def columns_list(
+        self,
+        entity_df: Union[pd.DataFrame, Any],
+    ) -> List[str]:
+        """
+        Reads columns list
+        """
+        return entity_df.columns
+
+    def select_dtypes_columns(
+        self,
+        entity_df: Union[pd.DataFrame, Any],
+        include: List[str]
+    ) -> List[str]:
+        return entity_df.select_dtypes(include=include).columns
+
     def create_retrival_job(
         self,
         evaluation_function: Callable,
@@ -278,8 +284,24 @@ class YummyOfflineStore(OfflineStore):
 
         backend_type = config.offline_store.backend
         backend = BackendFactory.create(backend_type, config.offline_store)
-        entity_df_event_timestamp_col, entity_df = backend.prepare_entity_df(entity_df)
+        entity_df = backend.prepare_entity_df(entity_df)
         all_columns = backend.columns_list(entity_df_event_timestamp_col)
+
+        entity_df_event_timestamp_col = DEFAULT_ENTITY_DF_EVENT_TIMESTAMP_COL  # local modifiable copy of global variable
+        if entity_df_event_timestamp_col not in all_columns:
+            datetime_columns = backend.select_dtypes_columns(
+                entity_df,
+                include=["datetime", "datetimetz"]
+            )
+            if len(datetime_columns) == 1:
+                print(
+                    f"Using {datetime_columns[0]} as the event timestamp. To specify a column explicitly, please name it {DEFAULT_ENTITY_DF_EVENT_TIMESTAMP_COL}."
+                )
+                entity_df_event_timestamp_col = datetime_columns[0]
+            else:
+                raise ValueError(
+                    f"Please provide an entity_df with a column named {DEFAULT_ENTITY_DF_EVENT_TIMESTAMP_COL} representing the time of events."
+                )
 
         (
             feature_views_to_features,

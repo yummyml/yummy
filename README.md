@@ -75,7 +75,9 @@ mystats_view = FeatureView(
 
 ## References
 
-[feast-spark-offline-store](https://github.com/Adyen/feast-spark-offline-store/) - spark configuration and session
+This project is based on the [Feast](https://github.com/feast-dev) project.
 
+I was also inspired by the other projects:
+[feast-spark-offline-store](https://github.com/Adyen/feast-spark-offline-store/) - spark configuration and session
 [feast-postgres](https://github.com/nossrannug/feast-postgres) - parts of Makefiles and github workflows
 

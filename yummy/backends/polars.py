@@ -41,21 +41,21 @@ class PolarsBackend(Backend):
     def prepare_entity_df(
         self,
         entity_df: Union[pd.DataFrame, Any],
-    ) -> Tuple[str, Union[pd.DataFrame, Any]]:
+    ) -> Union[pd.DataFrame, Any]:
         """
         Maps entity_df to type required by backend and finds event timestamp column
         """
-        ...
+        if not isinstance(entity_df, pl.DataFrame) and not isinstance(
+            entity_df, dd.DataFrame
+        ):
+            raise ValueError(
+                f"Please provide an entity_df of type {type(pd.DataFrame)} instead of type {type(entity_df)}"
+            )
 
-    @abstractmethod
-    def columns_list(
-        self,
-        entity_df: Union[pd.DataFrame, Any],
-    ) -> List[str]:
-        """
-        Reads columns list
-        """
-        ...
+        if isinstance(entity_df, pd.DataFrame):
+            entity_df: pl.DataFrame = pl.from_pandas(entity_df)
+
+        return entity_df
 
     @abstractmethod
     def get_entity_df_event_timestamp_range(
