@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Callable, List, Optional, Tuple, Union
+from typing import Callable, List, Optional, Tuple, Union, Dict
 
 import dask.dataframe as dd
 import pandas as pd
@@ -22,22 +22,37 @@ from feast.infra.offline_stores.offline_utils import (
 )
 from feast.infra.provider import (
     _get_requested_feature_views_to_features_dict,
-    _run_dask_field_mapping,
 )
 from feast.registry import Registry
 from feast.repo_config import FeastConfigBaseModel, RepoConfig
 from feast.saved_dataset import SavedDatasetStorage
 from feast.usage import log_exceptions_and_usage
+from yummy.backends.backend import Backend
 
 
-class FileOfflineStoreConfig(FeastConfigBaseModel):
-    """ Offline store config for local (file-based) store """
 
-    type: Literal["file"] = "file"
+def _run_dask_field_mapping(
+    table: dd.DataFrame, field_mapping: Dict[str, str],
+):
+    if field_mapping:
+        # run field mapping in the forward direction
+        table = table.rename(columns=field_mapping)
+        table = table.persist()
+
+    return table
+
+class DaskBackend(Backend):
+    ...
+
+
+class DaskOfflineStoreConfig(FeastConfigBaseModel):
+    """Offline store config for local (file-based) store"""
+
+    type: Literal["yummy.backends.DaskOfflineStore"] = "yummy.backends.DaskOfflineStore"
     """ Offline store type selector"""
 
 
-class FileRetrievalJob(RetrievalJob):
+class DaskRetrievalJob(RetrievalJob):
     def __init__(
         self,
         evaluation_function: Callable,
@@ -97,7 +112,7 @@ class FileRetrievalJob(RetrievalJob):
         return self._metadata
 
 
-class FileOfflineStore(OfflineStore):
+class DaskOfflineStore(OfflineStore):
     @staticmethod
     @log_exceptions_and_usage(offline_store="file")
     def get_historical_features(
@@ -254,7 +269,7 @@ class FileOfflineStore(OfflineStore):
 
             return entity_df_with_features.persist()
 
-        job = FileRetrievalJob(
+        job = DaskRetrievalJob(
             evaluation_function=evaluate_historical_retrieval,
             full_feature_names=full_feature_names,
             on_demand_feature_views=OnDemandFeatureView.get_requested_odfvs(
@@ -331,7 +346,7 @@ class FileOfflineStore(OfflineStore):
             return source_df[list(columns_to_extract)].persist()
 
         # When materializing a single feature view, we don't need full feature names. On demand transforms aren't materialized
-        return FileRetrievalJob(
+        return DaskRetrievalJob(
             evaluation_function=evaluate_offline_job, full_feature_names=False,
         )
 
@@ -346,7 +361,7 @@ class FileOfflineStore(OfflineStore):
         start_date: datetime,
         end_date: datetime,
     ) -> RetrievalJob:
-        return FileOfflineStore.pull_latest_from_table_or_query(
+        return DaskOfflineStore.pull_latest_from_table_or_query(
             config=config,
             data_source=data_source,
             join_key_columns=join_key_columns

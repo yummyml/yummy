@@ -1,9 +1,8 @@
 from datetime import datetime
 from typing import Callable, Dict, List, Optional, Union
 
-import pandas as pd
+import polars as pl
 import pyarrow
-import pyspark.sql.dataframe as sd
 import pytz
 from delta.tables import DeltaTable
 from feast import FileSource, OnDemandFeatureView
@@ -24,34 +23,29 @@ from feast.repo_config import FeastConfigBaseModel, RepoConfig
 from feast.saved_dataset import SavedDatasetStorage
 from feast.usage import log_exceptions_and_usage
 from pydantic.typing import Literal
-from pyspark.sql.functions import col, expr, lit
-from pyspark.sql import SparkSession
-from pyspark import SparkConf
+from yummy.backends.backend import Backend
 
+class PolarsBackend(Backend):
+    ...
 
-def _run_spark_field_mapping(
+def _run_polars_field_mapping(
     table: sd.DataFrame,
     field_mapping: Dict[str, str],
 ):
     if field_mapping:
-        return table.select(
-            [col(c).alias(field_mapping.get(c, c)) for c in table.columns]
-        )
+        return table.rename(field_mapping)
     else:
         return table
 
 
-class SparkOfflineStoreConfig(FeastConfigBaseModel):
+class PolarsOfflineStoreConfig(FeastConfigBaseModel):
     """Offline store config for local (file-based) store"""
 
-    type: Literal["feast_pyspark.SparkOfflineStore"] = "feast_pyspark.SparkOfflineStore"
+    type: Literal["yummy.backends.PolarsOfflineStore"] = "yummy.backends.PolarsOfflineStore"
     """ Offline store type selector"""
 
-    spark_conf: Optional[Dict[str, str]] = None
-    """ Configuration overlay for the spark session """
 
-
-class SparkRetrievalJob(RetrievalJob):
+class PolarsRetrievalJob(RetrievalJob):
     def __init__(
         self,
         evaluation_function: Callable,
@@ -78,14 +72,13 @@ class SparkRetrievalJob(RetrievalJob):
     @log_exceptions_and_usage
     def _to_df_internal(self) -> pd.DataFrame:
         # Only execute the evaluation function to build the final historical retrieval dataframe at the last moment.
-        df = self.evaluation_function().toPandas()
+        df = self.evaluation_function().to_pandas()
         return df
 
     @log_exceptions_and_usage
     def _to_arrow_internal(self):
         # Only execute the evaluation function to build the final historical retrieval dataframe at the last moment.
-        df = self.evaluation_function().toPandas()
-        return pyarrow.Table.from_pandas(df)
+        return self.evaluation_function().to_arrow()
 
     @property
     def metadata(self) -> Optional[RetrievalMetadata]:
@@ -95,7 +88,7 @@ class SparkRetrievalJob(RetrievalJob):
         pass
 
 
-class SparkOfflineStore(OfflineStore):
+class PolarsOfflineStore(OfflineStore):
 
     spark = None
 
@@ -110,12 +103,8 @@ class SparkOfflineStore(OfflineStore):
         full_feature_names: bool = False,
     ) -> RetrievalJob:
 
-        spark_session = _get_spark_session(
-            config.offline_store
-        )
-
         if not isinstance(entity_df, pd.DataFrame) and not isinstance(
-            entity_df, sd.DataFrame
+            entity_df, pl.DataFrame
         ):
             raise ValueError(
                 f"Please provide an entity_df of type {type(pd.DataFrame)} instead of type {type(entity_df)}"
@@ -148,9 +137,7 @@ class SparkOfflineStore(OfflineStore):
 
             if isinstance(entity_df, pd.DataFrame):
                 # Create a copy of entity_df to prevent modifying the original
-                entity_df_with_features = spark_session.createDataFrame(
-                    entity_df
-                )
+                entity_df_with_features = pl.from_pandas(entity_df)
             else:
                 entity_df_with_features = entity_df
 

@@ -1,8 +1,9 @@
 from datetime import datetime
 from typing import Callable, Dict, List, Optional, Union
 
-import polars as pl
+import pandas as pd
 import pyarrow
+import pyspark.sql.dataframe as sd
 import pytz
 from delta.tables import DeltaTable
 from feast import FileSource, OnDemandFeatureView
@@ -23,22 +24,30 @@ from feast.repo_config import FeastConfigBaseModel, RepoConfig
 from feast.saved_dataset import SavedDatasetStorage
 from feast.usage import log_exceptions_and_usage
 from pydantic.typing import Literal
+from pyspark.sql.functions import col, expr, lit
+from pyspark.sql import SparkSession
+from pyspark import SparkConf
+from yummy.backends.backend import Backend
 
+class SparkBackend(Backend):
+    ...
 
-def _run_polars_field_mapping(
+def _run_spark_field_mapping(
     table: sd.DataFrame,
     field_mapping: Dict[str, str],
 ):
     if field_mapping:
-        return table.rename(field_mapping)
+        return table.select(
+            [col(c).alias(field_mapping.get(c, c)) for c in table.columns]
+        )
     else:
         return table
 
 
-class PolarsOfflineStoreConfig(FeastConfigBaseModel):
+class SparkOfflineStoreConfig(FeastConfigBaseModel):
     """Offline store config for local (file-based) store"""
 
-    type: Literal["feast_polars.PolarsOfflineStore"] = "feast_polars.PolarsOfflineStore"
+    type: Literal["feast_pyspark.SparkOfflineStore"] = "feast_pyspark.SparkOfflineStore"
     """ Offline store type selector"""
 
     spark_conf: Optional[Dict[str, str]] = None
