@@ -46,7 +46,6 @@ class SparkBackend(Backend):
     def spark_session(self) -> SparkSession:
         return _spark_session
 
-    @abstractmethod
     def prepare_entity_df(
         self,
         entity_df: Union[pd.DataFrame, Any],
@@ -66,49 +65,50 @@ class SparkBackend(Backend):
 
         return entity_df
 
-    @abstractmethod
-    def get_entity_df_event_timestamp_range(
-        self,
-        entity_df: Union[pd.DataFrame, Any],
-    ) -> Tuple[datetime, datetime]:
-        """
-        Finds min and max datetime in input entity_df data frame
-        """
-        ...
-
-    @abstractmethod
     def normalize_timezone(
         self,
-        entity_df: Union[pd.DataFrame, Any],
+        entity_df_with_features: Union[pd.DataFrame, Any],
     ) -> Union[pd.DataFrame, Any]:
         """
         Normalize timezon of input entity df to UTC
         """
-        ...
+        return entity_df_with_features
 
-    @abstractmethod
     def sort_values(
         self,
         entity_df: Union[pd.DataFrame, Any],
         by: str,
+        ascending: bool = True,
+        na_position: Optional[str] = "last",
     ) -> Union[pd.DataFrame, Any]:
         """
         Sorts entity df by selected column
         """
-        ...
 
-    @abstractmethod
-    def field_mapping(
+        c = col(by)
+
+        if ascending and na_position='first':
+            c = c.asc_nulls_first()
+        elif ascending and na_position='last':
+            c = c.asc_nulls_last()
+        elif not ascending and na_position='first':
+            c = c.desc_nulls_first()
+        elif not ascending and na_position='last':
+            c = c.desc_nulls_last()
+
+        return entity_df.orderBy(c)
+
+    def run_field_mapping(
         self,
-        df_to_join: Union[pd.DataFrame, Any],
-        feature_view: FeatureView,
-        features: List[str],
-        right_entity_key_columns: List[str],
-        entity_df_event_timestamp_col: str,
-        event_timestamp_column: str,
-        full_feature_names: bool,
-    ) -> Union[pd.DataFrame, Any]:
-        ...
+        table: Union[pd.DataFrame,Any],
+        field_mapping: Dict[str, str],
+    ):
+        if field_mapping:
+            return table.select(
+                [col(c).alias(field_mapping.get(c, c)) for c in table.columns]
+            )
+        else:
+            return table
 
     @abstractmethod
     def merge(
@@ -148,8 +148,36 @@ class SparkBackend(Backend):
     ) -> Union[pd.DataFrame, Any]:
         ...
 
-    @abstractmethod
     def drop_duplicates(
+        self,
+        df_to_join: Union[pd.DataFrame, Any],
+        subset: List[str],
+    ) -> Union[pd.DataFrame, Any]:
+        return df_to_join.dropDuplicates(subset)
+
+    def drop(
+        self,
+        df_to_join: Union[pd.DataFrame, Any],
+        columns_list: List[str],
+    ) -> Union[pd.DataFrame, Any]:
+        return df_to_join.drop(*columns_list)
+
+    def add_static_column(
+        self,
+        df_to_join: Union[pd.DataFrame, Any],
+        column_name: str,
+        column_value: str,
+    ) -> Union[pd.DataFrame, Any]:
+        return df_to_join.withColumn(column_name, lit(column_value))
+
+    def select(
+        self,
+        df_to_join: Union[pd.DataFrame, Any],
+        columns_list: List[str]
+    ) -> Union[pd.DataFrame, Any]:
+        return df_to_join.select(*columns_list)
+
+    def drop_df_duplicates(
         self,
         df_to_join: Union[pd.DataFrame, Any],
         all_join_keys: List[str],
@@ -157,33 +185,16 @@ class SparkBackend(Backend):
         created_timestamp_column: Optional[str],
         entity_df_event_timestamp_col: Optional[str] = None,
     ) -> Union[pd.DataFrame, Any]:
-        ...
+        # This must be overriten and df must be reversed because in pyspark
+        # there is no keep last in dropDuplicates
+        if created_timestamp_column:
+            df_to_join =  self.sort_values(df_to_join, ascending=False, by=created_timestamp_column, na_position="last")
 
-    @abstractmethod
-    def drop_columns(
-        self,
-        df_to_join: Union[pd.DataFrame, Any],
-        event_timestamp_column: str,
-        created_timestamp_column: str,
-    ) -> Union[pd.DataFrame, Any]:
-        ...
+        df_to_join = self.sort_values(df_to_join, ascending=False, by=event_timestamp_column, na_position="last")
 
-    @abstractmethod
-    def add_static_column(
-        self,
-        df_to_join: Union[pd.DataFrame, Any],
-        column_name: str,
-        column_value: str,
-    ) -> Union[pd.DataFrame, Any]:
-        ...
+        df_to_join = self.drop_duplicates(df_to_join,subset=all_join_keys + [entity_df_event_timestamp_col])
 
-    @abstractmethod
-    def select(
-        self,
-        df_to_join: Union[pd.DataFrame, Any],
-        columns_list: List[str]
-    ) -> Union[pd.DataFrame, Any]:
-        ...
+        return df_to_join
 
     def _get_spark_session(
         backend_config: YummyOfflineStoreConfig,
@@ -202,18 +213,6 @@ class SparkBackend(Backend):
             spark_session = spark_builder.getOrCreate()
 
         return spark_session
-
-    def _run_spark_field_mapping(
-        self,
-        table: sd.DataFrame,
-        field_mapping: Dict[str, str],
-    ):
-        if field_mapping:
-            return table.select(
-                [col(c).alias(field_mapping.get(c, c)) for c in table.columns]
-            )
-        else:
-            return table
 
 
 class SparkRetrievalJob(RetrievalJob):

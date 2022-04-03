@@ -70,19 +70,9 @@ class Backend(ABC):
         ...
 
     @abstractmethod
-    def get_entity_df_event_timestamp_range(
-        self,
-        entity_df: Union[pd.DataFrame, Any],
-    ) -> Tuple[datetime, datetime]:
-        """
-        Finds min and max datetime in input entity_df data frame
-        """
-        ...
-
-    @abstractmethod
     def normalize_timezone(
         self,
-        entity_df: Union[pd.DataFrame, Any],
+        entity_df_with_features: Union[pd.DataFrame, Any],
     ) -> Union[pd.DataFrame, Any]:
         """
         Normalize timezon of input entity df to UTC
@@ -94,6 +84,8 @@ class Backend(ABC):
         self,
         entity_df: Union[pd.DataFrame, Any],
         by: str,
+        ascending: bool = True,
+        na_position: Optional[str] = "last",
     ) -> Union[pd.DataFrame, Any]:
         """
         Sorts entity df by selected column
@@ -101,16 +93,11 @@ class Backend(ABC):
         ...
 
     @abstractmethod
-    def field_mapping(
+    def run_field_mapping(
         self,
-        df_to_join: Union[pd.DataFrame, Any],
-        feature_view: FeatureView,
-        features: List[str],
-        right_entity_key_columns: List[str],
-        entity_df_event_timestamp_col: str,
-        event_timestamp_column: str,
-        full_feature_names: bool,
-    ) -> Union[pd.DataFrame, Any]:
+        table: Union[pd.DataFrame,Any],
+        field_mapping: Dict[str, str],
+    ):
         ...
 
     @abstractmethod
@@ -155,19 +142,15 @@ class Backend(ABC):
     def drop_duplicates(
         self,
         df_to_join: Union[pd.DataFrame, Any],
-        all_join_keys: List[str],
-        event_timestamp_column: str,
-        created_timestamp_column: Optional[str],
-        entity_df_event_timestamp_col: Optional[str] = None,
+        subset: List[str],
     ) -> Union[pd.DataFrame, Any]:
         ...
 
     @abstractmethod
-    def drop_columns(
+    def drop(
         self,
         df_to_join: Union[pd.DataFrame, Any],
-        event_timestamp_column: str,
-        created_timestamp_column: str,
+        columns_list: List[str],
     ) -> Union[pd.DataFrame, Any]:
         ...
 
@@ -187,6 +170,110 @@ class Backend(ABC):
         columns_list: List[str]
     ) -> Union[pd.DataFrame, Any]:
         ...
+
+    def drop_df_duplicates(
+        self,
+        df_to_join: Union[pd.DataFrame, Any],
+        all_join_keys: List[str],
+        event_timestamp_column: str,
+        created_timestamp_column: Optional[str],
+        entity_df_event_timestamp_col: Optional[str] = None,
+    ) -> Union[pd.DataFrame, Any]:
+        if created_timestamp_column:
+            df_to_join =  self.sort_values(df_to_join, by=created_timestamp_column, na_position="first")
+
+        df_to_join = self.sort_values(df_to_join, by=event_timestamp_column, na_position="first")
+
+        df_to_join = self.drop_duplicates(df_to_join,subset=all_join_keys + [entity_df_event_timestamp_col])
+
+        return df_to_join
+
+    def drop_columns(
+        self,
+        df_to_join: Union[pd.DataFrame, Any],
+        event_timestamp_column: str,
+        created_timestamp_column: str,
+    ) -> Union[pd.DataFrame, Any]:
+        entity_df_with_features = self.drop(df_to_join, [event_timestamp_column])
+
+        if created_timestamp_column:
+            entity_df_with_features = seld.drop(entity_df_with_features,[created_timestamp_column])
+
+        return entity_df_with_features
+
+    def field_mapping(
+        self,
+        df_to_join: Union[pd.DataFrame, Any],
+        feature_view: FeatureView,
+        features: List[str],
+        right_entity_key_columns: List[str],
+        entity_df_event_timestamp_col: str,
+        event_timestamp_column: str,
+        full_feature_names: bool,
+    ) -> Union[pd.DataFrame, Any]:
+        # Rename columns by the field mapping dictionary if it exists
+        if feature_view.batch_source.field_mapping:
+            df_to_join = self.run_field_mapping(
+                df_to_join, feature_view.batch_source.field_mapping
+            )
+        # Rename entity columns by the join_key_map dictionary if it exists
+        if feature_view.projection.join_key_map:
+            df_to_join = self.run_field_mapping(
+                df_to_join, feature_view.projection.join_key_map
+            )
+
+        # Build a list of all the features we should select from this source
+        feature_names = []
+        columns_map = {}
+        for feature in features:
+            # Modify the separator for feature refs in column names to double underscore. We are using
+            # double underscore as separator for consistency with other databases like BigQuery,
+            # where there are very few characters available for use as separators
+            if full_feature_names:
+                formatted_feature_name = (
+                    f"{feature_view.projection.name_to_use()}__{feature}"
+                )
+            else:
+                formatted_feature_name = feature
+            # Add the feature name to the list of columns
+            feature_names.append(formatted_feature_name)
+            columns_map[feature] = formatted_feature_name
+
+        # Ensure that the source dataframe feature column includes the feature view name as a prefix
+        df_to_join = self.run_field_mapping(df_to_join, columns_map)
+
+        # Select only the columns we need to join from the feature dataframe
+        df_to_join = self.select(df_to_join, [right_entity_key_columns + feature_names])
+
+        # Make sure to not have duplicated columns
+        if entity_df_event_timestamp_col == event_timestamp_column:
+            df_to_join = self.run_field_mapping(
+                df_to_join, {event_timestamp_column: f"__{event_timestamp_column}"},
+            )
+            event_timestamp_column = f"__{event_timestamp_column}"
+
+        return df_to_join, event_timestamp_column
+
+    def get_entity_df_event_timestamp_range(
+        self,
+        entity_df: Union[pd.DataFrame, Any],
+        entity_df_event_timestamp_col: str,
+    ) -> Tuple[datetime, datetime]:
+        """
+        Finds min and max datetime in input entity_df data frame
+        """
+        if not isinstance(entity_df, pd.DataFrame):
+            entity_df_event_timestamp = entity_df.loc[entity_df_event_timestamp_col].infer_objects()
+            if pd.api.types.is_string_dtype(entity_df_event_timestamp):
+                entity_df_event_timestamp = pd.to_datetime(entity_df_event_timestamp, utc=True)
+
+            return (
+                entity_df_event_timestamp.min().to_pydatetime(),
+                entity_df_event_timestamp.max().to_pydatetime(),
+            )
+
+        # TODO: check if this metadata is really needed
+        return None, None
 
     def columns_list(
         self,
@@ -378,7 +465,7 @@ class YummyOfflineStore(OfflineStore):
                     event_timestamp_column,
                 )
 
-                df_to_join = backend.drop_duplicates(
+                df_to_join = backend.drop_df_duplicates(
                     df_to_join,
                     all_join_keys,
                     event_timestamp_column,
@@ -454,7 +541,7 @@ class YummyOfflineStore(OfflineStore):
                 join_key_columns + feature_name_columns + ts_columns
             )
             if join_key_columns:
-                source_df = backend.drop_duplicates(source_df, join_key_columns, event_timestamp_column, created_timestamp_column)
+                source_df = backend.drop_df_duplicates(source_df, join_key_columns, event_timestamp_column, created_timestamp_column)
             else:
                 source_df = backend.add_static_column(source_df, DUMMY_ENTITY_ID, DUMMY_ENTITY_VAL)
                 columns_to_extract.add(DUMMY_ENTITY_ID)

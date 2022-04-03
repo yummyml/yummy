@@ -37,7 +37,6 @@ class PolarsBackend(Backend):
     def retrival_job_type(self):
         return PolarsRetrievalJob
 
-    @abstractmethod
     def prepare_entity_df(
         self,
         entity_df: Union[pd.DataFrame, Any],
@@ -57,49 +56,45 @@ class PolarsBackend(Backend):
 
         return entity_df
 
-    @abstractmethod
-    def get_entity_df_event_timestamp_range(
-        self,
-        entity_df: Union[pd.DataFrame, Any],
-    ) -> Tuple[datetime, datetime]:
-        """
-        Finds min and max datetime in input entity_df data frame
-        """
-        ...
-
-    @abstractmethod
     def normalize_timezone(
         self,
-        entity_df: Union[pd.DataFrame, Any],
+        entity_df_with_features: Union[pd.DataFrame, Any],
     ) -> Union[pd.DataFrame, Any]:
         """
         Normalize timezon of input entity df to UTC
         """
-        ...
+        return entity_df_with_features
 
-    @abstractmethod
     def sort_values(
         self,
         entity_df: Union[pd.DataFrame, Any],
         by: str,
+        ascending: bool = True,
+        na_position: Optional[str] = "last",
     ) -> Union[pd.DataFrame, Any]:
         """
         Sorts entity df by selected column
         """
-        ...
+        nulls_last = True
+        if na_position == 'first':
+            nulls_last = False
 
-    @abstractmethod
-    def field_mapping(
+        reverse = False
+        if not ascending:
+            reverse = True
+
+        return entity_df.sort(by, reverse=reverse, nulls_last=nulls_last)
+
+    def run_field_mapping(
         self,
-        df_to_join: Union[pd.DataFrame, Any],
-        feature_view: FeatureView,
-        features: List[str],
-        right_entity_key_columns: List[str],
-        entity_df_event_timestamp_col: str,
-        event_timestamp_column: str,
-        full_feature_names: bool,
-    ) -> Union[pd.DataFrame, Any]:
-        ...
+        table: Union[pd.DataFrame,Any],
+        field_mapping: Dict[str, str],
+    ):
+        if field_mapping:
+            # run field mapping in the forward direction
+            table = table.rename(columns=field_mapping)
+
+        return table
 
     @abstractmethod
     def merge(
@@ -139,52 +134,34 @@ class PolarsBackend(Backend):
     ) -> Union[pd.DataFrame, Any]:
         ...
 
-    @abstractmethod
     def drop_duplicates(
         self,
         df_to_join: Union[pd.DataFrame, Any],
-        all_join_keys: List[str],
-        event_timestamp_column: str,
-        created_timestamp_column: Optional[str],
-        entity_df_event_timestamp_col: Optional[str] = None,
+        subset: List[str],
     ) -> Union[pd.DataFrame, Any]:
-        ...
+        return df_to_join.distinct(subset, keep='last')
 
-    @abstractmethod
-    def drop_columns(
+    def drop(
         self,
         df_to_join: Union[pd.DataFrame, Any],
-        event_timestamp_column: str,
-        created_timestamp_column: str,
+        columns_list: List[str],
     ) -> Union[pd.DataFrame, Any]:
-        ...
+        return df_to_join.drop(columns_list)
 
-    @abstractmethod
     def add_static_column(
         self,
         df_to_join: Union[pd.DataFrame, Any],
         column_name: str,
         column_value: str,
     ) -> Union[pd.DataFrame, Any]:
-        ...
+        return df_to_join.with_column(pl.lit(column_value).alias(column_name))
 
-    @abstractmethod
     def select(
         self,
         df_to_join: Union[pd.DataFrame, Any],
         columns_list: List[str]
     ) -> Union[pd.DataFrame, Any]:
-        ...
-
-
-    def _run_polars_field_mapping(
-        table: sd.DataFrame,
-        field_mapping: Dict[str, str],
-    ):
-        if field_mapping:
-            return table.rename(field_mapping)
-        else:
-            return table
+        return df_to_join[columns_list]
 
 
 class PolarsRetrievalJob(RetrievalJob):

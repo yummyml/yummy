@@ -30,17 +30,6 @@ from feast.usage import log_exceptions_and_usage
 from yummy.backends.backend import Backend, BackendType
 
 
-
-def _run_dask_field_mapping(
-    table: dd.DataFrame, field_mapping: Dict[str, str],
-):
-    if field_mapping:
-        # run field mapping in the forward direction
-        table = table.rename(columns=field_mapping)
-        table = table.persist()
-
-    return table
-
 class DaskBackend(Backend):
     def __init__(self, backend_config: BackendConfig):
         super().__init__(backend_config)
@@ -53,7 +42,6 @@ class DaskBackend(Backend):
     def retrival_job_type(self):
         return DaskRetrievalJob
 
-    @abstractmethod
     def prepare_entity_df(
         self,
         entity_df: Union[pd.DataFrame, Any],
@@ -73,49 +61,67 @@ class DaskBackend(Backend):
 
         return entity_df
 
-    @abstractmethod
-    def get_entity_df_event_timestamp_range(
-        self,
-        entity_df: Union[pd.DataFrame, Any],
-    ) -> Tuple[datetime, datetime]:
-        """
-        Finds min and max datetime in input entity_df data frame
-        """
-        ...
-
-    @abstractmethod
     def normalize_timezone(
         self,
-        entity_df: Union[pd.DataFrame, Any],
+        entity_df_with_features: Union[pd.DataFrame, Any],
     ) -> Union[pd.DataFrame, Any]:
         """
         Normalize timezon of input entity df to UTC
         """
-        ...
+        entity_df_event_timestamp_col_type = entity_df_with_features.dtypes[
+            entity_df_event_timestamp_col
+        ]
+        if (
+            not hasattr(entity_df_event_timestamp_col_type, "tz")
+            or entity_df_event_timestamp_col_type.tz != pytz.UTC
+        ):
+            # Make sure all event timestamp fields are tz-aware. We default tz-naive fields to UTC
+            entity_df_with_features[
+                entity_df_event_timestamp_col
+            ] = entity_df_with_features[entity_df_event_timestamp_col].apply(
+                lambda x: x if x.tzinfo is not None else x.replace(tzinfo=pytz.utc)
+            )
 
-    @abstractmethod
+            # Convert event timestamp column to datetime and normalize time zone to UTC
+            # This is necessary to avoid issues with pd.merge_asof
+            if isinstance(entity_df_with_features, dd.DataFrame):
+                entity_df_with_features[
+                    entity_df_event_timestamp_col
+                ] = dd.to_datetime(
+                    entity_df_with_features[entity_df_event_timestamp_col], utc=True
+                )
+            else:
+                entity_df_with_features[
+                    entity_df_event_timestamp_col
+                ] = pd.to_datetime(
+                    entity_df_with_features[entity_df_event_timestamp_col], utc=True
+                )
+
+        return entity_df_with_features
+
     def sort_values(
         self,
         entity_df: Union[pd.DataFrame, Any],
         by: str,
+        ascending: bool = True,
+        na_position: Optional[str] = "last",
     ) -> Union[pd.DataFrame, Any]:
         """
         Sorts entity df by selected column
         """
-        ...
+        return entity_df.sort_values(by, ascending=ascending, na_position=na_position).persist()
 
-    @abstractmethod
-    def field_mapping(
+    def run_field_mapping(
         self,
-        df_to_join: Union[pd.DataFrame, Any],
-        feature_view: FeatureView,
-        features: List[str],
-        right_entity_key_columns: List[str],
-        entity_df_event_timestamp_col: str,
-        event_timestamp_column: str,
-        full_feature_names: bool,
-    ) -> Union[pd.DataFrame, Any]:
-        ...
+        table: Union[pd.DataFrame,Any],
+        field_mapping: Dict[str, str],
+    ):
+        if field_mapping:
+            # run field mapping in the forward direction
+            table = table.rename(columns=field_mapping)
+            table = table.persist()
+
+        return table
 
     @abstractmethod
     def merge(
@@ -155,42 +161,35 @@ class DaskBackend(Backend):
     ) -> Union[pd.DataFrame, Any]:
         ...
 
-    @abstractmethod
     def drop_duplicates(
         self,
         df_to_join: Union[pd.DataFrame, Any],
-        all_join_keys: List[str],
-        event_timestamp_column: str,
-        created_timestamp_column: Optional[str],
-        entity_df_event_timestamp_col: Optional[str] = None,
+        subset: List[str],
     ) -> Union[pd.DataFrame, Any]:
-        ...
+        return df_to_join.drop_duplicates(subset, keep='last', ignore_index=True,).persist()
 
-    @abstractmethod
-    def drop_columns(
+    def drop(
         self,
         df_to_join: Union[pd.DataFrame, Any],
-        event_timestamp_column: str,
-        created_timestamp_column: str,
+        columns_list: List[str],
     ) -> Union[pd.DataFrame, Any]:
-        ...
+        return df_to_join.drop(columns_list)
 
-    @abstractmethod
     def add_static_column(
         self,
         df_to_join: Union[pd.DataFrame, Any],
         column_name: str,
         column_value: str,
     ) -> Union[pd.DataFrame, Any]:
-        ...
+        df_to_join[column_name]=column_value
+        return df_to_join
 
-    @abstractmethod
     def select(
         self,
         df_to_join: Union[pd.DataFrame, Any],
         columns_list: List[str]
     ) -> Union[pd.DataFrame, Any]:
-        ...
+        return df_to_join[columns_list].persist()
 
 class DaskRetrievalJob(RetrievalJob):
     def __init__(
