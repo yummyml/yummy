@@ -139,16 +139,41 @@ class DaskBackend(Backend):
                 how="left",
             )
 
-    @abstractmethod
     def normalize_timestamp(
         self,
         df_to_join: Union[pd.DataFrame, Any],
         event_timestamp_column: str,
         created_timestamp_column: str,
     ) -> Union[pd.DataFrame, Any]:
-        ...
+        df_to_join_types = df_to_join.dtypes
+        event_timestamp_column_type = df_to_join_types[event_timestamp_column]
 
-    @abstractmethod
+        if created_timestamp_column:
+            created_timestamp_column_type = df_to_join_types[created_timestamp_column]
+
+        if (
+            not hasattr(event_timestamp_column_type, "tz")
+            or event_timestamp_column_type.tz != pytz.UTC
+        ):
+            # Make sure all timestamp fields are tz-aware. We default tz-naive fields to UTC
+            df_to_join[event_timestamp_column] = df_to_join[event_timestamp_column].apply(
+                lambda x: x if x.tzinfo is not None else x.replace(tzinfo=pytz.utc),
+                meta=(event_timestamp_column, "datetime64[ns, UTC]"),
+            )
+
+        if created_timestamp_column and (
+            not hasattr(created_timestamp_column_type, "tz")
+            or created_timestamp_column_type.tz != pytz.UTC
+        ):
+            df_to_join[created_timestamp_column] = df_to_join[
+                created_timestamp_column
+            ].apply(
+                lambda x: x if x.tzinfo is not None else x.replace(tzinfo=pytz.utc),
+                meta=(event_timestamp_column, "datetime64[ns, UTC]"),
+            )
+
+        return df_to_join.persist()
+
     def filter_ttl(
         self,
         df_to_join: Union[pd.DataFrame, Any],
@@ -156,7 +181,22 @@ class DaskBackend(Backend):
         entity_df_event_timestamp_col: str,
         event_timestamp_column: str,
     ) -> Union[pd.DataFrame, Any]:
-        ...
+        # Filter rows by defined timestamp tolerance
+        if feature_view.ttl and feature_view.ttl.total_seconds() != 0:
+            df_to_join = df_to_join[
+                (
+                    df_to_join[event_timestamp_column]
+                    >= df_to_join[entity_df_event_timestamp_col] - feature_view.ttl
+                )
+                & (
+                    df_to_join[event_timestamp_column]
+                    <= df_to_join[entity_df_event_timestamp_col]
+                )
+            ]
+
+            df_to_join = df_to_join.persist()
+
+        return df_to_join
 
     @abstractmethod
     def filter_time_range(

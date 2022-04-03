@@ -135,14 +135,13 @@ class SparkBackend(Backend):
             how="left"
         ).select(*cols)
 
-    @abstractmethod
     def normalize_timestamp(
         self,
         df_to_join: Union[pd.DataFrame, Any],
         event_timestamp_column: str,
         created_timestamp_column: str,
     ) -> Union[pd.DataFrame, Any]:
-        ...
+        return df_to_join
 
     @abstractmethod
     def filter_ttl(
@@ -152,7 +151,22 @@ class SparkBackend(Backend):
         entity_df_event_timestamp_col: str,
         event_timestamp_column: str,
     ) -> Union[pd.DataFrame, Any]:
-        ...
+        # Filter rows by defined timestamp tolerance
+        if feature_view.ttl and feature_view.ttl.total_seconds() != 0:
+            df_to_join= df_to_join.filter(
+                (
+                    col(event_timestamp_column)
+                    >= col(entity_df_event_timestamp_col)
+                    - expr(f"INTERVAL {ttl_seconds} seconds")
+                )
+                & (
+                    col(event_timestamp_column)
+                    <= col(entity_df_event_timestamp_col)
+                )
+            )
+
+        return df_to_join
+
 
     @abstractmethod
     def filter_time_range(

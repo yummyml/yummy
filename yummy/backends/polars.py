@@ -111,16 +111,14 @@ class PolarsBackend(Backend):
                 how="left",
             )
 
-    @abstractmethod
     def normalize_timestamp(
         self,
         df_to_join: Union[pd.DataFrame, Any],
         event_timestamp_column: str,
         created_timestamp_column: str,
     ) -> Union[pd.DataFrame, Any]:
-        ...
+        return df_to_join
 
-    @abstractmethod
     def filter_ttl(
         self,
         df_to_join: Union[pd.DataFrame, Any],
@@ -128,7 +126,20 @@ class PolarsBackend(Backend):
         entity_df_event_timestamp_col: str,
         event_timestamp_column: str,
     ) -> Union[pd.DataFrame, Any]:
-        ...
+        # Filter rows by defined timestamp tolerance
+        if feature_view.ttl and feature_view.ttl.total_seconds() != 0:
+            df_to_join = df_to_join[
+                (
+                    pl.col(event_timestamp_column)
+                    >= pl.col(entity_df_event_timestamp_col) - feature_view.ttl
+                )
+                & (
+                    pl.col(event_timestamp_column)
+                    <= pl.col(entity_df_event_timestamp_col)
+                )
+            ]
+
+        return df_to_join
 
     @abstractmethod
     def filter_time_range(
