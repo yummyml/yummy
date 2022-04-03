@@ -198,15 +198,19 @@ class DaskBackend(Backend):
 
         return df_to_join
 
-    @abstractmethod
     def filter_time_range(
         self,
-        df_to_join: Union[pd.DataFrame, Any],
+        source_df: Union[pd.DataFrame, Any],
         event_timestamp_column: str,
         start_date: datetime,
         end_date: datetime,
     ) -> Union[pd.DataFrame, Any]:
-        ...
+        source_df = source_df[
+            (source_df[event_timestamp_column] >= start_date)
+            & (source_df[event_timestamp_column] < end_date)
+        ]
+
+        return source_df.persist()
 
     def drop_duplicates(
         self,

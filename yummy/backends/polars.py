@@ -141,15 +141,17 @@ class PolarsBackend(Backend):
 
         return df_to_join
 
-    @abstractmethod
     def filter_time_range(
         self,
-        df_to_join: Union[pd.DataFrame, Any],
+        source_df: Union[pd.DataFrame, Any],
         event_timestamp_column: str,
         start_date: datetime,
         end_date: datetime,
     ) -> Union[pd.DataFrame, Any]:
-        ...
+        return source_df.filter(
+            (pl.col(event_timestamp_column) >= start_date)
+            & (pl.col(event_timestamp_column) < end_date)
+        )
 
     def drop_duplicates(
         self,

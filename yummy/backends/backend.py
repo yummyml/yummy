@@ -132,7 +132,7 @@ class Backend(ABC):
     @abstractmethod
     def filter_time_range(
         self,
-        df_to_join: Union[pd.DataFrame, Any],
+        source_df: Union[pd.DataFrame, Any],
         event_timestamp_column: str,
         start_date: datetime,
         end_date: datetime,
