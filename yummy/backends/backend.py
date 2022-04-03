@@ -101,11 +101,12 @@ class Backend(ABC):
         ...
 
     @abstractmethod
-    def merge(
+    def join(
         self,
         entity_df_with_features: Union[pd.DataFrame, Any],
         df_to_join: Union[pd.DataFrame, Any],
         join_keys: List[str],
+        feature_view: FeatureView,
     ) -> Union[pd.DataFrame, Any]:
         ...
 
@@ -171,6 +172,33 @@ class Backend(ABC):
     ) -> Union[pd.DataFrame, Any]:
         ...
 
+    def merge(
+        self,
+        entity_df_with_features: Union[pd.DataFrame, Any],
+        df_to_join: Union[pd.DataFrame, Any],
+        join_keys: List[str],
+        feature_view: FeatureView,
+    ) -> Union[pd.DataFrame, Any]:
+        # tmp join keys needed for cross join with null join table view
+        tmp_join_keys = []
+        if not join_keys:
+            self.add_static_column(entity_df_with_features, "__tmp", 1)
+            self.add_static_column(df_to_join, "__tmp", 1)
+            tmp_join_keys = ["__tmp"]
+
+        # Get only data with requested entities
+        df_to_join = self.join(
+            entity_df_with_features,
+            df_to_join,
+            join_keys or tmp_join_keys,
+            feature_view,
+        )
+
+        if tmp_join_keys:
+            df_to_join = self.drop(df_to_join, tmp_join_keys)
+
+        return df_to_join
+
     def drop_df_duplicates(
         self,
         df_to_join: Union[pd.DataFrame, Any],
@@ -195,7 +223,7 @@ class Backend(ABC):
         entity_df_with_features = self.drop(df_to_join, [event_timestamp_column])
 
         if created_timestamp_column:
-            entity_df_with_features = seld.drop(entity_df_with_features,[created_timestamp_column])
+            entity_df_with_features = self.drop(entity_df_with_features,[created_timestamp_column])
 
         return entity_df_with_features
 
@@ -450,7 +478,7 @@ class YummyOfflineStore(OfflineStore):
                     full_feature_names,
                 )
 
-                df_to_join = backend.merge(entity_df_with_features, df_to_join, join_keys)
+                df_to_join = backend.merge(entity_df_with_features, df_to_join, join_keys, feature_view)
 
                 df_to_join = backend.normalize_timestamp(
                     df_to_join, event_timestamp_column, created_timestamp_column

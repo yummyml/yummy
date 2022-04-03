@@ -96,14 +96,20 @@ class PolarsBackend(Backend):
 
         return table
 
-    @abstractmethod
-    def merge(
+    def join(
         self,
         entity_df_with_features: Union[pd.DataFrame, Any],
         df_to_join: Union[pd.DataFrame, Any],
         join_keys: List[str],
+        feature_view: FeatureView,
     ) -> Union[pd.DataFrame, Any]:
-        ...
+        return entity_df_with_features.join(
+                df_to_join,
+                left_on=join_keys,
+                right_on=join_keys,
+                suffixes=("", "__"),
+                how="left",
+            )
 
     @abstractmethod
     def normalize_timestamp(

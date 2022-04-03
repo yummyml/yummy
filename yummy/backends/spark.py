@@ -113,14 +113,27 @@ class SparkBackend(Backend):
         else:
             return table
 
-    @abstractmethod
-    def merge(
+    def join(
         self,
         entity_df_with_features: Union[pd.DataFrame, Any],
         df_to_join: Union[pd.DataFrame, Any],
         join_keys: List[str],
+        feature_view: FeatureView,
     ) -> Union[pd.DataFrame, Any]:
-        ...
+
+        range_join = feature_view.batch_source.range_join
+        if range_join:
+            df_to_join = df_to_join.hint("range_join", range_join)
+
+        df_to_join_cols = df_to_join.columns
+        entity_df_with_features_columns = [entity_df_with_features_columns[c] for c in entity_df_with_features.columns if c not in df_to_join_cols]
+        cols = [df_to_join_cols]+entity_df_with_features_columns
+
+        return entity_df_with_features.join(
+            other=df_to_join,
+            on=join_keys,
+            how="left"
+        ).select(*cols)
 
     @abstractmethod
     def normalize_timestamp(
