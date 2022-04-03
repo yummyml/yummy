@@ -77,7 +77,7 @@ class SparkBackend(Backend):
     def sort_values(
         self,
         entity_df: Union[pd.DataFrame, Any],
-        by: str,
+        by: Union[str,List[str]],
         ascending: bool = True,
         na_position: Optional[str] = "last",
     ) -> Union[pd.DataFrame, Any]:
@@ -85,18 +85,21 @@ class SparkBackend(Backend):
         Sorts entity df by selected column
         """
 
-        c = col(by)
+        if type(by) is str:
+            by = [by]
+
+        cols = [col(b) for b in by]
 
         if ascending and na_position='first':
-            c = c.asc_nulls_first()
+            cols = [col(b).asc_nulls_first() for b in by]
         elif ascending and na_position='last':
-            c = c.asc_nulls_last()
+            cols = [col(b).asc_nulls_last() for b in by]
         elif not ascending and na_position='first':
-            c = c.desc_nulls_first()
+            cols = [col(b).desc_nulls_first() for b in by]
         elif not ascending and na_position='last':
-            c = c.desc_nulls_last()
+            cols = [col(b).desc_nulls_last() for b in by]
 
-        return entity_df.orderBy(c)
+        return entity_df.orderBy(cols)
 
     def run_field_mapping(
         self,
@@ -188,13 +191,11 @@ class SparkBackend(Backend):
         # This must be overriten and df must be reversed because in pyspark
         # there is no keep last in dropDuplicates
         if created_timestamp_column:
-            df_to_join =  self.sort_values(df_to_join, ascending=False, by=created_timestamp_column, na_position="last")
+            df_to_join =  self.sort_values(df_to_join, ascending=False, by=[created_timestamp_column, event_timestamp_column], na_position="last")
+        else:
+            df_to_join = self.sort_values(df_to_join, ascending=False, by=event_timestamp_column, na_position="last")
 
-        df_to_join = self.sort_values(df_to_join, ascending=False, by=event_timestamp_column, na_position="last")
-
-        df_to_join = self.drop_duplicates(df_to_join,subset=all_join_keys + [entity_df_event_timestamp_col])
-
-        return df_to_join
+        return self.drop_duplicates(df_to_join,subset=all_join_keys + [entity_df_event_timestamp_col])
 
     def _get_spark_session(
         backend_config: YummyOfflineStoreConfig,

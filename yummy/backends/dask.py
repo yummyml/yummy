@@ -102,7 +102,7 @@ class DaskBackend(Backend):
     def sort_values(
         self,
         entity_df: Union[pd.DataFrame, Any],
-        by: str,
+        by: Union[str,List[str]],
         ascending: bool = True,
         na_position: Optional[str] = "last",
     ) -> Union[pd.DataFrame, Any]:

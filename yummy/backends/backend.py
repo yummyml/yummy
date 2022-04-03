@@ -83,7 +83,7 @@ class Backend(ABC):
     def sort_values(
         self,
         entity_df: Union[pd.DataFrame, Any],
-        by: str,
+        by: Union[str,List[str]],
         ascending: bool = True,
         na_position: Optional[str] = "last",
     ) -> Union[pd.DataFrame, Any]:
@@ -180,13 +180,11 @@ class Backend(ABC):
         entity_df_event_timestamp_col: Optional[str] = None,
     ) -> Union[pd.DataFrame, Any]:
         if created_timestamp_column:
-            df_to_join =  self.sort_values(df_to_join, by=created_timestamp_column, na_position="first")
+            df_to_join =  self.sort_values(df_to_join, by=[created_timestamp_column, event_timestamp_column], na_position="first")
+        else:
+            df_to_join = self.sort_values(df_to_join, by=event_timestamp_column, na_position="first")
 
-        df_to_join = self.sort_values(df_to_join, by=event_timestamp_column, na_position="first")
-
-        df_to_join = self.drop_duplicates(df_to_join,subset=all_join_keys + [entity_df_event_timestamp_col])
-
-        return df_to_join
+        return self.drop_duplicates(df_to_join, subset=all_join_keys + [entity_df_event_timestamp_col])
 
     def drop_columns(
         self,
