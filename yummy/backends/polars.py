@@ -1,10 +1,10 @@
 from datetime import datetime
-from typing import Callable, Dict, List, Optional, Union
+from typing import Callable, List, Optional, Tuple, Union, Dict, Any
 
 import polars as pl
+import pandas as pd
 import pyarrow
 import pytz
-from delta.tables import DeltaTable
 from feast import FileSource, OnDemandFeatureView
 from feast.data_source import DataSource
 from feast.errors import FeastJoinKeysDuringMaterialization
@@ -23,7 +23,7 @@ from feast.repo_config import FeastConfigBaseModel, RepoConfig
 from feast.saved_dataset import SavedDatasetStorage
 from feast.usage import log_exceptions_and_usage
 from pydantic.typing import Literal
-from yummy.backends.backend import Backend, BackendType
+from yummy.backends.backend import Backend, BackendType, BackendConfig
 
 class PolarsBackend(Backend):
     def __init__(self, backend_config: BackendConfig):
@@ -44,8 +44,8 @@ class PolarsBackend(Backend):
         """
         Maps entity_df to type required by backend and finds event timestamp column
         """
-        if not isinstance(entity_df, pl.DataFrame) and not isinstance(
-            entity_df, dd.DataFrame
+        if not isinstance(entity_df, pd.DataFrame) and not isinstance(
+            entity_df, pl.DataFrame
         ):
             raise ValueError(
                 f"Please provide an entity_df of type {type(pd.DataFrame)} instead of type {type(entity_df)}"
@@ -189,6 +189,7 @@ class PolarsRetrievalJob(RetrievalJob):
         evaluation_function: Callable,
         full_feature_names: bool,
         on_demand_feature_views: Optional[List[OnDemandFeatureView]] = None,
+        metadata: Optional[RetrievalMetadata] = None,
     ):
         """Initialize a lazy historical retrieval job"""
 
@@ -198,6 +199,7 @@ class PolarsRetrievalJob(RetrievalJob):
         self._on_demand_feature_views = (
             on_demand_feature_views if on_demand_feature_views else []
         )
+        self._metadata = metadata
 
     @property
     def full_feature_names(self) -> bool:
@@ -220,7 +222,7 @@ class PolarsRetrievalJob(RetrievalJob):
 
     @property
     def metadata(self) -> Optional[RetrievalMetadata]:
-        pass
+        self._metadata
 
     def persist(self, storage: SavedDatasetStorage):
         pass

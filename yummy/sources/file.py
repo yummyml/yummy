@@ -10,7 +10,7 @@ from feast.value_type import ValueType
 import pandas as pd
 import pyarrow
 from yummy.sources.source import YummyDataSource
-from yummy.backends.backend import Backend, YummyDataSourceReader
+from yummy.backends.backend import Backend, BackendType, YummyDataSourceReader
 
 
 class YummyFileDataSource(YummyDataSource):
@@ -219,10 +219,10 @@ class ParquetDataSourceReader(YummyDataSourceReader):
         return (
             {
                 "client_kwargs": {
-                    "endpoint_url": data_source.file_options.s3_endpoint_override
+                    "endpoint_url": data_source.s3_endpoint_override
                 }
             }
-            if data_source.file_options.s3_endpoint_override
+            if data_source.s3_endpoint_override
             else None
         )
 

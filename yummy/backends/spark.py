@@ -1,11 +1,10 @@
 from datetime import datetime
-from typing import Callable, Dict, List, Optional, Union
+from typing import Callable, List, Optional, Tuple, Union, Dict, Any
 
 import pandas as pd
 import pyarrow
 import pyspark.sql.dataframe as sd
 import pytz
-from delta.tables import DeltaTable
 from feast import FileSource, OnDemandFeatureView
 from feast.data_source import DataSource
 from feast.errors import FeastJoinKeysDuringMaterialization
@@ -27,7 +26,7 @@ from pydantic.typing import Literal
 from pyspark.sql.functions import col, expr, lit
 from pyspark.sql import SparkSession
 from pyspark import SparkConf
-from yummy.backends.backend import Backend, BackendType, YummyOfflineStoreConfig
+from yummy.backends.backend import Backend, BackendType, BackendConfig
 
 class SparkBackend(Backend):
     def __init__(self, backend_config: BackendConfig):
@@ -226,7 +225,7 @@ class SparkBackend(Backend):
         return self.drop_duplicates(df_to_join,subset=all_join_keys + [entity_df_event_timestamp_col])
 
     def _get_spark_session(
-        backend_config: YummyOfflineStoreConfig,
+        backend_config: BackendConfig,
     ) -> SparkSession:
         spark_session = SparkSession.getActiveSession()
 
@@ -250,6 +249,7 @@ class SparkRetrievalJob(RetrievalJob):
         evaluation_function: Callable,
         full_feature_names: bool,
         on_demand_feature_views: Optional[List[OnDemandFeatureView]] = None,
+        metadata: Optional[RetrievalMetadata] = None,
     ):
         """Initialize a lazy historical retrieval job"""
 
@@ -259,6 +259,7 @@ class SparkRetrievalJob(RetrievalJob):
         self._on_demand_feature_views = (
             on_demand_feature_views if on_demand_feature_views else []
         )
+        self._metadata = metadata
 
     @property
     def full_feature_names(self) -> bool:
@@ -282,7 +283,7 @@ class SparkRetrievalJob(RetrievalJob):
 
     @property
     def metadata(self) -> Optional[RetrievalMetadata]:
-        pass
+        self._metadata
 
     def persist(self, storage: SavedDatasetStorage):
         pass

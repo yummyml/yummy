@@ -37,7 +37,11 @@ class BackendType(str, Enum):
 
 
 class BackendConfig(FeastConfigBaseModel):
-    ...
+
+    backend: Optional[str] = None
+
+    config: Optional[Dict[str, str]] = None
+    """ Configuration """
 
 
 class Backend(ABC):
@@ -285,7 +289,7 @@ class Backend(ABC):
         """
         Finds min and max datetime in input entity_df data frame
         """
-        if not isinstance(entity_df, pd.DataFrame):
+        if isinstance(entity_df, pd.DataFrame):
             entity_df_event_timestamp = entity_df.loc[entity_df_event_timestamp_col].infer_objects()
             if pd.api.types.is_string_dtype(entity_df_event_timestamp):
                 entity_df_event_timestamp = pd.to_datetime(entity_df_event_timestamp, utc=True)
@@ -321,9 +325,8 @@ class Backend(ABC):
         on_demand_feature_views: Optional[List[OnDemandFeatureView]] = None,
         metadata: Optional[RetrievalMetadata] = None,
     ) -> RetrievalJob:
-        self.retrival_job_type()
         return self.retrival_job_type(
-            evaluation_function=evaluate_historical_retrieval,
+            evaluation_function=evaluation_function,
             full_feature_names=full_feature_names,
             on_demand_feature_views=on_demand_feature_views,
             metadata=metadata,
@@ -338,8 +341,8 @@ class Backend(ABC):
         """
         Reads data source
         """
+        assert issubclass(data_source.reader_type, YummyDataSourceReader)
         reader: YummyDataSourceReader = data_source.reader_type()
-        assert issubclass(reader, YummyDataSourceReader)
         return reader.read_datasource(data_source, features, self, entity_df)
 
 
@@ -385,16 +388,11 @@ class YummyDataSourceReader(ABC):
         ...
 
 
-class YummyOfflineStoreConfig(FeastConfigBaseModel):
+class YummyOfflineStoreConfig(BackendConfig):
     """Offline store config for local (file-based) store"""
 
     type: Literal["yummy.YummyOfflineStore"] = "yummy.YummyOfflineStore"
     """ Offline store type selector"""
-
-    backend: Optional[str] = None
-
-    config: Optional[Dict[str, str]] = None
-    """ Configuration """
 
 
 class YummyOfflineStore(OfflineStore):
@@ -413,7 +411,7 @@ class YummyOfflineStore(OfflineStore):
         backend_type = config.offline_store.backend
         backend = BackendFactory.create(backend_type, config.offline_store)
         entity_df = backend.prepare_entity_df(entity_df)
-        all_columns = backend.columns_list(entity_df_event_timestamp_col)
+        all_columns = backend.columns_list(entity_df)
 
         entity_df_event_timestamp_col = DEFAULT_ENTITY_DF_EVENT_TIMESTAMP_COL  # local modifiable copy of global variable
         if entity_df_event_timestamp_col not in all_columns:

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Callable, List, Optional, Tuple, Union, Dict
+from typing import Callable, List, Optional, Tuple, Union, Dict, Any
 
 import dask.dataframe as dd
 import pandas as pd
@@ -27,7 +27,7 @@ from feast.registry import Registry
 from feast.repo_config import FeastConfigBaseModel, RepoConfig
 from feast.saved_dataset import SavedDatasetStorage
 from feast.usage import log_exceptions_and_usage
-from yummy.backends.backend import Backend, BackendType
+from yummy.backends.backend import Backend, BackendType, BackendConfig
 
 
 class DaskBackend(Backend):
