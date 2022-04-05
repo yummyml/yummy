@@ -64,6 +64,7 @@ class DaskBackend(Backend):
     def normalize_timezone(
         self,
         entity_df_with_features: Union[pd.DataFrame, Any],
+        entity_df_event_timestamp_col: str,
     ) -> Union[pd.DataFrame, Any]:
         """
         Normalize timezon of input entity df to UTC

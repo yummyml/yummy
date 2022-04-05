@@ -74,6 +74,7 @@ class Backend(ABC):
     def normalize_timezone(
         self,
         entity_df_with_features: Union[pd.DataFrame, Any],
+        entity_df_event_timestamp_col: str,
     ) -> Union[pd.DataFrame, Any]:
         """
         Normalize timezon of input entity df to UTC
@@ -445,7 +446,7 @@ class YummyOfflineStore(OfflineStore):
         # Create lazy function that is only called from the RetrievalJob object
         def evaluate_historical_retrieval():
 
-            entity_df_with_features = backend.normalize_timezone(entity_df)
+            entity_df_with_features = backend.normalize_timezone(entity_df, entity_df_event_timestamp_col)
 
             entity_df_with_features = backend.sort_values(entity_df_with_features, entity_df_event_timestamp_col)
 
