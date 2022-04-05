@@ -28,7 +28,6 @@ from feast.saved_dataset import SavedDatasetStorage
 from feast.usage import log_exceptions_and_usage
 from feast.importer import import_class
 from enum import Enum
-from yummy.sources.source import YummyDataSourceReader
 
 class BackendType(str, Enum):
     dask = "dask"
@@ -49,15 +48,13 @@ class Backend(ABC):
     def __init__(self, backend_config: BackendConfig):
         self._backend_config = backend_config
 
-    @abstractmethod
     @property
     def backend_type(self) -> BackendType:
-        ...
+        raise NotImplementedError("Backend type not defined")
 
-    @abstractmethod
     @property
     def retrival_job_type(self):
-        ...
+        raise NotImplementedError("Retrival job type not defined")
 
     @abstractmethod
     def prepare_entity_df(
@@ -336,7 +333,6 @@ class Backend(ABC):
         self,
         data_source,
         features: List[str],
-        backend: Backend,
         entity_df: Optional[Union[pd.DataFrame, Any]] = None,
     ) -> Union[pyarrow.Table, pd.DataFrame, Any]:
         """
@@ -344,7 +340,7 @@ class Backend(ABC):
         """
         reader: YummyDataSourceReader = data_source.reader_type()
         assert issubclass(reader, YummyDataSourceReader)
-        return reader.read_datasource(data_source, features, backend, entity_df)
+        return reader.read_datasource(data_source, features, self, entity_df)
 
 
 class BackendFactory:
@@ -352,7 +348,10 @@ class BackendFactory:
     @staticmethod
     def create(
         backend_type: BackendType,
-        backend_config: BackendConfig)) -> Backend:
+        backend_config: BackendConfig) -> Backend:
+
+        print(f'I will use {backend_type} backend')
+
         if backend_type == BackendType.dask:
             from yummy.backends.dask import DaskBackend
             return DaskBackend(backend_config)
@@ -372,11 +371,27 @@ class BackendFactory:
 
         return PolarsBackend(backend_config)
 
+
+class YummyDataSourceReader(ABC):
+
+    @abstractmethod
+    def read_datasource(
+        self,
+        data_source,
+        features: List[str],
+        backend: Backend,
+        entity_df: Optional[Union[pd.DataFrame, Any]] = None,
+    ) -> Union[pyarrow.Table, pd.DataFrame, Any]:
+        ...
+
+
 class YummyOfflineStoreConfig(FeastConfigBaseModel):
     """Offline store config for local (file-based) store"""
 
     type: Literal["yummy.YummyOfflineStore"] = "yummy.YummyOfflineStore"
     """ Offline store type selector"""
+
+    backend: Optional[str] = None
 
     config: Optional[Dict[str, str]] = None
     """ Configuration """
@@ -466,7 +481,7 @@ class YummyOfflineStore(OfflineStore):
 
                 all_join_keys = list(set(all_join_keys + join_keys))
 
-                df_to_join = backend.read_datasource(feature_view.batch_source, features, backend, entity_df_with_features)
+                df_to_join = backend.read_datasource(feature_view.batch_source, features, entity_df_with_features)
 
                 df_to_join, event_timestamp_column = backend.field_mapping(
                     df_to_join,
@@ -541,7 +556,7 @@ class YummyOfflineStore(OfflineStore):
 
         # Create lazy function that is only called from the RetrievalJob object
         def evaluate_offline_job():
-            source_df = backend.read_datasource(data_source, feature_name_columns, backend)
+            source_df = backend.read_datasource(data_source, feature_name_columns)
 
             source_df = backend.normalize_timestamp(
                 source_df, event_timestamp_column, created_timestamp_column

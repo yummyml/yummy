@@ -11,10 +11,10 @@ RUN cd ./vim && ./configure --with-features=huge \
 
 RUN apt update && apt install curl git ssh cmake ack g++ tmux ncurses-dev -yq
 
-RUN git clone -b feature/dask https://github.com/qooba/feast.git
-RUN cd feast && pip install -e "sdk/python[ci]"
-RUN cd feast/sdk/python && pip install -e .
-RUN pip install ray[default,data]==1.9.1 scikit-learn==1.0.2 dask[distributed]==2021.11.0
+#RUN git clone -b feature/dask https://github.com/qooba/feast.git
+#RUN cd feast && pip install -e "sdk/python[ci]"
+#RUN cd feast/sdk/python && pip install -e .
+RUN pip install ray[default,data]==1.9.1 scikit-learn==1.0.2 dask[distributed]==2021.11.0 feast==0.18.0
 RUN pip install polars
 RUN pip install jupyterlab
 

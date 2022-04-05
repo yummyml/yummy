@@ -1,14 +1,16 @@
 import json
 from datetime import datetime
-from typing import Callable, Dict, List, Optional, Union
+from typing import Callable, Dict, List, Optional, Union, Any
 
 from feast import type_map
 from feast.data_source import DataSource
 from feast.protos.feast.core.DataSource_pb2 import DataSource as DataSourceProto
 from feast.repo_config import RepoConfig
 from feast.value_type import ValueType
-from yummy.sources.source import YummyDataSource, YummyDataSourceReader
-from yummy.backends.backend import BackendType
+import pandas as pd
+import pyarrow
+from yummy.sources.source import YummyDataSource
+from yummy.backends.backend import Backend, YummyDataSourceReader
 
 
 class YummyFileDataSource(YummyDataSource):
@@ -32,7 +34,6 @@ class YummyFileDataSource(YummyDataSource):
         self._path = path
         self._s3_endpoint_override = s3_endpoint_override
 
-    @abstractmethod
     @property
     def reader_type(self):
         """
@@ -54,34 +55,13 @@ class YummyFileDataSource(YummyDataSource):
         """
         return self._s3_endpoint_override
 
-    @staticmethod
-    def from_proto(data_source: DataSourceProto):
-        """
-        Creates a `CustomFileDataSource` object from a DataSource proto, by
-        parsing the CustomSourceOptions which is encoded as a binary json string.
-        """
-        custom_source_options = str(
-            data_source.custom_options.configuration, encoding="utf8"
-        )
-        path = json.loads(custom_source_options)["path"]
-        s3_endpoint_override = json.loads(custom_source_options)["s3_endpoint_override"]
-        range_join = json.loads(custom_source_options)["range_join"]
-        return DeltaDataSource(
-            field_mapping=dict(data_source.field_mapping),
-            path=path,
-            s3_endpoint_override=s3_endpoint_override,
-            event_timestamp_column=data_source.event_timestamp_column,
-            created_timestamp_column=data_source.created_timestamp_column,
-            date_partition_column=data_source.date_partition_column,
-        )
-
     def to_proto(self) -> DataSourceProto:
         """
         Creates a DataSource proto representation of this object, by serializing some
         custom options into the custom_options field as a binary encoded json string.
         """
         config_json = json.dumps(
-            {"path": self.path, "s3_endpoint_override": self.s3_endpoint_override, "range_join": self.range_join}
+            {"path": self.path, "s3_endpoint_override": self.s3_endpoint_override}
         )
         data_source_proto = DataSourceProto(
             type=DataSourceProto.CUSTOM_SOURCE,
@@ -130,13 +110,32 @@ class ParquetDataSource(YummyFileDataSource):
             date_partition_column=date_partition_column,
         )
 
-    @abstractmethod
     @property
     def reader_type(self):
         """
         Returns the reader type which will read data source
         """
         return ParquetDataSourceReader
+
+    @staticmethod
+    def from_proto(data_source: DataSourceProto) -> Any:
+        """
+        Creates a `CustomFileDataSource` object from a DataSource proto, by
+        parsing the CustomSourceOptions which is encoded as a binary json string.
+        """
+        custom_source_options = str(
+            data_source.custom_options.configuration, encoding="utf8"
+        )
+        path = json.loads(custom_source_options)["path"]
+        s3_endpoint_override = json.loads(custom_source_options)["s3_endpoint_override"]
+        return ParquetDataSource(
+            field_mapping=dict(data_source.field_mapping),
+            path=path,
+            s3_endpoint_override=s3_endpoint_override,
+            event_timestamp_column=data_source.event_timestamp_column,
+            created_timestamp_column=data_source.created_timestamp_column,
+            date_partition_column=data_source.date_partition_column,
+        )
 
 
 class CsvDataSource(YummyFileDataSource):
@@ -158,6 +157,33 @@ class CsvDataSource(YummyFileDataSource):
             created_timestamp_column=created_timestamp_column,
             field_mapping=field_mapping,
             date_partition_column=date_partition_column,
+        )
+
+    @property
+    def reader_type(self):
+        """
+        Returns the reader type which will read data source
+        """
+        return CsvDataSourceReader
+
+    @staticmethod
+    def from_proto(data_source: DataSourceProto) -> Any:
+        """
+        Creates a `CustomFileDataSource` object from a DataSource proto, by
+        parsing the CustomSourceOptions which is encoded as a binary json string.
+        """
+        custom_source_options = str(
+            data_source.custom_options.configuration, encoding="utf8"
+        )
+        path = json.loads(custom_source_options)["path"]
+        s3_endpoint_override = json.loads(custom_source_options)["s3_endpoint_override"]
+        return CsvDataSource(
+            field_mapping=dict(data_source.field_mapping),
+            path=path,
+            s3_endpoint_override=s3_endpoint_override,
+            event_timestamp_column=data_source.event_timestamp_column,
+            created_timestamp_column=data_source.created_timestamp_column,
+            date_partition_column=data_source.date_partition_column,
         )
 
 
@@ -228,4 +254,5 @@ class CsvDataSourceReader(ParquetDataSourceReader):
             import polars as dd
 
         return dd.read_csv(data_source.path, storage_options=self._storage_options(data_source),)
+
 

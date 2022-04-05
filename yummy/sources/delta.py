@@ -7,9 +7,8 @@ from feast.data_source import DataSource
 from feast.protos.feast.core.DataSource_pb2 import DataSource as DataSourceProto
 from feast.repo_config import RepoConfig
 from feast.value_type import ValueType
-from yummy.sources.source import YummyDataSource
 
-class DeltaDataSource(YummyDataSource):
+class DeltaDataSource(DataSource):
     """Custom data source class for local files"""
 
     def __init__(

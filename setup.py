@@ -4,7 +4,7 @@ NAME = "feast_yummy"
 REQUIRES_PYTHON = ">=3.7.0"
 
 INSTALL_REQUIRE = [
-    "feast>=0.19.3",
+    "feast==0.18.0",
 ]
 
 DEV_REQUIRE = [
