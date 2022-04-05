@@ -362,6 +362,7 @@ class BackendFactory:
         elif backend_type == BackendType.ray:
             import ray
             import dask
+            from ray.util.dask import ray_dask_get
             ray.init(ignore_reinit_error=True)
             dask.config.set(scheduler=ray_dask_get)
             from yummy.backends.dask import DaskBackend

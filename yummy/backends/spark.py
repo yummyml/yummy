@@ -31,7 +31,7 @@ from yummy.backends.backend import Backend, BackendType, BackendConfig
 class SparkBackend(Backend):
     def __init__(self, backend_config: BackendConfig):
         super().__init__(backend_config)
-        self._spark_session = _get_spark_session(backend_config)
+        self._spark_session = self._get_spark_session(backend_config)
 
     @property
     def backend_type(self) -> BackendType:
@@ -43,7 +43,7 @@ class SparkBackend(Backend):
 
     @property
     def spark_session(self) -> SparkSession:
-        return _spark_session
+        return self._spark_session
 
     def prepare_entity_df(
         self,
@@ -90,13 +90,13 @@ class SparkBackend(Backend):
 
         cols = [col(b) for b in by]
 
-        if ascending and na_position='first':
+        if ascending and na_position=='first':
             cols = [col(b).asc_nulls_first() for b in by]
-        elif ascending and na_position='last':
+        elif ascending and na_position=='last':
             cols = [col(b).asc_nulls_last() for b in by]
-        elif not ascending and na_position='first':
+        elif not ascending and na_position=='first':
             cols = [col(b).desc_nulls_first() for b in by]
-        elif not ascending and na_position='last':
+        elif not ascending and na_position=='last':
             cols = [col(b).desc_nulls_last() for b in by]
 
         return entity_df.orderBy(cols)
@@ -120,14 +120,16 @@ class SparkBackend(Backend):
         join_keys: List[str],
         feature_view: FeatureView,
     ) -> Union[pd.DataFrame, Any]:
+        range_join = None
+        if hasattr(feature_view.batch_source, 'range_join'):
+            range_join = feature_view.batch_source.range_join
 
-        range_join = feature_view.batch_source.range_join
         if range_join:
             df_to_join = df_to_join.hint("range_join", range_join)
 
         df_to_join_cols = df_to_join.columns
-        entity_df_with_features_columns = [entity_df_with_features_columns[c] for c in entity_df_with_features.columns if c not in df_to_join_cols]
-        cols = [df_to_join_cols]+entity_df_with_features_columns
+        entity_df_with_features_columns = [c for c in entity_df_with_features.columns if c not in df_to_join_cols]
+        cols = df_to_join_cols+entity_df_with_features_columns
 
         return entity_df_with_features.join(
             other=df_to_join,
@@ -143,7 +145,6 @@ class SparkBackend(Backend):
     ) -> Union[pd.DataFrame, Any]:
         return df_to_join
 
-    @abstractmethod
     def filter_ttl(
         self,
         df_to_join: Union[pd.DataFrame, Any],
@@ -153,6 +154,7 @@ class SparkBackend(Backend):
     ) -> Union[pd.DataFrame, Any]:
         # Filter rows by defined timestamp tolerance
         if feature_view.ttl and feature_view.ttl.total_seconds() != 0:
+            ttl_seconds = feature_view.ttl.total_seconds()
             df_to_join= df_to_join.filter(
                 (
                     col(event_timestamp_column)
@@ -226,6 +228,7 @@ class SparkBackend(Backend):
         return self.drop_duplicates(df_to_join,subset=all_join_keys + [entity_df_event_timestamp_col])
 
     def _get_spark_session(
+        self,
         backend_config: BackendConfig,
     ) -> SparkSession:
         spark_session = SparkSession.getActiveSession()
