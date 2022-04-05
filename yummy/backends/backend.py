@@ -497,6 +497,7 @@ class YummyOfflineStore(OfflineStore):
                     df_to_join, event_timestamp_column, created_timestamp_column
                 )
 
+
                 df_to_join = backend.filter_ttl(
                     df_to_join,
                     feature_view,
@@ -519,7 +520,7 @@ class YummyOfflineStore(OfflineStore):
                 # Ensure that we delete dataframes to free up memory
                 del df_to_join
 
-            return entity_df_with_features.persist()
+            return entity_df_with_features
 
         job = backend.create_retrival_job(
             evaluation_function=evaluate_historical_retrieval,

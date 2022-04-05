@@ -57,7 +57,7 @@ class DaskBackend(Backend):
             )
 
         if isinstance(entity_df, pd.DataFrame):
-            entity_df: dd.DataFrame = dd.from_pandas(entity_df)
+            entity_df: dd.DataFrame = dd.from_pandas(entity_df, npartitions=1)
 
         return entity_df
 

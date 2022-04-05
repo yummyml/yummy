@@ -92,7 +92,7 @@ class PolarsBackend(Backend):
     ):
         if field_mapping:
             # run field mapping in the forward direction
-            table = table.rename(columns=field_mapping)
+            table = table.rename(field_mapping)
 
         return table
 
@@ -107,7 +107,7 @@ class PolarsBackend(Backend):
                 df_to_join,
                 left_on=join_keys,
                 right_on=join_keys,
-                suffixes=("", "__"),
+                suffix="__",
                 how="left",
             )
 
@@ -128,7 +128,7 @@ class PolarsBackend(Backend):
     ) -> Union[pd.DataFrame, Any]:
         # Filter rows by defined timestamp tolerance
         if feature_view.ttl and feature_view.ttl.total_seconds() != 0:
-            df_to_join = df_to_join[
+            df_to_join = df_to_join.filter(
                 (
                     pl.col(event_timestamp_column)
                     >= pl.col(entity_df_event_timestamp_col) - feature_view.ttl
@@ -137,7 +137,7 @@ class PolarsBackend(Backend):
                     pl.col(event_timestamp_column)
                     <= pl.col(entity_df_event_timestamp_col)
                 )
-            ]
+            )
 
         return df_to_join
 
@@ -158,7 +158,7 @@ class PolarsBackend(Backend):
         df_to_join: Union[pd.DataFrame, Any],
         subset: List[str],
     ) -> Union[pd.DataFrame, Any]:
-        return df_to_join.distinct(subset, keep='last')
+        return df_to_join.distinct(subset=subset, keep='last')
 
     def drop(
         self,
@@ -180,7 +180,7 @@ class PolarsBackend(Backend):
         df_to_join: Union[pd.DataFrame, Any],
         columns_list: List[str]
     ) -> Union[pd.DataFrame, Any]:
-        return df_to_join[columns_list]
+        return df_to_join.select([pl.col(c) for c in columns_list])
 
 
 class PolarsRetrievalJob(RetrievalJob):
