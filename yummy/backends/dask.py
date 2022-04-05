@@ -80,7 +80,8 @@ class DaskBackend(Backend):
             entity_df_with_features[
                 entity_df_event_timestamp_col
             ] = entity_df_with_features[entity_df_event_timestamp_col].apply(
-                lambda x: x if x.tzinfo is not None else x.replace(tzinfo=pytz.utc)
+                lambda x: x if x.tzinfo is not None else x.replace(tzinfo=pytz.utc),
+                meta=(entity_df_event_timestamp_col, "datetime64[ns, UTC]"),
             )
 
             # Convert event timestamp column to datetime and normalize time zone to UTC
@@ -225,7 +226,7 @@ class DaskBackend(Backend):
         df_to_join: Union[pd.DataFrame, Any],
         columns_list: List[str],
     ) -> Union[pd.DataFrame, Any]:
-        return df_to_join.drop(columns_list)
+        return df_to_join.drop(columns_list, axis=1).persist()
 
     def add_static_column(
         self,
