@@ -271,7 +271,7 @@ class Backend(ABC):
         df_to_join = self.run_field_mapping(df_to_join, columns_map)
 
         # Select only the columns we need to join from the feature dataframe
-        df_to_join = self.select(df_to_join, [right_entity_key_columns + feature_names])
+        df_to_join = self.select(df_to_join, right_entity_key_columns + feature_names)
 
         # Make sure to not have duplicated columns
         if entity_df_event_timestamp_col == event_timestamp_column:
