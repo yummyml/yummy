@@ -149,6 +149,8 @@ class CsvDataSource(YummyFileDataSource):
         field_mapping: Optional[Dict[str, str]] = None,
         created_timestamp_column: Optional[str] = "",
         date_partition_column: Optional[str] = "",
+        delimiter: Optional[str] = ',',
+        header: Optional[bool] = True,
     ):
         super().__init__(
             event_timestamp_column=event_timestamp_column,
@@ -158,6 +160,8 @@ class CsvDataSource(YummyFileDataSource):
             field_mapping=field_mapping,
             date_partition_column=date_partition_column,
         )
+        self._delimiter = delimiter
+        self._header = header
 
     @property
     def reader_type(self):
@@ -165,6 +169,40 @@ class CsvDataSource(YummyFileDataSource):
         Returns the reader type which will read data source
         """
         return CsvDataSourceReader
+
+    @property
+    def delimiter(self):
+        return self._delimiter
+
+    @property
+    def header(self):
+        return self._header
+
+    def to_proto(self) -> DataSourceProto:
+        """
+        Creates a DataSource proto representation of this object, by serializing some
+        custom options into the custom_options field as a binary encoded json string.
+        """
+        config_json = json.dumps(
+            {"path": self.path,
+             "s3_endpoint_override": self.s3_endpoint_override,
+             "delimiter": self.delimiter,
+             "header": self.header,
+             }
+        )
+        data_source_proto = DataSourceProto(
+            type=DataSourceProto.CUSTOM_SOURCE,
+            field_mapping=self.field_mapping,
+            custom_options=DataSourceProto.CustomSourceOptions(
+                configuration=bytes(config_json, encoding="utf8")
+            ),
+        )
+
+        data_source_proto.event_timestamp_column = self.event_timestamp_column
+        data_source_proto.created_timestamp_column = self.created_timestamp_column
+        data_source_proto.date_partition_column = self.date_partition_column
+
+        return data_source_proto
 
     @staticmethod
     def from_proto(data_source: DataSourceProto) -> Any:
@@ -177,6 +215,8 @@ class CsvDataSource(YummyFileDataSource):
         )
         path = json.loads(custom_source_options)["path"]
         s3_endpoint_override = json.loads(custom_source_options)["s3_endpoint_override"]
+        delimiter = json.loads(custom_source_options)["delimiter"]
+        header = json.loads(custom_source_options)["header"]
         return CsvDataSource(
             field_mapping=dict(data_source.field_mapping),
             path=path,
@@ -184,6 +224,8 @@ class CsvDataSource(YummyFileDataSource):
             event_timestamp_column=data_source.event_timestamp_column,
             created_timestamp_column=data_source.created_timestamp_column,
             date_partition_column=data_source.date_partition_column,
+            delimiter=delimiter,
+            header=header,
         )
 
 
@@ -237,6 +279,9 @@ class CsvDataSourceReader(ParquetDataSourceReader):
         entity_df: Optional[Union[pd.DataFrame, Any]] = None,
     ) -> Union[pyarrow.Table, pd.DataFrame, Any]:
         backend_type = backend.backend_type
+        event_timestamp_column = data_source.event_timestamp_column
+        created_timestamp_column = data_source.created_timestamp_column
+
         if backend_type == BackendType.spark:
             from yummy.backends.spark import SparkBackend
             spark_backend: SparkBackend = backend
@@ -246,13 +291,32 @@ class CsvDataSourceReader(ParquetDataSourceReader):
             if "s3://" in path:
                 path = path.replace('s3://','s3a://')
 
-            return spark_session.read.csv(path)
+            return spark_session.read.options(header=data_source.header, delimeter=data_source.delimiter).csv(path)
 
         elif backend_type in [BackendType.ray, BackendType.dask]:
             import dask.dataframe as dd
+            csv_df = dd.read_csv(
+                data_source.path,
+                storage_options=self._storage_options(data_source),
+                delimiter=data_source.delimiter,
+            )
+            csv_df[event_timestamp_column] = dd.to_datetime(csv_df[event_timestamp_column])
+            if created_timestamp_column:
+                csv_df[created_timestamp_column] = dd.to_datetime(csv_df[created_timestamp_column])
+
+            return csv_df
         elif backend_type == BackendType.polars:
             import polars as dd
+            #TODO: check
+            # csv_df = csv_df.with_column(pl.col("datetime").str.strptime(pl.Datetime, "%Y-%m-%d %H:%M:%S.%f", strict=False))
+            return dd.read_csv(
+                data_source.path,
+                storage_options=self._storage_options(data_source),
+                parse_dates=True,
+                has_header=data_source.header,
+                delimiter=data_source.delimiter,
+            )
 
-        return dd.read_csv(data_source.path, storage_options=self._storage_options(data_source),)
+
 
 
