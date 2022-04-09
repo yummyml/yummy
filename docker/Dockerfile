@@ -27,5 +27,10 @@ ARG NB_GID=100
 USER 1000
 RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/qooba/vim-python-ide/master/setup.sh)"
 
+USER root
+RUN pip install deltalake==0.5.6
+
+USER 1000
+
 WORKDIR /home/jovyan
 CMD /bin/bash

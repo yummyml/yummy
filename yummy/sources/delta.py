@@ -7,8 +7,10 @@ from feast.data_source import DataSource
 from feast.protos.feast.core.DataSource_pb2 import DataSource as DataSourceProto
 from feast.repo_config import RepoConfig
 from feast.value_type import ValueType
+from yummy.sources.source import YummyDataSource
+from yummy.backends.backend import Backend, BackendType, YummyDataSourceReader
 
-class DeltaDataSource(DataSource):
+class DeltaDataSource(YummyDataSource):
     """Custom data source class for local files"""
 
     def __init__(
@@ -30,6 +32,13 @@ class DeltaDataSource(DataSource):
         self._path = path
         self._s3_endpoint_override = s3_endpoint_override
         self._range_join = range_join
+
+    @property
+    def reader_type(self):
+        """
+        Returns the reader type which will read data source
+        """
+        return DeltaDataSourceReader
 
     @property
     def path(self):
@@ -100,9 +109,43 @@ class DeltaDataSource(DataSource):
         pass
 
     def validate(self, config: RepoConfig):
-        # TODO: validate a FileSource
+        # TODO: validate a DeltaSource
         pass
 
     @staticmethod
     def source_datatype_to_feast_value_type() -> Callable[[str], ValueType]:
         return type_map.pa_to_feast_value_type
+
+
+class DeltaDataSourceReader(YummyDataSourceReader):
+
+    def read_datasource(
+        self,
+        data_source,
+        features: List[str],
+        backend: Backend,
+        entity_df: Optional[Union[pd.DataFrame, Any]] = None,
+    ) -> Union[pyarrow.Table, pd.DataFrame, Any]:
+        backend_type = backend.backend_type
+        if backend_type == BackendType.spark:
+            from yummy.backends.spark import SparkBackend
+            spark_backend: SparkBackend = backend
+            spark_session = spark_backend.spark_session
+            #TODO: add s3 endpoint override support
+            path = data_source.path
+            if "s3://" in path:
+                path = path.replace('s3://','s3a://')
+            return spark_session.read.format('delta').load(path)
+        elif backend_type in [BackendType.ray, BackendType.dask]:
+            import dask.dataframe as dd
+            from deltalake import DeltaTable
+            dt = DeltaTable(path)
+            return dd.from_pandas(dt.to_pandas())
+        elif backend_type == BackendType.polars:
+            import polars as pl
+            from deltalake import DeltaTable
+            dt = DeltaTable(path)
+            return pl.DataFrame(dt.to_pyarrow_table())
+
+        raise NotImplementedError(f'Delta lake support not implemented for {backend_type}')
+
