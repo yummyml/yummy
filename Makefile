@@ -15,7 +15,8 @@ lint: ## Run mypy, isort, flake8, and black
 
 build: ## Build the wheel
 	rm -rf dist/*
-	python -m build
+	python setup.py sdist
+#	python -m build
 
 publish-testpypi: ## Publish to testpipy
 	twine upload --repository testpypi dist/*
