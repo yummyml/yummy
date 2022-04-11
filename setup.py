@@ -5,6 +5,10 @@ REQUIRES_PYTHON = ">=3.7.0"
 
 INSTALL_REQUIRE = [
     "feast==0.18.0",
+    "polars==0.13.18",
+    "ray[default,data]==1.9.1",
+    "dask[distributed]==2021.11.0",
+    "deltalake==0.5.6",
 ]
 
 DEV_REQUIRE = [
@@ -19,7 +23,7 @@ DEV_REQUIRE = [
 
 setup(
     name=NAME,
-    version="0.0.2",
+    version="0.0.3",
     author="Qooba",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
