@@ -1,7 +1,8 @@
 import json
 from datetime import datetime
-from typing import Callable, Dict, List, Optional, Union
-
+from typing import Callable, Dict, List, Optional, Union, Any
+import pandas as pd
+import pyarrow
 from feast import type_map
 from feast.data_source import DataSource
 from feast.protos.feast.core.DataSource_pb2 import DataSource as DataSourceProto
@@ -127,6 +128,7 @@ class DeltaDataSourceReader(YummyDataSourceReader):
         entity_df: Optional[Union[pd.DataFrame, Any]] = None,
     ) -> Union[pyarrow.Table, pd.DataFrame, Any]:
         backend_type = backend.backend_type
+        path = data_source.path
         if backend_type == BackendType.spark:
             from yummy.backends.spark import SparkBackend
             spark_backend: SparkBackend = backend
@@ -140,7 +142,7 @@ class DeltaDataSourceReader(YummyDataSourceReader):
             import dask.dataframe as dd
             from deltalake import DeltaTable
             dt = DeltaTable(path)
-            return dd.from_pandas(dt.to_pandas())
+            return dd.from_pandas(dt.to_pandas(), npartitions=1)
         elif backend_type == BackendType.polars:
             import polars as pl
             from deltalake import DeltaTable
