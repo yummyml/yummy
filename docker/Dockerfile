@@ -29,6 +29,7 @@ RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/qooba/vim-python-ide/m
 
 USER root
 RUN pip install deltalake==0.5.6
+RUN pip install twine
 
 USER 1000
 

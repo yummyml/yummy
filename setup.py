@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-NAME = "feast_yummy"
+NAME = "feast-yummy"
 REQUIRES_PYTHON = ">=3.7.0"
 
 INSTALL_REQUIRE = [
@@ -19,18 +19,18 @@ DEV_REQUIRE = [
 
 setup(
     name=NAME,
-    version="0.0.1",
+    version="0.0.2",
     author="Qooba",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     python_requires=REQUIRES_PYTHON,
     url="https://github.com/qooba/feast-yummy",
-    packages=find_packages(include=["feast_yummy"]),
+    packages=find_packages(include=["yummy"]),
     install_requires=INSTALL_REQUIRE,
     extras_require={
         "dev": DEV_REQUIRE,
     },
-    keywords=("feast featurestore polars offlinestore"),
+    keywords=("feast featurestore polars dask ray pyspark offlinestore"),
     license='Apache License, Version 2.0',
     classifiers=[
         "License :: OSI Approved :: Apache Software License",
