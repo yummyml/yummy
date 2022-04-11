@@ -214,7 +214,10 @@ class Backend(ABC):
         else:
             df_to_join = self.sort_values(df_to_join, by=event_timestamp_column, na_position="first")
 
-        return self.drop_duplicates(df_to_join, subset=all_join_keys + [entity_df_event_timestamp_col])
+        if entity_df_event_timestamp_col:
+            return self.drop_duplicates(df_to_join, subset=all_join_keys + [entity_df_event_timestamp_col])
+        else:
+            return self.drop_duplicates(df_to_join, subset=all_join_keys)
 
     def drop_columns(
         self,
