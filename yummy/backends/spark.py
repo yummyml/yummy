@@ -225,7 +225,10 @@ class SparkBackend(Backend):
         else:
             df_to_join = self.sort_values(df_to_join, ascending=False, by=event_timestamp_column, na_position="last")
 
-        return self.drop_duplicates(df_to_join,subset=all_join_keys + [entity_df_event_timestamp_col])
+        if entity_df_event_timestamp_col:
+            return self.drop_duplicates(df_to_join,subset=all_join_keys + [entity_df_event_timestamp_col])
+        else:
+            return self.drop_duplicates(df_to_join,subset=all_join_keys)
 
     def _get_spark_session(
         self,

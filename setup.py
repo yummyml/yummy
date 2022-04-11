@@ -23,7 +23,7 @@ DEV_REQUIRE = [
 
 setup(
     name=NAME,
-    version="0.0.5",
+    version="0.0.6",
     author="Qooba",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
