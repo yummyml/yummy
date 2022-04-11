@@ -23,13 +23,13 @@ DEV_REQUIRE = [
 
 setup(
     name=NAME,
-    version="0.0.3",
+    version="0.0.4",
     author="Qooba",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     python_requires=REQUIRES_PYTHON,
     url="https://github.com/qooba/feast-yummy",
-    packages=find_packages(include=["yummy"]),
+    packages=find_packages(exclude=["test*", "feature_repo*"]),
     install_requires=INSTALL_REQUIRE,
     extras_require={
         "dev": DEV_REQUIRE,
