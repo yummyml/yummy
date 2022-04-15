@@ -1,4 +1,4 @@
-# [Yummy](https://github.com/qooba/feast-yummy) - delicious [Feast](https://github.com/feast-dev/feast) extension
+# [Yummy](https://github.com/qooba/yummy) - delicious [Feast](https://github.com/feast-dev/feast) extension
 
 Yummy project adds possiblity to run [Feast](https://github.com/feast-dev/feast) on multiple backends:
 * [polars](https://github.com/pola-rs/polars)
@@ -9,9 +9,9 @@ Yummy project adds possiblity to run [Feast](https://github.com/feast-dev/feast)
 This gives flexibility in setting up the feature store on existing environments and using its capabilities.
 Moreover using Yummy you can combine multiple and different datasources during historical fetch task.
 
-### Install feast-yummy:
+### Install yummy:
 ```bash
-pip install feast-yummy
+pip install https://github.com/qooba/yummy.git
 ```
 
 ### Create a feature repository:

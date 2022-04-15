@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-NAME = "feast-yummy"
+NAME = "yummy"
 REQUIRES_PYTHON = ">=3.7.0"
 
 INSTALL_REQUIRE = [
@@ -23,12 +23,12 @@ DEV_REQUIRE = [
 
 setup(
     name=NAME,
-    version="0.0.6",
+    version="0.0.1",
     author="Qooba",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     python_requires=REQUIRES_PYTHON,
-    url="https://github.com/qooba/feast-yummy",
+    url="https://github.com/qooba/yummy",
     packages=find_packages(exclude=["test*", "feature_repo*"]),
     install_requires=INSTALL_REQUIRE,
     extras_require={
