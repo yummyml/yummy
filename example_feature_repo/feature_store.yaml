@@ -1,0 +1,13 @@
+project: example_feature_repo
+registry: data/registry.db
+provider: local
+offline_store:
+  type: yummy.YummyOfflineStore
+  backend: spark
+  config:
+    spark.master: "local[*]"
+    spark.ui.enabled: "false"
+    spark.eventLog.enabled: "false"
+    spark.sql.session.timeZone: "UTC"
+online_store:
+  path: data/online_store.db

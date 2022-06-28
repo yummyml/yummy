@@ -10,8 +10,13 @@ This gives flexibility in setting up the feature store on existing environments 
 Moreover using Yummy you can combine multiple and different datasources during historical fetch task.
 
 ### Install yummy:
+
 ```bash
-pip install https://github.com/qooba/yummy.git
+pip install yummy
+```
+
+```bash
+pip install git+https://github.com/qooba/yummy.git
 ```
 
 ### Create a feature repository:

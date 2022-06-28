@@ -6,12 +6,27 @@ REQUIRES_PYTHON = ">=3.7.0"
 INSTALL_REQUIRE = [
     "feast==0.18.0",
     "polars==0.13.18",
-    "ray[default,data]==1.9.1",
+]
+
+DASK_REQUIRE = [
     "dask[distributed]==2021.11.0",
+]
+
+RAY_REQUIRE = DASK_REQUIRE + [
+    "ray[default,data]==1.9.1",
+]
+
+SPARK_REQUIRE = [
+    "pyspark==3.2.0",
+]
+
+DELTA_REQUIRE = [
     "deltalake==0.5.6",
 ]
 
-DEV_REQUIRE = [
+DEV_REQUIRE = RAY_REQUIRE + \
+    SPARK_REQUIRE + \
+    DELTA_REQUIRE + [
     "flake8",
     "black==21.10b0",
     "isort>=5",
@@ -23,7 +38,7 @@ DEV_REQUIRE = [
 
 setup(
     name=NAME,
-    version="0.0.1",
+    version="0.0.2",
     author="Qooba",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
@@ -33,6 +48,10 @@ setup(
     install_requires=INSTALL_REQUIRE,
     extras_require={
         "dev": DEV_REQUIRE,
+        "dask": DASK_REQUIRE,
+        "ray": RAY_REQUIRE,
+        "spark": SPARK_REQUIRE,
+        "delta": DELTA_REQUIRE,
     },
     keywords=("feast featurestore polars dask ray pyspark offlinestore"),
     license='Apache License, Version 2.0',

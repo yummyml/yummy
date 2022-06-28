@@ -24,19 +24,5 @@ publish-testpypi: ## Publish to testpipy
 publish-pypi: ## Publish to pipy
 	twine upload --repository pypi dist/*
 
-# Here we have to type out the whole command for the test rather than having
-# `cd feast && FULL_REPO_CONFIGS_MODULE=tests.repo_config make test-python-universal`
-# The reason is that feast runs the tests in parallel and doing so the update function
-# is run in parallel where two threads will try to create the same schema at the same
-# time.
-#
-# https://stackoverflow.com/a/29908840/957738
-#   If the schema is being concurrently created in another session but isn't yet committed,
-#   then it both exists and does not exist, depending on who you are and how you look.
-#   It's not possible for other transactions to "see" the new schema in the system
-#   catalogs because it's uncommitted, so it's entry in pg_namespace is not visible to
-#   other transactions. So CREATE SCHEMA / CREATE TABLE tries to create it because, as
-#   far as it's concerned, the object doesn't exist.
-# 
-test-python-universal:
-	cd feast && FULL_REPO_CONFIGS_MODULE=tests.repo_config FEAST_USAGE=False IS_TEST=True python -m pytest --integration --universal sdk/python/tests
+test:
+	FEAST_USAGE=False IS_TEST=True python -m pytest -s tests
