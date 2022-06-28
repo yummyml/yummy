@@ -129,6 +129,36 @@ class ParquetGenerator(Generator):
             event_timestamp_column="datetime",
         )
 
+class DeltaGenerator(Generator):
+
+    @property
+    def data_type(self) -> DataType:
+        return DataType.delta
+
+    def write_data(self, df: pd.DataFrame, path: str):
+        from pyspark.sql import SparkSession
+        from pyspark import SparkConf
+
+        spark = SparkSession.builder.config(conf=SparkConf().setAll(
+            [
+                ("spark.master", "local[*]"),
+                ("spark.ui.enabled", "false"),
+                ("spark.eventLog.enabled", "false"),
+                ("spark.sql.session.timeZone", "UTC"),
+                ("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension"),
+                ("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
+            ]
+        )).getOrCreate()
+
+        spark.createDataFrame(df).write.format("delta").mode("append").save(path)
+
+    def prepare_source(self, path: str):
+        return DeltaDataSource(
+            path=path,
+            event_timestamp_column="datetime",
+        )
+
+
 
 
 

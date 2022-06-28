@@ -26,3 +26,6 @@ publish-pypi: ## Publish to pipy
 
 test:
 	FEAST_USAGE=False IS_TEST=True python -m pytest -s tests
+
+test-spark:
+	spark-submit --packages io.delta:delta-core_2.12:1.1.0 --conf "spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension" --conf "spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog" --conf "spark.driver.memory=5g" --conf "spark.executor.memory=5g" ./tests/run.py
