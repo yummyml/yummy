@@ -1,3 +1,4 @@
+import os
 from typing import Callable, List, Optional, Tuple, Union, Dict, Any
 from abc import ABC, abstractmethod
 import pandas as pd
@@ -7,13 +8,14 @@ from sklearn.datasets import make_hastie_10_2
 from enum import Enum
 from google.protobuf.duration_pb2 import Duration
 from feast import Entity, Feature, FeatureView, ValueType
-from yummy import ParquetDataSource, CsvDataSource, DeltaDataSource
+from yummy import ParquetDataSource, CsvDataSource, DeltaDataSource, IcebergDataSource
 
 
 class DataType(str, Enum):
     csv = "csv"
     parquet = "parquet"
     delta = "delta"
+    iceberg = "iceberg"
 
 class Generator(ABC):
 
@@ -159,8 +161,42 @@ class DeltaGenerator(Generator):
         )
 
 
+class IcebergGenerator(Generator):
 
+    @property
+    def data_type(self) -> DataType:
+        return DataType.delta
 
+    def write_data(self, df: pd.DataFrame, path: str):
+        from pyspark.sql import SparkSession
+        from pyspark import SparkConf
+
+        dir_name=os.path.dirname(path)
+        db_name=os.path.basename(path)
+
+        spark = SparkSession.builder.config(conf=SparkConf().setAll(
+            [
+                ("spark.master", "local[*]"),
+                ("spark.ui.enabled", "false"),
+                ("spark.eventLog.enabled", "false"),
+                ("spark.sql.session.timeZone", "UTC"),
+                ("spark.sql.extensions", "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions"),
+                ("spark.sql.catalog.spark_catalog", "org.apache.iceberg.spark.SparkSessionCatalog"),
+                ("spark.sql.catalog.spark_catalog.type","hive"),
+                ("spark.sql.catalog.local","org.apache.iceberg.spark.SparkCatalog"),
+                ("spark.sql.catalog.local.type","hadoop"),
+                ("spark.sql.catalog.local.warehouse",dir_name),
+            ]
+        )).getOrCreate()
+
+        spark.sql(f"CREATE TABLE local.db.table (f0 float, f1 float, f2 float, f3 float, f4 float, f5 float, f6 float, f7 float, f8 float, f9 float, y float, entity_id int, datetime date, created date, month_year date) USING iceberg")
+        spark.createDataFrame(df).write.format("iceberg").mode("append").save(db_name)
+
+    def prepare_source(self, path: str):
+        return IcebergDataSource(
+            path=os.path.basename(path),
+            event_timestamp_column="datetime",
+        )
 
 
 
