@@ -7,6 +7,7 @@ from feast import FeatureStore
 from tests.generators import Generator, IcebergGenerator
 
 @pytest.mark.parametrize("backend", ["spark"])
+@pytest.mark.spark
 def test_end_to_end_one_feature_view(feature_store: FeatureStore, tmp_dir: TemporaryDirectory, backend):
     feature_store.config.offline_store.backend = backend
 

@@ -25,7 +25,16 @@ publish-pypi: ## Publish to pipy
 	twine upload --repository pypi dist/*
 
 test:
-	FEAST_USAGE=False IS_TEST=True python -m pytest -s tests
+	FEAST_USAGE=False IS_TEST=True python3 ./tests/run.py
+
+test-integration:
+	PYSPARK_PYTHON=/opt/conda/bin/python3 PYSPARK_DRIVER_PYTHON=/opt/conda/bin/python3 FEAST_USAGE=False IS_TEST=True spark-submit \
+				   --packages io.delta:delta-core_2.12:1.1.0 \
+				   --conf "spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension" \
+				   --conf "spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog" \
+				   --conf "spark.driver.memory=5g" \
+				   --conf "spark.executor.memory=5g" \
+				   ./tests/run.py --integration
 
 test-spark:
 	PYSPARK_PYTHON=/opt/conda/bin/python3 PYSPARK_DRIVER_PYTHON=/opt/conda/bin/python3 FEAST_USAGE=False IS_TEST=True spark-submit \
@@ -35,14 +44,4 @@ test-spark:
 				   --conf "spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog" \
 				   --conf "spark.driver.memory=5g" \
 				   --conf "spark.executor.memory=5g" \
-				   ./tests/run.py
-
-test-iceberg:
-	PYSPARK_PYTHON=/opt/conda/bin/python3 PYSPARK_DRIVER_PYTHON=/opt/conda/bin/python3 FEAST_USAGE=False IS_TEST=True spark-submit \
-				   --packages io.delta:delta-core_2.12:1.1.0 \
-				   --packages org.apache.iceberg:iceberg-spark-runtime-3.2_2.12:0.13.2 \
-				   --conf "spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension" \
-				   --conf "spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog" \
-				   --conf "spark.driver.memory=5g" \
-				   --conf "spark.executor.memory=5g" \
-				   ./tests/run_iceberg.py
+				   ./tests/run.py --spark
