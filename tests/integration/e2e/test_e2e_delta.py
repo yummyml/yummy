@@ -6,11 +6,12 @@ import pandas as pd
 from feast import FeatureStore
 from tests.generators import Generator, CsvGenerator, ParquetGenerator, DeltaGenerator
 
+
 @pytest.mark.parametrize("backend", ["polars", "dask", "ray", "spark"])
-@pytest.mark.integration
-def test_end_to_end_one_feature_view(feature_store: FeatureStore, tmp_dir: TemporaryDirectory, backend):
+@pytest.mark.delta
+def test_e2e_delta(feature_store: FeatureStore, tmp_dir: TemporaryDirectory, backend):
     """
-    This will test all backends with basic data stores
+    This will test all backends with basic data stores and delta lake store
     """
     feature_store.config.offline_store.backend = backend
 
@@ -25,7 +26,6 @@ def test_end_to_end_one_feature_view(feature_store: FeatureStore, tmp_dir: Tempo
     delta_dataset = str(Path(tmp_dir) / "delta")
     delta_generator = DeltaGenerator()
     delta_fv, delta_fv_name = delta_generator.generate(delta_dataset)
-
 
     entity = Generator.entity()
     feature_store.apply([entity, csv_fv, parquet_fv, delta_fv])

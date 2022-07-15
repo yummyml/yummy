@@ -189,7 +189,7 @@ class IcebergGenerator(Generator):
             ]
         )).getOrCreate()
 
-        spark.sql(f"CREATE TABLE local.db.table (f0 float, f1 float, f2 float, f3 float, f4 float, f5 float, f6 float, f7 float, f8 float, f9 float, y float, entity_id int, datetime date, created date, month_year date) USING iceberg")
+        spark.sql(f"CREATE TABLE {db_name} (f0 float, f1 float, f2 float, f3 float, f4 float, f5 float, f6 float, f7 float, f8 float, f9 float, y float, entity_id int, datetime date, created date, month_year date) USING iceberg")
         spark.createDataFrame(df).write.format("iceberg").mode("append").save(db_name)
 
     def prepare_source(self, path: str):

@@ -24,19 +24,28 @@ publish-testpypi: ## Publish to testpipy
 publish-pypi: ## Publish to pipy
 	twine upload --repository pypi dist/*
 
-test:
-	FEAST_USAGE=False IS_TEST=True python3 ./tests/run.py
+test-nospark:
+	FEAST_USAGE=False IS_TEST=True python3 ./tests/run.py --nospark
 
-test-integration:
+test-spark:
 	PYSPARK_PYTHON=/opt/conda/bin/python3 PYSPARK_DRIVER_PYTHON=/opt/conda/bin/python3 FEAST_USAGE=False IS_TEST=True spark-submit \
 				   --packages io.delta:delta-core_2.12:1.1.0 \
 				   --conf "spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension" \
 				   --conf "spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog" \
 				   --conf "spark.driver.memory=5g" \
 				   --conf "spark.executor.memory=5g" \
-				   ./tests/run.py --integration
+				   ./tests/run.py --spark
 
-test-spark:
+test-delta:
+	PYSPARK_PYTHON=/opt/conda/bin/python3 PYSPARK_DRIVER_PYTHON=/opt/conda/bin/python3 FEAST_USAGE=False IS_TEST=True spark-submit \
+				   --packages io.delta:delta-core_2.12:1.1.0 \
+				   --conf "spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension" \
+				   --conf "spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog" \
+				   --conf "spark.driver.memory=5g" \
+				   --conf "spark.executor.memory=5g" \
+				   ./tests/run.py --delta
+
+test-iceberg:
 	PYSPARK_PYTHON=/opt/conda/bin/python3 PYSPARK_DRIVER_PYTHON=/opt/conda/bin/python3 FEAST_USAGE=False IS_TEST=True spark-submit \
 				   --packages io.delta:delta-core_2.12:1.1.0 \
 				   --packages org.apache.iceberg:iceberg-spark-runtime-3.2_2.12:0.13.2 \
@@ -44,4 +53,4 @@ test-spark:
 				   --conf "spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog" \
 				   --conf "spark.driver.memory=5g" \
 				   --conf "spark.executor.memory=5g" \
-				   ./tests/run.py --spark
+				   ./tests/run.py --iceberg
