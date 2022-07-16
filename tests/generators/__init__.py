@@ -5,13 +5,15 @@ from abc import ABC, abstractmethod
 import pandas as pd
 import numpy as np
 from pathlib import Path
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from sklearn.datasets import make_hastie_10_2
 from enum import Enum
 from google.protobuf.duration_pb2 import Duration
 from feast import Entity, Feature, FeatureView, ValueType
 from yummy import ParquetDataSource, CsvDataSource, DeltaDataSource, IcebergDataSource
 
+start_date = datetime.strptime("2021-10-01", "%Y-%m-%d")
+end_date = start_date + timedelta(days=100)
 
 class DataType(str, Enum):
     csv = "csv"

@@ -4,10 +4,10 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import pandas as pd
 from feast import FeatureStore
-from tests.generators import Generator, csv, parquet
+from tests.generators import Generator, csv, parquet, start_date, end_date
+from datetime import datetime
 
-
-def e2e_basic(feature_store: FeatureStore, tmp_dir: TemporaryDirectory, backend):
+def e2e_basic(feature_store: FeatureStore, tmp_dir: TemporaryDirectory, backend: str):
     """
     This will test all backends with basic data stores (parquet and csv)
     """
@@ -28,13 +28,31 @@ def e2e_basic(feature_store: FeatureStore, tmp_dir: TemporaryDirectory, backend)
         ], entity_df=entity_df, full_feature_names=True
     ).to_df()
 
-    assert(feature_vector[feature_vector.entity_id == 1][f"{csv_fv_name}__f0"] is not None)
-    assert(feature_vector[feature_vector.entity_id == 1][f"{parquet_fv_name}__f0"] is not None)
+    feature_store.materialize(start_date=start_date, end_date=end_date)
+
+    fv = feature_vector[feature_vector.entity_id == 1].to_dict(orient="records")[0]
+    csv_f0 = fv[f"{csv_fv_name}__f0"]
+    parquet_f0 = fv[f"{parquet_fv_name}__f0"]
+
+    assert(csv_f0 is not None)
+    assert(parquet_f0 is not None)
+
+    ff = feature_store.get_online_features(
+        features=[
+            f"{csv_fv_name}:f0",
+            f"{parquet_fv_name}:f0",
+        ],
+        entity_rows = [{"entity_id": 1}],
+        full_feature_names=True,
+    ).to_df().to_dict(orient="records")
+
+    assert(abs(ff[0]['fv_csv__f0'] - csv_f0) < 1e-6)
+    assert(abs(ff[0]['fv_parquet__f0'] - parquet_f0) < 1e-6)
 
 
 @pytest.mark.parametrize("backend", ["polars", "dask", "ray"])
 @pytest.mark.nospark
-def test_e2e_basic_nospark(feature_store: FeatureStore, tmp_dir: TemporaryDirectory, backend):
+def test_e2e_basic_nospark(feature_store: FeatureStore, tmp_dir: TemporaryDirectory, backend: str):
     """
     This will test all backends with basic data stores (parquet and csv)
     """
@@ -43,7 +61,7 @@ def test_e2e_basic_nospark(feature_store: FeatureStore, tmp_dir: TemporaryDirect
 
 @pytest.mark.parametrize("backend", ["spark", "polars", "dask", "ray"])
 @pytest.mark.spark
-def test_e2e_basic_spark(feature_store: FeatureStore, tmp_dir: TemporaryDirectory, backend):
+def test_e2e_basic_spark(feature_store: FeatureStore, tmp_dir: TemporaryDirectory, backend: str):
     """
     This will test all backends with basic data stores (parquet and csv)
     """

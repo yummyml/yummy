@@ -9,7 +9,7 @@ from feast import FeatureStore
 from feast.driver_test_data import create_driver_hourly_stats_df
 from feast.repo_config import load_repo_config, RepoConfig
 from filelock import FileLock
-
+from datetime import datetime, timedelta
 #from example_feature_repo.example import generate_example_data, example_data_exists
 
 
@@ -17,7 +17,6 @@ from filelock import FileLock
 def root_path() -> str:
     """Fixture that returns the root path of this git repository"""
     return str((Path(__file__).parent / "..").resolve())
-
 
 @pytest.fixture(scope="session")
 def example_repo_path(root_path: str) -> str:
