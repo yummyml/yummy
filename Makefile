@@ -24,6 +24,15 @@ publish-testpypi: ## Publish to testpipy
 publish-pypi: ## Publish to pipy
 	twine upload --repository pypi dist/*
 
+test-polars:
+	FEAST_USAGE=False IS_TEST=True python3 ./tests/run.py --polars
+
+test-dask:
+	FEAST_USAGE=False IS_TEST=True python3 ./tests/run.py --dask
+
+test-ray:
+	FEAST_USAGE=False IS_TEST=True python3 ./tests/run.py --ray
+
 test-nospark:
 	FEAST_USAGE=False IS_TEST=True python3 ./tests/run.py --nospark
 

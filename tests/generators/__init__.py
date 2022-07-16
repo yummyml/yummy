@@ -62,8 +62,10 @@ class Generator(ABC):
             ]
         )
 
+        df['month_year'] = df['datetime'].dt.date
         return df
 
+    @staticmethod
     def __append_modified(df: pd.DataFrame, entity_id: int, offsets: list[pd.DateOffset]) -> pd.DataFrame:
         adf = df[df.entity_id == 1].copy()
         i=1

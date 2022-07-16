@@ -49,6 +49,28 @@ def e2e_basic(feature_store: FeatureStore, tmp_dir: TemporaryDirectory, backend:
     assert(abs(ofv[0]['fv_csv__f0'] - csv_f0) < 1e-6)
     assert(abs(ofv[0]['fv_parquet__f0'] - parquet_f0) < 1e-6)
 
+@pytest.mark.polars
+def test_e2e_basic_polars(feature_store: FeatureStore, tmp_dir: TemporaryDirectory):
+    """
+    This will test polars backend with basic data stores (parquet and csv)
+    """
+    e2e_basic(feature_store, tmp_dir, "polars")
+
+@pytest.mark.dask
+def test_e2e_basic_dask(feature_store: FeatureStore, tmp_dir: TemporaryDirectory):
+    """
+    This will test dask backend with basic data stores (parquet and csv)
+    """
+    e2e_basic(feature_store, tmp_dir, "dask")
+
+
+@pytest.mark.ray
+def test_e2e_basic_ray(feature_store: FeatureStore, tmp_dir: TemporaryDirectory):
+    """
+    This will test ray backend with basic data stores (parquet and csv)
+    """
+    e2e_basic(feature_store, tmp_dir, "ray")
+
 
 @pytest.mark.parametrize("backend", ["polars", "dask", "ray"])
 @pytest.mark.nospark
