@@ -4,7 +4,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import pandas as pd
 from feast import FeatureStore
-from tests.generators import Generator, CsvGenerator, ParquetGenerator, DeltaGenerator
+from tests.generators import Generator, csv, parquet, delta
 
 
 @pytest.mark.parametrize("backend", ["polars", "dask", "ray", "spark"])
@@ -15,17 +15,9 @@ def test_e2e_delta(feature_store: FeatureStore, tmp_dir: TemporaryDirectory, bac
     """
     feature_store.config.offline_store.backend = backend
 
-    csv_dataset = str(Path(tmp_dir) / "data.csv")
-    csv_generator = CsvGenerator()
-    csv_fv, csv_fv_name = csv_generator.generate(csv_dataset)
-
-    parquet_dataset = str(Path(tmp_dir) / "data.parquet")
-    parquet_generator = ParquetGenerator()
-    parquet_fv, parquet_fv_name = parquet_generator.generate(parquet_dataset)
-
-    delta_dataset = str(Path(tmp_dir) / "delta")
-    delta_generator = DeltaGenerator()
-    delta_fv, delta_fv_name = delta_generator.generate(delta_dataset)
+    csv_fv, csv_fv_name = csv(tmp_dir)
+    parquet_fv, parquet_fv_name = parquet(tmp_dir)
+    delta_fv, delta_fv_name = delta(tmp_dir)
 
     entity = Generator.entity()
     feature_store.apply([entity, csv_fv, parquet_fv, delta_fv])

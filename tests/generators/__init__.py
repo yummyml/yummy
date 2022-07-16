@@ -1,8 +1,10 @@
 import os
+import random
 from typing import Callable, List, Optional, Tuple, Union, Dict, Any
 from abc import ABC, abstractmethod
 import pandas as pd
 import numpy as np
+from pathlib import Path
 from datetime import datetime, timezone
 from sklearn.datasets import make_hastie_10_2
 from enum import Enum
@@ -199,7 +201,24 @@ class IcebergGenerator(Generator):
         )
 
 
+def _base(tmp_dir: str, path: str, generator: Generator):
+    x_dataset = str(Path(tmp_dir) / path)
+    x_fv, x_fv_name = generator.generate(x_dataset)
+    return x_fv, x_fv_name
 
+
+def csv(tmp_dir: str):
+    return _base(tmp_dir, "data.csv", CsvGenerator())
+
+def parquet(tmp_dir: str):
+    return _base(tmp_dir, "data.parquet", ParquetGenerator())
+
+def delta(tmp_dir: str):
+    return _base(tmp_dir, "delta", DeltaGenerator())
+
+def iceberg(tmp_dir: str):
+    i = str(random.randint(0, 100))
+    return _base(tmp_dir, f"local.db.table{i}", IcebergGenerator())
 
 
 

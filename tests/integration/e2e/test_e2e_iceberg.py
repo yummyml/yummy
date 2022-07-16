@@ -4,7 +4,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import pandas as pd
 from feast import FeatureStore
-from tests.generators import Generator, IcebergGenerator, CsvGenerator, ParquetGenerator
+from tests.generators import Generator, iceberg, csv, parquet
 
 
 def initialize(feature_store: FeatureStore, tmp_dir: TemporaryDirectory, backend: str):
@@ -23,9 +23,7 @@ def initialize(feature_store: FeatureStore, tmp_dir: TemporaryDirectory, backend
 def test_e2e_iceberg_only(feature_store: FeatureStore, tmp_dir: TemporaryDirectory, backend: str):
     initialize(feature_store, tmp_dir, backend)
 
-    iceberg_dataset = str(Path(tmp_dir) / "local.db.table")
-    iceberg_generator = IcebergGenerator()
-    iceberg_fv, iceberg_fv_name = iceberg_generator.generate(iceberg_dataset)
+    iceberg_fv, iceberg_fv_name = iceberg(tmp_dir)
 
     entity = Generator.entity()
     feature_store.apply([entity, iceberg_fv])
@@ -46,17 +44,9 @@ def test_e2e_iceberg_only(feature_store: FeatureStore, tmp_dir: TemporaryDirecto
 def test_e2e_iceberg_mix(feature_store: FeatureStore, tmp_dir: TemporaryDirectory, backend: str):
     initialize(feature_store, tmp_dir, backend)
 
-    iceberg_dataset = str(Path(tmp_dir) / "local.db.table_mix")
-    iceberg_generator = IcebergGenerator()
-    iceberg_fv, iceberg_fv_name = iceberg_generator.generate(iceberg_dataset)
-
-    csv_dataset = str(Path(tmp_dir) / "data.csv")
-    csv_generator = CsvGenerator()
-    csv_fv, csv_fv_name = csv_generator.generate(csv_dataset)
-
-    parquet_dataset = str(Path(tmp_dir) / "data.parquet")
-    parquet_generator = ParquetGenerator()
-    parquet_fv, parquet_fv_name = parquet_generator.generate(parquet_dataset)
+    iceberg_fv, iceberg_fv_name = iceberg(tmp_dir)
+    csv_fv, csv_fv_name = csv(tmp_dir)
+    parquet_fv, parquet_fv_name = parquet(tmp_dir)
 
     entity = Generator.entity()
     feature_store.apply([entity, iceberg_fv, csv_fv, parquet_fv])
