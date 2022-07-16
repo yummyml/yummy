@@ -45,17 +45,34 @@ class Generator(ABC):
         df = pd.DataFrame(X, columns=["f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9"])
         df["y"]=y
         df['entity_id'] = entities
-        df['datetime'] = pd.to_datetime(
-                np.random.randint(
-                    datetime(year, month, day, 0,tzinfo=timezone.utc).timestamp(),
-                    datetime(year, month, day, 22,tzinfo=timezone.utc).timestamp(),
-                    size=n_samples),
-            unit="s", #utc=True
-        )
+        df['datetime'] = pd.to_datetime(datetime(2021, 10, 1, 23, 59, 41, tzinfo=timezone.utc))
         df['created'] = pd.to_datetime(
                 datetime.now(), #utc=True
                 )
-        df['month_year'] = pd.to_datetime(datetime(year, month, day, 0, tzinfo=timezone.utc), utc=True)
+
+        # add rows for entity_id == 1
+        df = Generator.__append_modified(
+            df,
+            1,
+            [
+                pd.DateOffset(days=-1),
+                pd.DateOffset(hours=-1),
+                pd.DateOffset(minutes=-1),
+                pd.DateOffset(seconds=-1),
+            ]
+        )
+
+        return df
+
+    def __append_modified(df: pd.DataFrame, entity_id: int, offsets: list[pd.DateOffset]) -> pd.DataFrame:
+        adf = df[df.entity_id == 1].copy()
+        i=1
+        for offset in offsets:
+            aadf = adf.copy()
+            aadf['datetime'] = adf['datetime'] + offset
+            aadf['f0'] = adf['f0'] + i
+            i+=1
+            df = df.append(aadf.copy())
         return df
 
     @property
@@ -112,7 +129,7 @@ class CsvGenerator(Generator):
         return DataType.csv
 
     def write_data(self, df: pd.DataFrame, path: str):
-        df.to_csv(path)
+        df.to_csv(path, date_format='%Y-%m-%d %H:%M:%S')
 
     def prepare_source(self, path: str):
         return CsvDataSource(

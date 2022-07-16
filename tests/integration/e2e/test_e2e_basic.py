@@ -31,13 +31,13 @@ def e2e_basic(feature_store: FeatureStore, tmp_dir: TemporaryDirectory, backend:
     feature_store.materialize(start_date=start_date, end_date=end_date)
 
     fv = feature_vector[feature_vector.entity_id == 1].to_dict(orient="records")[0]
-    csv_f0 = fv[f"{csv_fv_name}__f0"]
-    parquet_f0 = fv[f"{parquet_fv_name}__f0"]
+    csv_f0 = float(fv[f"{csv_fv_name}__f0"])
+    parquet_f0 = float(fv[f"{parquet_fv_name}__f0"])
 
     assert(csv_f0 is not None)
     assert(parquet_f0 is not None)
 
-    ff = feature_store.get_online_features(
+    ofv = feature_store.get_online_features(
         features=[
             f"{csv_fv_name}:f0",
             f"{parquet_fv_name}:f0",
@@ -46,8 +46,8 @@ def e2e_basic(feature_store: FeatureStore, tmp_dir: TemporaryDirectory, backend:
         full_feature_names=True,
     ).to_df().to_dict(orient="records")
 
-    assert(abs(ff[0]['fv_csv__f0'] - csv_f0) < 1e-6)
-    assert(abs(ff[0]['fv_parquet__f0'] - parquet_f0) < 1e-6)
+    assert(abs(ofv[0]['fv_csv__f0'] - csv_f0) < 1e-6)
+    assert(abs(ofv[0]['fv_parquet__f0'] - parquet_f0) < 1e-6)
 
 
 @pytest.mark.parametrize("backend", ["polars", "dask", "ray"])
