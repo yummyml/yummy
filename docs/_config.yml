@@ -15,6 +15,7 @@ url:              https://yummyml.github.io
 baseurl:          /
 relative_url:     /
 remote_theme:     just-the-docs/just-the-docs
+color_scheme:     dark
 
 author:
   name:           'Qooba'
