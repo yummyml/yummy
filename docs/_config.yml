@@ -11,7 +11,7 @@ name:             yummyml.github.io
 title:            Qooba
 tagline:          'Yummy'
 description:      'Yummy extension'
-url:              https://yummyml.github.io/yummy/
+url:              https://yummyml.github.io
 baseurl:          /
 relative_url:     /
 remote_theme:     just-the-docs/just-the-docs
