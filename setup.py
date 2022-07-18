@@ -43,7 +43,7 @@ setup(
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
     python_requires=REQUIRES_PYTHON,
-    url="https://github.com/qooba/yummy",
+    url="https://github.com/yummyml/yummy",
     packages=find_packages(exclude=["test*", "feature_repo*"]),
     install_requires=INSTALL_REQUIRE,
     extras_require={
