@@ -1,0 +1,43 @@
+# Dependencies
+markdown:         redcarpet
+highlighter:      pygments
+
+# Permalinks
+#permalink:        pretty
+#relative_permalinks: true
+
+# Setup
+name:             yummyml.github.io
+title:            Qooba
+tagline:          'Yummy'
+description:      'Yummy extension'
+url:              https://yummyml.github.io/yummy/
+baseurl:          /
+relative_url:     /
+remote_theme:     just-the-docs/just-the-docs
+
+author:
+  name:           'Qooba'
+  url:            https://blog.qooba.net/about
+
+paginate:         5
+
+# Custom vars
+
+github:
+  repo:           https://github.com/yummyml/yummy
+
+plugins:
+  - jekyll-gist
+  - jekyll-coffeescript
+  - jekyll-seo-tag
+
+# defaults:
+#   -
+#     scope:
+#       path: "" # an empty string here means all files in the project
+#     values:
+#       layout: "default"
+
+#theme: jekyll-theme-slate
+#theme: minimal-mistakes-jekyll
