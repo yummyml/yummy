@@ -1,4 +1,4 @@
-# [Yummy](https://github.com/qooba/yummy) - delicious [Feast](https://github.com/feast-dev/feast) extension
+# [Yummy](https://github.com/yummyml/yummy) - delicious [Feast](https://github.com/feast-dev/feast) extension
 
 Yummy project adds possiblity to run [Feast](https://github.com/feast-dev/feast) on multiple backends:
 * [polars](https://github.com/pola-rs/polars)
