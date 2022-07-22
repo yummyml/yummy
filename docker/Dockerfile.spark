@@ -12,7 +12,7 @@ RUN apt update && apt install curl git ssh cmake ack g++ tmux vim -yq
 USER 1000
 RUN /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/qooba/vim-python-ide/master/setup.sh)"
 
-RUN pip install git+https://github.com/qooba/yummy.git#egg=yummy[dev]
+RUN pip install git+https://github.com/yummyml/yummy.git@v0.0.2#egg=yummy[dev]
 
 RUN pip install twine
 
