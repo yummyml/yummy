@@ -37,6 +37,7 @@ class YummyDataSource(DataSource):
             name=name,
             timestamp_field=timestamp_field,
         )
+        print(f"DUPA1: {name}")
 
     @property
     def reader_type(self):

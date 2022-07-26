@@ -8,7 +8,6 @@ from pathlib import Path
 from datetime import datetime, timezone, timedelta
 from sklearn.datasets import make_hastie_10_2
 from enum import Enum
-from google.protobuf.duration_pb2 import Duration
 from feast import Entity, Feature, FeatureView, ValueType, Field
 from feast.types import Float32, Int32
 from yummy import ParquetDataSource, CsvDataSource, DeltaDataSource, IcebergDataSource
@@ -75,7 +74,7 @@ class Generator(ABC):
             aadf['datetime'] = adf['datetime'] + offset
             aadf['f0'] = adf['f0'] + i
             i+=1
-            df = df.append(aadf.copy())
+            df = pd.concat([df,aadf.copy()])
         return df
 
     @property
@@ -115,11 +114,12 @@ class Generator(ABC):
 
     def prepare_features(self, path: str) -> Tuple[FeatureView, str]:
         source = self.prepare_source(path)
+        print(source)
         name = f"fv_{self.data_type}"
         return FeatureView(
             name=name,
             entities=[Generator.entity()],
-            ttl=Duration(seconds=3600*24*20),
+            ttl=timedelta(seconds=3600*24*20),
             schema=self.features,
             online=True,
             source=source,
