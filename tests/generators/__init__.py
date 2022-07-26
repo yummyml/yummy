@@ -26,7 +26,7 @@ class Generator(ABC):
 
     @staticmethod
     def entity() -> Entity:
-        return Entity(name="entity_id", value_type=ValueType.INT64, description="entity id",)
+        return Entity(name="entity_id", description="entity id",)
 
     @staticmethod
     def generate_entities(size: int):
@@ -85,6 +85,7 @@ class Generator(ABC):
     @property
     def features(self):
         return [
+            Field(name="entity_id", dtype=Int32),
             Field(name="f0", dtype=Float32),
             Field(name="f1", dtype=Float32),
             Field(name="f2", dtype=Float32),

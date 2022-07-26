@@ -95,7 +95,7 @@ Example `features.py`:
 ```python
 from google.protobuf.duration_pb2 import Duration
 from feast import Entity, Feature, FeatureView, ValueType, Field
-from feast.types import Float32
+from feast.types import Float32, Int32
 from yummy import ParquetDataSource, CsvDataSource, DeltaDataSource
 
 my_stats_parquet = ParquetDataSource(
@@ -114,13 +114,14 @@ my_stats_csv = CsvDataSource(
     timestamp_field="datetime",
 )
 
-my_entity = Entity(name="entity_id", value_type=ValueType.INT64, description="entity id",)
+my_entity = Entity(name="entity_id", description="entity id",)
 
 mystats_view_parquet = FeatureView(
     name="my_statistics_parquet",
-    entities=["entity_id"],
+    entities=[my_entity],
     ttl=Duration(seconds=3600*24*20),
-    features=[
+    schema=[
+        Field(name="entity_id", dtype=Float32),
         Field(name="p0", dtype=Float32),
         Field(name="p1", dtype=Float32),
         Field(name="p2", dtype=Float32),
@@ -132,13 +133,14 @@ mystats_view_parquet = FeatureView(
         Field(name="p8", dtype=Float32),
         Field(name="p9", dtype=Float32),
         Field(name="y", dtype=Float32),
-    ], online=True, input=my_stats_parquet, tags={},)
+    ], online=True, source=my_stats_parquet, tags={},)
 
 mystats_view_delta = FeatureView(
     name="my_statistics_delta",
-    entities=["entity_id"],
+    entities=[my_entity],
     ttl=Duration(seconds=3600*24*20),
-    features=[
+    schema=[
+        Field(name="entity_id", dtype=Float32),
         Field(name="d0", dtype=Float32),
         Field(name="d1", dtype=Float32),
         Field(name="d2", dtype=Float32),
@@ -149,17 +151,18 @@ mystats_view_delta = FeatureView(
         Field(name="d7", dtype=Float32),
         Field(name="d8", dtype=Float32),
         Field(name="d9", dtype=Float32),
-    ], online=True, input=my_stats_delta, tags={},)
+    ], online=True, source=my_stats_delta, tags={},)
 
     
 mystats_view_csv = FeatureView(
     name="my_statistics_csv",
-    entities=["entity_id"],
+    entities=[my_entity],
     ttl=Duration(seconds=3600*24*20),
-    features=[
+    schema=[
+        Field(name="entity_id", dtype=Float32),
         Field(name="c1", dtype=Float32),
         Field(name="c2", dtype=Float32),
-    ], online=True, input=my_stats_csv, tags={},)
+    ], online=True, source=my_stats_csv, tags={},)
 ```
 
 
