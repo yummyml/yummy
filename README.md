@@ -94,7 +94,7 @@ offline_store:
 Example `features.py`:
 ```python
 from datetime import timedelta
-from feast import Entity, Feature, FeatureView, ValueType, Field
+from feast import Entity, FeatureView, Field
 from feast.types import Float32, Int32
 from yummy import ParquetSource, CsvSource, DeltaSource
 
@@ -138,7 +138,7 @@ mystats_view_parquet = FeatureView(
 mystats_view_delta = FeatureView(
     name="my_statistics_delta",
     entities=[my_entity],
-    ttl=Duration(seconds=3600*24*20),
+    ttl=timedelta(seconds=3600*24*20),
     schema=[
         Field(name="entity_id", dtype=Float32),
         Field(name="d0", dtype=Float32),
@@ -157,7 +157,7 @@ mystats_view_delta = FeatureView(
 mystats_view_csv = FeatureView(
     name="my_statistics_csv",
     entities=[my_entity],
-    ttl=Duration(seconds=3600*24*20),
+    ttl=timedelta(seconds=3600*24*20),
     schema=[
         Field(name="entity_id", dtype=Float32),
         Field(name="c1", dtype=Float32),
