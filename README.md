@@ -93,7 +93,7 @@ offline_store:
 
 Example `features.py`:
 ```python
-from google.protobuf.duration_pb2 import Duration
+from datetime import timedelta
 from feast import Entity, Feature, FeatureView, ValueType, Field
 from feast.types import Float32, Int32
 from yummy import ParquetSource, CsvSource, DeltaSource
@@ -119,7 +119,7 @@ my_entity = Entity(name="entity_id", description="entity id",)
 mystats_view_parquet = FeatureView(
     name="my_statistics_parquet",
     entities=[my_entity],
-    ttl=Duration(seconds=3600*24*20),
+    ttl=timedelta(seconds=3600*24*20),
     schema=[
         Field(name="entity_id", dtype=Float32),
         Field(name="p0", dtype=Float32),
