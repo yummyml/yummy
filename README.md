@@ -96,20 +96,20 @@ Example `features.py`:
 from google.protobuf.duration_pb2 import Duration
 from feast import Entity, Feature, FeatureView, ValueType, Field
 from feast.types import Float32, Int32
-from yummy import ParquetDataSource, CsvDataSource, DeltaDataSource
+from yummy import ParquetSource, CsvSource, DeltaSource
 
-my_stats_parquet = ParquetDataSource(
+my_stats_parquet = ParquetSource(
     path="/home/jovyan/notebooks/ray/dataset/all_data.parquet",
     timestamp_field="datetime",
 )
 
-my_stats_delta = DeltaDataSource(
+my_stats_delta = DeltaSource(
     path="dataset/all",
     timestamp_field="datetime",
     #range_join=10,
 )
 
-my_stats_csv = CsvDataSource(
+my_stats_csv = CsvSource(
     path="/home/jovyan/notebooks/ray/dataset/all_data.csv",
     timestamp_field="datetime",
 )

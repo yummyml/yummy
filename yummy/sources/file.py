@@ -105,7 +105,7 @@ class YummyFileDataSource(YummyDataSource):
         return type_map.pa_to_feast_value_type
 
 
-class ParquetDataSource(YummyFileDataSource):
+class ParquetSource(YummyFileDataSource):
     """Custom data source class for parquets files"""
 
     def __init__(
@@ -142,7 +142,7 @@ class ParquetDataSource(YummyFileDataSource):
         """
         Returns the reader type which will read data source
         """
-        return ParquetDataSourceReader
+        return ParquetSourceReader
 
     @staticmethod
     def from_proto(data_source: DataSourceProto) -> Any:
@@ -155,7 +155,7 @@ class ParquetDataSource(YummyFileDataSource):
         )
         path = json.loads(custom_source_options)["path"]
         s3_endpoint_override = json.loads(custom_source_options)["s3_endpoint_override"]
-        return ParquetDataSource(
+        return ParquetSource(
             name=data_source.name,
             field_mapping=dict(data_source.field_mapping),
             timestamp_field=data_source.timestamp_field,
@@ -168,7 +168,7 @@ class ParquetDataSource(YummyFileDataSource):
         )
 
 
-class CsvDataSource(YummyFileDataSource):
+class CsvSource(YummyFileDataSource):
     """Custom data source class for parquets files"""
 
     def __init__(
@@ -209,7 +209,7 @@ class CsvDataSource(YummyFileDataSource):
         """
         Returns the reader type which will read data source
         """
-        return CsvDataSourceReader
+        return CsvSourceReader
 
     @property
     def delimiter(self):
@@ -263,7 +263,7 @@ class CsvDataSource(YummyFileDataSource):
         s3_endpoint_override = json.loads(custom_source_options)["s3_endpoint_override"]
         delimiter = json.loads(custom_source_options)["delimiter"]
         header = json.loads(custom_source_options)["header"]
-        return CsvDataSource(
+        return CsvSource(
             name=data_source.name,
             field_mapping=dict(data_source.field_mapping),
             timestamp_field=data_source.timestamp_field,
@@ -278,7 +278,7 @@ class CsvDataSource(YummyFileDataSource):
         )
 
 
-class ParquetDataSourceReader(YummyDataSourceReader):
+class ParquetSourceReader(YummyDataSourceReader):
 
     def read_datasource(
         self,
@@ -318,7 +318,7 @@ class ParquetDataSourceReader(YummyDataSourceReader):
         )
 
 
-class CsvDataSourceReader(ParquetDataSourceReader):
+class CsvSourceReader(ParquetSourceReader):
 
     def read_datasource(
         self,

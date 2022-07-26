@@ -11,7 +11,7 @@ from feast.value_type import ValueType
 from yummy.sources.source import YummyDataSource
 from yummy.backends.backend import Backend, BackendType, YummyDataSourceReader
 
-class DeltaDataSource(YummyDataSource):
+class DeltaSource(YummyDataSource):
     """Custom data source class for local files"""
 
     def __init__(
@@ -50,7 +50,7 @@ class DeltaDataSource(YummyDataSource):
         """
         Returns the reader type which will read data source
         """
-        return DeltaDataSourceReader
+        return DeltaSourceReader
 
     @property
     def path(self):
@@ -85,7 +85,7 @@ class DeltaDataSource(YummyDataSource):
         path = json.loads(custom_source_options)["path"]
         s3_endpoint_override = json.loads(custom_source_options)["s3_endpoint_override"]
         range_join = json.loads(custom_source_options)["range_join"]
-        return DeltaDataSource(
+        return DeltaSource(
             name=data_source.name,
             field_mapping=dict(data_source.field_mapping),
             timestamp_field=data_source.timestamp_field,
@@ -137,7 +137,7 @@ class DeltaDataSource(YummyDataSource):
         return type_map.pa_to_feast_value_type
 
 
-class DeltaDataSourceReader(YummyDataSourceReader):
+class DeltaSourceReader(YummyDataSourceReader):
 
     def read_datasource(
         self,

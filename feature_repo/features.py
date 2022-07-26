@@ -1,10 +1,10 @@
 from google.protobuf.duration_pb2 import Duration
 from feast import Entity, Field, FeatureView, ValueType
 from feast.types import Float32
-from feast_pyspark import DeltaDataSource
+from feast_pyspark import DeltaSource
 from feast.data_format import ParquetFormat
 
-my_stats = DeltaDataSource(
+my_stats = DeltaSource(
     path="/home/jovyan/feast-pyspark/feature_repo/dataset/all",
     timestamp_field="datetime",
 )

@@ -11,7 +11,7 @@ from feast.value_type import ValueType
 from yummy.sources.source import YummyDataSource
 from yummy.backends.backend import Backend, BackendType, YummyDataSourceReader
 
-class IcebergDataSource(YummyDataSource):
+class IcebergSource(YummyDataSource):
     """Custom data source class for local files"""
 
     def __init__(
@@ -50,7 +50,7 @@ class IcebergDataSource(YummyDataSource):
         """
         Returns the reader type which will read data source
         """
-        return IcebergDataSourceReader
+        return IcebergSourceReader
 
     @property
     def path(self):
@@ -85,7 +85,7 @@ class IcebergDataSource(YummyDataSource):
         path = json.loads(custom_source_options)["path"]
         s3_endpoint_override = json.loads(custom_source_options)["s3_endpoint_override"]
         range_join = json.loads(custom_source_options)["range_join"]
-        return IcebergDataSource(
+        return IcebergSource(
             name=data_source.name,
             field_mapping=dict(data_source.field_mapping),
             timestamp_field=data_source.timestamp_field,
@@ -137,7 +137,7 @@ class IcebergDataSource(YummyDataSource):
         return type_map.pa_to_feast_value_type
 
 
-class IcebergDataSourceReader(YummyDataSourceReader):
+class IcebergSourceReader(YummyDataSourceReader):
 
     def read_datasource(
         self,
@@ -155,9 +155,9 @@ class IcebergDataSourceReader(YummyDataSourceReader):
             path = data_source.path
             return spark_session.read.format('iceberg').load(path)
         elif backend_type in [BackendType.ray, BackendType.dask]:
-            raise NotImplementedError("IcebergDataSource is currently supported only by spark backend")
+            raise NotImplementedError("IcebergSource is currently supported only by spark backend")
         elif backend_type == BackendType.polars:
-            raise NotImplementedError("IcebergDataSource is currently supported only by spark backend")
+            raise NotImplementedError("IcebergSource is currently supported only by spark backend")
 
         raise NotImplementedError(f'Delta lake support not implemented for {backend_type}')
 

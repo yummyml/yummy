@@ -10,7 +10,7 @@ from sklearn.datasets import make_hastie_10_2
 from enum import Enum
 from feast import Entity, Feature, FeatureView, ValueType, Field
 from feast.types import Float32, Int32
-from yummy import ParquetDataSource, CsvDataSource, DeltaDataSource, IcebergDataSource
+from yummy import ParquetSource, CsvSource, DeltaSource, IcebergSource
 
 start_date = datetime.strptime("2021-10-01", "%Y-%m-%d")
 end_date = start_date + timedelta(days=100)
@@ -135,7 +135,7 @@ class CsvGenerator(Generator):
         df.to_csv(path, date_format='%Y-%m-%d %H:%M:%S')
 
     def prepare_source(self, path: str):
-        return CsvDataSource(
+        return CsvSource(
             name="csv",
             path=path,
             timestamp_field="datetime",
@@ -151,7 +151,7 @@ class ParquetGenerator(Generator):
         df.to_parquet(path)
 
     def prepare_source(self, path: str):
-        return ParquetDataSource(
+        return ParquetSource(
             name="parquet",
             path=path,
             timestamp_field="datetime",
@@ -181,7 +181,7 @@ class DeltaGenerator(Generator):
         spark.createDataFrame(df).write.format("delta").mode("append").save(path)
 
     def prepare_source(self, path: str):
-        return DeltaDataSource(
+        return DeltaSource(
             name="delta",
             path=path,
             timestamp_field="datetime",
@@ -220,7 +220,7 @@ class IcebergGenerator(Generator):
         spark.createDataFrame(df).write.format("iceberg").mode("append").save(db_name)
 
     def prepare_source(self, path: str):
-        return IcebergDataSource(
+        return IcebergSource(
             name="iceberg",
             path=os.path.basename(path),
             timestamp_field="datetime",
