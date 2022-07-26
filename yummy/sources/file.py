@@ -75,8 +75,14 @@ class YummyFileDataSource(YummyDataSource):
             {"path": self.path, "s3_endpoint_override": self.s3_endpoint_override}
         )
         data_source_proto = DataSourceProto(
+            name=self.name,
             type=DataSourceProto.CUSTOM_SOURCE,
             field_mapping=self.field_mapping,
+            description=self.description,
+            tags=self.tags,
+            owner=self.owner,
+            timestamp_field=self.timestamp_field,
+            created_timestamp_column=self.created_timestamp_column,
             custom_options=DataSourceProto.CustomSourceOptions(
                 configuration=bytes(config_json, encoding="utf8")
             ),
@@ -84,7 +90,6 @@ class YummyFileDataSource(YummyDataSource):
 
         data_source_proto.timestamp_field = self.timestamp_field
         data_source_proto.created_timestamp_column = self.created_timestamp_column
-        data_source_proto.date_partition_column = self.date_partition_column
 
         return data_source_proto
 
@@ -151,12 +156,15 @@ class ParquetDataSource(YummyFileDataSource):
         path = json.loads(custom_source_options)["path"]
         s3_endpoint_override = json.loads(custom_source_options)["s3_endpoint_override"]
         return ParquetDataSource(
+            name=data_source.name,
             field_mapping=dict(data_source.field_mapping),
-            path=path,
-            s3_endpoint_override=s3_endpoint_override,
             timestamp_field=data_source.timestamp_field,
             created_timestamp_column=data_source.created_timestamp_column,
-            date_partition_column=data_source.date_partition_column,
+            description=data_source.description,
+            tags=dict(data_source.tags),
+            owner=data_source.owner,
+            path=path,
+            s3_endpoint_override=s3_endpoint_override,
         )
 
 
@@ -224,8 +232,14 @@ class CsvDataSource(YummyFileDataSource):
              }
         )
         data_source_proto = DataSourceProto(
+            name=self.name,
             type=DataSourceProto.CUSTOM_SOURCE,
             field_mapping=self.field_mapping,
+            description=self.description,
+            tags=self.tags,
+            owner=self.owner,
+            timestamp_field=self.timestamp_field,
+            created_timestamp_column=self.created_timestamp_column,
             custom_options=DataSourceProto.CustomSourceOptions(
                 configuration=bytes(config_json, encoding="utf8")
             ),
@@ -233,7 +247,6 @@ class CsvDataSource(YummyFileDataSource):
 
         data_source_proto.timestamp_field = self.timestamp_field
         data_source_proto.created_timestamp_column = self.created_timestamp_column
-        data_source_proto.date_partition_column = self.date_partition_column
 
         return data_source_proto
 
@@ -251,12 +264,15 @@ class CsvDataSource(YummyFileDataSource):
         delimiter = json.loads(custom_source_options)["delimiter"]
         header = json.loads(custom_source_options)["header"]
         return CsvDataSource(
+            name=data_source.name,
             field_mapping=dict(data_source.field_mapping),
-            path=path,
-            s3_endpoint_override=s3_endpoint_override,
             timestamp_field=data_source.timestamp_field,
             created_timestamp_column=data_source.created_timestamp_column,
-            date_partition_column=data_source.date_partition_column,
+            description=data_source.description,
+            tags=dict(data_source.tags),
+            owner=data_source.owner,
+            path=path,
+            s3_endpoint_override=s3_endpoint_override,
             delimiter=delimiter,
             header=header,
         )

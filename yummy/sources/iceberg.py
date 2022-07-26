@@ -86,12 +86,15 @@ class IcebergDataSource(YummyDataSource):
         s3_endpoint_override = json.loads(custom_source_options)["s3_endpoint_override"]
         range_join = json.loads(custom_source_options)["range_join"]
         return IcebergDataSource(
+            name=data_source.name,
             field_mapping=dict(data_source.field_mapping),
-            path=path,
-            s3_endpoint_override=s3_endpoint_override,
             timestamp_field=data_source.timestamp_field,
             created_timestamp_column=data_source.created_timestamp_column,
-            date_partition_column=data_source.date_partition_column,
+            description=data_source.description,
+            tags=dict(data_source.tags),
+            owner=data_source.owner,
+            path=path,
+            s3_endpoint_override=s3_endpoint_override,
             range_join=range_join,
         )
 
@@ -104,8 +107,14 @@ class IcebergDataSource(YummyDataSource):
             {"path": self.path, "s3_endpoint_override": self.s3_endpoint_override, "range_join": self.range_join}
         )
         data_source_proto = DataSourceProto(
+            name=self.name,
             type=DataSourceProto.CUSTOM_SOURCE,
             field_mapping=self.field_mapping,
+            description=self.description,
+            tags=self.tags,
+            owner=self.owner,
+            timestamp_field=self.timestamp_field,
+            created_timestamp_column=self.created_timestamp_column,
             custom_options=DataSourceProto.CustomSourceOptions(
                 configuration=bytes(config_json, encoding="utf8")
             ),
@@ -113,7 +122,6 @@ class IcebergDataSource(YummyDataSource):
 
         data_source_proto.timestamp_field = self.timestamp_field
         data_source_proto.created_timestamp_column = self.created_timestamp_column
-        data_source_proto.date_partition_column = self.date_partition_column
 
         return data_source_proto
 

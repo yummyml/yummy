@@ -114,7 +114,6 @@ class Generator(ABC):
 
     def prepare_features(self, path: str) -> Tuple[FeatureView, str]:
         source = self.prepare_source(path)
-        print(source)
         name = f"fv_{self.data_type}"
         return FeatureView(
             name=name,
