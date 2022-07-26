@@ -18,18 +18,29 @@ class YummyFileDataSource(YummyDataSource):
 
     def __init__(
         self,
-        timestamp_field: Optional[str] = "",
+        *,
+        event_timestamp_column: Optional[str] = None,
+        created_timestamp_column: Optional[str] = None,
+        field_mapping: Optional[Dict[str, str]] = None,
+        date_partition_column: Optional[str] = None,
+        description: Optional[str] = "",
+        tags: Optional[Dict[str, str]] = None,
+        owner: Optional[str] = "",
+        name: Optional[str] = None,
+        timestamp_field: Optional[str] = None,
         path: Optional[str] = None,
         s3_endpoint_override: Optional[str] = None,
-        field_mapping: Optional[Dict[str, str]] = None,
-        created_timestamp_column: Optional[str] = "",
-        date_partition_column: Optional[str] = "",
     ):
         super().__init__(
-            timestamp_field=timestamp_field,
+            event_timestamp_column=event_timestamp_column,
             created_timestamp_column=created_timestamp_column,
             field_mapping=field_mapping,
             date_partition_column=date_partition_column,
+            description=description,
+            tags=tags,
+            owner=owner,
+            name=name,
+            timestamp_field=timestamp_field,
         )
         self._path = path
         self._s3_endpoint_override = s3_endpoint_override
@@ -94,20 +105,31 @@ class ParquetDataSource(YummyFileDataSource):
 
     def __init__(
         self,
-        timestamp_field: Optional[str] = "",
+        *,
+        event_timestamp_column: Optional[str] = None,
+        created_timestamp_column: Optional[str] = None,
+        field_mapping: Optional[Dict[str, str]] = None,
+        date_partition_column: Optional[str] = None,
+        description: Optional[str] = "",
+        tags: Optional[Dict[str, str]] = None,
+        owner: Optional[str] = "",
+        name: Optional[str] = None,
+        timestamp_field: Optional[str] = None,
         path: Optional[str] = None,
         s3_endpoint_override: Optional[str] = None,
-        field_mapping: Optional[Dict[str, str]] = None,
-        created_timestamp_column: Optional[str] = "",
-        date_partition_column: Optional[str] = "",
     ):
         super().__init__(
-            timestamp_field=timestamp_field,
-            path=path,
-            s3_endpoint_override=s3_endpoint_override,
+            event_timestamp_column=event_timestamp_column,
             created_timestamp_column=created_timestamp_column,
             field_mapping=field_mapping,
             date_partition_column=date_partition_column,
+            description=description,
+            tags=tags,
+            owner=owner,
+            name=name,
+            timestamp_field=timestamp_field,
+            path=path,
+            s3_endpoint_override=s3_endpoint_override,
         )
 
     @property
@@ -143,22 +165,33 @@ class CsvDataSource(YummyFileDataSource):
 
     def __init__(
         self,
-        timestamp_field: Optional[str] = "",
+        *,
+        event_timestamp_column: Optional[str] = None,
+        created_timestamp_column: Optional[str] = None,
+        field_mapping: Optional[Dict[str, str]] = None,
+        date_partition_column: Optional[str] = None,
+        description: Optional[str] = "",
+        tags: Optional[Dict[str, str]] = None,
+        owner: Optional[str] = "",
+        name: Optional[str] = None,
+        timestamp_field: Optional[str] = None,
         path: Optional[str] = None,
         s3_endpoint_override: Optional[str] = None,
-        field_mapping: Optional[Dict[str, str]] = None,
-        created_timestamp_column: Optional[str] = "",
-        date_partition_column: Optional[str] = "",
         delimiter: Optional[str] = ',',
         header: Optional[bool] = True,
     ):
         super().__init__(
-            timestamp_field=timestamp_field,
-            path=path,
-            s3_endpoint_override=s3_endpoint_override,
+            event_timestamp_column=event_timestamp_column,
             created_timestamp_column=created_timestamp_column,
             field_mapping=field_mapping,
             date_partition_column=date_partition_column,
+            description=description,
+            tags=tags,
+            owner=owner,
+            name=name,
+            timestamp_field=timestamp_field,
+            path=path,
+            s3_endpoint_override=s3_endpoint_override,
         )
         self._delimiter = delimiter
         self._header = header

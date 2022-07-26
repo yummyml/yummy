@@ -16,19 +16,30 @@ class DeltaDataSource(YummyDataSource):
 
     def __init__(
         self,
-        timestamp_field: Optional[str] = "",
+        *,
+        event_timestamp_column: Optional[str] = None,
+        created_timestamp_column: Optional[str] = None,
+        field_mapping: Optional[Dict[str, str]] = None,
+        date_partition_column: Optional[str] = None,
+        description: Optional[str] = "",
+        tags: Optional[Dict[str, str]] = None,
+        owner: Optional[str] = "",
+        name: Optional[str] = None,
+        timestamp_field: Optional[str] = None,
         path: Optional[str] = None,
         s3_endpoint_override: Optional[str] = None,
-        field_mapping: Optional[Dict[str, str]] = None,
-        created_timestamp_column: Optional[str] = "",
-        date_partition_column: Optional[str] = "",
         range_join: Optional[int] = None,
     ):
         super().__init__(
-            timestamp_field=timestamp_field,
+            event_timestamp_column=event_timestamp_column,
             created_timestamp_column=created_timestamp_column,
             field_mapping=field_mapping,
             date_partition_column=date_partition_column,
+            description=description,
+            tags=tags,
+            owner=owner,
+            name=name,
+            timestamp_field=timestamp_field,
         )
         self._path = path
         self._s3_endpoint_override = s3_endpoint_override

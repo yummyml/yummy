@@ -15,16 +15,27 @@ class YummyDataSource(DataSource):
 
     def __init__(
         self,
-        timestamp_field: Optional[str] = "",
-        created_timestamp_column: Optional[str] = "",
+        *,
+        event_timestamp_column: Optional[str] = None,
+        created_timestamp_column: Optional[str] = None,
         field_mapping: Optional[Dict[str, str]] = None,
-        date_partition_column: Optional[str] = "",
+        date_partition_column: Optional[str] = None,
+        description: Optional[str] = "",
+        tags: Optional[Dict[str, str]] = None,
+        owner: Optional[str] = "",
+        name: Optional[str] = None,
+        timestamp_field: Optional[str] = None,
     ):
         super().__init__(
-            timestamp_field=timestamp_field,
+            event_timestamp_column=event_timestamp_column,
             created_timestamp_column=created_timestamp_column,
             field_mapping=field_mapping,
             date_partition_column=date_partition_column,
+            description=description,
+            tags=tags,
+            owner=owner,
+            name=name,
+            timestamp_field=timestamp_field,
         )
 
     @property

@@ -10,7 +10,7 @@ from sklearn.datasets import make_hastie_10_2
 from enum import Enum
 from google.protobuf.duration_pb2 import Duration
 from feast import Entity, Feature, FeatureView, ValueType, Field
-from feast.types import Float32
+from feast.types import Float32, Int32
 from yummy import ParquetDataSource, CsvDataSource, DeltaDataSource, IcebergDataSource
 
 start_date = datetime.strptime("2021-10-01", "%Y-%m-%d")
@@ -117,7 +117,7 @@ class Generator(ABC):
         name = f"fv_{self.data_type}"
         return FeatureView(
             name=name,
-            entities=["entity_id"],
+            entities=[Generator.entity()],
             ttl=Duration(seconds=3600*24*20),
             schema=self.features,
             online=True,
@@ -136,6 +136,7 @@ class CsvGenerator(Generator):
 
     def prepare_source(self, path: str):
         return CsvDataSource(
+            name="csv",
             path=path,
             timestamp_field="datetime",
         )
@@ -151,6 +152,7 @@ class ParquetGenerator(Generator):
 
     def prepare_source(self, path: str):
         return ParquetDataSource(
+            name="parquet",
             path=path,
             timestamp_field="datetime",
         )
@@ -180,6 +182,7 @@ class DeltaGenerator(Generator):
 
     def prepare_source(self, path: str):
         return DeltaDataSource(
+            name="delta",
             path=path,
             timestamp_field="datetime",
         )
@@ -218,6 +221,7 @@ class IcebergGenerator(Generator):
 
     def prepare_source(self, path: str):
         return IcebergDataSource(
+            name="iceberg",
             path=os.path.basename(path),
             timestamp_field="datetime",
         )
