@@ -8,9 +8,9 @@ from pathlib import Path
 from datetime import datetime, timezone, timedelta
 from sklearn.datasets import make_hastie_10_2
 from enum import Enum
-from google.protobuf.duration_pb2 import Duration
-from feast import Entity, Feature, FeatureView, ValueType
-from yummy import ParquetDataSource, CsvDataSource, DeltaDataSource, IcebergDataSource
+from feast import Entity, Feature, FeatureView, ValueType, Field
+from feast.types import Float32, Int32
+from yummy import ParquetSource, CsvSource, DeltaSource, IcebergSource
 
 start_date = datetime.strptime("2021-10-01", "%Y-%m-%d")
 end_date = start_date + timedelta(days=100)
@@ -25,7 +25,7 @@ class Generator(ABC):
 
     @staticmethod
     def entity() -> Entity:
-        return Entity(name="entity_id", value_type=ValueType.INT64, description="entity id",)
+        return Entity(name="entity_id", description="entity id",)
 
     @staticmethod
     def generate_entities(size: int):
@@ -74,7 +74,7 @@ class Generator(ABC):
             aadf['datetime'] = adf['datetime'] + offset
             aadf['f0'] = adf['f0'] + i
             i+=1
-            df = df.append(aadf.copy())
+            df = pd.concat([df,aadf.copy()])
         return df
 
     @property
@@ -84,17 +84,18 @@ class Generator(ABC):
     @property
     def features(self):
         return [
-            Feature(name="f0", dtype=ValueType.FLOAT),
-            Feature(name="f1", dtype=ValueType.FLOAT),
-            Feature(name="f2", dtype=ValueType.FLOAT),
-            Feature(name="f3", dtype=ValueType.FLOAT),
-            Feature(name="f4", dtype=ValueType.FLOAT),
-            Feature(name="f5", dtype=ValueType.FLOAT),
-            Feature(name="f6", dtype=ValueType.FLOAT),
-            Feature(name="f7", dtype=ValueType.FLOAT),
-            Feature(name="f8", dtype=ValueType.FLOAT),
-            Feature(name="f9", dtype=ValueType.FLOAT),
-            Feature(name="y", dtype=ValueType.FLOAT),
+            Field(name="entity_id", dtype=Int32),
+            Field(name="f0", dtype=Float32),
+            Field(name="f1", dtype=Float32),
+            Field(name="f2", dtype=Float32),
+            Field(name="f3", dtype=Float32),
+            Field(name="f4", dtype=Float32),
+            Field(name="f5", dtype=Float32),
+            Field(name="f6", dtype=Float32),
+            Field(name="f7", dtype=Float32),
+            Field(name="f8", dtype=Float32),
+            Field(name="f9", dtype=Float32),
+            Field(name="y", dtype=Float32),
         ]
 
     def generate(self, path: str, size: int = 10, year: int = 2021, month: int = 10, day: int = 1) -> Tuple[FeatureView, str]:
@@ -116,11 +117,11 @@ class Generator(ABC):
         name = f"fv_{self.data_type}"
         return FeatureView(
             name=name,
-            entities=["entity_id"],
-            ttl=Duration(seconds=3600*24*20),
-            features=self.features,
+            entities=[Generator.entity()],
+            ttl=timedelta(seconds=3600*24*20),
+            schema=self.features,
             online=True,
-            input=source,
+            source=source,
             tags={},), name
 
 
@@ -134,9 +135,10 @@ class CsvGenerator(Generator):
         df.to_csv(path, date_format='%Y-%m-%d %H:%M:%S')
 
     def prepare_source(self, path: str):
-        return CsvDataSource(
+        return CsvSource(
+            name="csv",
             path=path,
-            event_timestamp_column="datetime",
+            timestamp_field="datetime",
         )
 
 class ParquetGenerator(Generator):
@@ -149,9 +151,10 @@ class ParquetGenerator(Generator):
         df.to_parquet(path)
 
     def prepare_source(self, path: str):
-        return ParquetDataSource(
+        return ParquetSource(
+            name="parquet",
             path=path,
-            event_timestamp_column="datetime",
+            timestamp_field="datetime",
         )
 
 class DeltaGenerator(Generator):
@@ -178,9 +181,10 @@ class DeltaGenerator(Generator):
         spark.createDataFrame(df).write.format("delta").mode("append").save(path)
 
     def prepare_source(self, path: str):
-        return DeltaDataSource(
+        return DeltaSource(
+            name="delta",
             path=path,
-            event_timestamp_column="datetime",
+            timestamp_field="datetime",
         )
 
 
@@ -216,9 +220,10 @@ class IcebergGenerator(Generator):
         spark.createDataFrame(df).write.format("iceberg").mode("append").save(db_name)
 
     def prepare_source(self, path: str):
-        return IcebergDataSource(
+        return IcebergSource(
+            name="iceberg",
             path=os.path.basename(path),
-            event_timestamp_column="datetime",
+            timestamp_field="datetime",
         )
 
 

@@ -116,7 +116,7 @@ class Backend(ABC):
     def normalize_timestamp(
         self,
         df_to_join: Union[pd.DataFrame, Any],
-        event_timestamp_column: str,
+        timestamp_field: str,
         created_timestamp_column: str,
     ) -> Union[pd.DataFrame, Any]:
         ...
@@ -127,7 +127,7 @@ class Backend(ABC):
         df_to_join: Union[pd.DataFrame, Any],
         feature_view: FeatureView,
         entity_df_event_timestamp_col: str,
-        event_timestamp_column: str,
+        timestamp_field: str,
     ) -> Union[pd.DataFrame, Any]:
         ...
 
@@ -135,7 +135,7 @@ class Backend(ABC):
     def filter_time_range(
         self,
         source_df: Union[pd.DataFrame, Any],
-        event_timestamp_column: str,
+        timestamp_field: str,
         start_date: datetime,
         end_date: datetime,
     ) -> Union[pd.DataFrame, Any]:
@@ -205,14 +205,14 @@ class Backend(ABC):
         self,
         df_to_join: Union[pd.DataFrame, Any],
         all_join_keys: List[str],
-        event_timestamp_column: str,
+        timestamp_field: str,
         created_timestamp_column: Optional[str],
         entity_df_event_timestamp_col: Optional[str] = None,
     ) -> Union[pd.DataFrame, Any]:
         if created_timestamp_column:
-            df_to_join =  self.sort_values(df_to_join, by=[created_timestamp_column, event_timestamp_column], na_position="first")
+            df_to_join =  self.sort_values(df_to_join, by=[created_timestamp_column, timestamp_field], na_position="first")
         else:
-            df_to_join = self.sort_values(df_to_join, by=event_timestamp_column, na_position="first")
+            df_to_join = self.sort_values(df_to_join, by=timestamp_field, na_position="first")
 
         if entity_df_event_timestamp_col:
             return self.drop_duplicates(df_to_join, subset=all_join_keys + [entity_df_event_timestamp_col])
@@ -222,10 +222,10 @@ class Backend(ABC):
     def drop_columns(
         self,
         df_to_join: Union[pd.DataFrame, Any],
-        event_timestamp_column: str,
+        timestamp_field: str,
         created_timestamp_column: str,
     ) -> Union[pd.DataFrame, Any]:
-        entity_df_with_features = self.drop(df_to_join, [event_timestamp_column])
+        entity_df_with_features = self.drop(df_to_join, [timestamp_field])
 
         if created_timestamp_column:
             entity_df_with_features = self.drop(entity_df_with_features,[created_timestamp_column])
@@ -239,7 +239,7 @@ class Backend(ABC):
         features: List[str],
         right_entity_key_columns: List[str],
         entity_df_event_timestamp_col: str,
-        event_timestamp_column: str,
+        timestamp_field: str,
         full_feature_names: bool,
     ) -> Union[pd.DataFrame, Any]:
         # Rename columns by the field mapping dictionary if it exists
@@ -277,13 +277,13 @@ class Backend(ABC):
         df_to_join = self.select(df_to_join, right_entity_key_columns + feature_names)
 
         # Make sure to not have duplicated columns
-        if entity_df_event_timestamp_col == event_timestamp_column:
+        if entity_df_event_timestamp_col == timestamp_field:
             df_to_join = self.run_field_mapping(
-                df_to_join, {event_timestamp_column: f"__{event_timestamp_column}"},
+                df_to_join, {timestamp_field: f"__{timestamp_field}"},
             )
-            event_timestamp_column = f"__{event_timestamp_column}"
+            timestamp_field = f"__{timestamp_field}"
 
-        return df_to_join, event_timestamp_column
+        return df_to_join, timestamp_field
 
     def get_entity_df_event_timestamp_range(
         self,
@@ -459,8 +459,8 @@ class YummyOfflineStore(OfflineStore):
 
             # Load feature view data from sources and join them incrementally
             for feature_view, features in feature_views_to_features.items():
-                event_timestamp_column = (
-                    feature_view.batch_source.event_timestamp_column
+                timestamp_field = (
+                    feature_view.batch_source.timestamp_field
                 )
                 created_timestamp_column = (
                     feature_view.batch_source.created_timestamp_column
@@ -477,7 +477,7 @@ class YummyOfflineStore(OfflineStore):
                     join_keys.append(join_key)
 
                 right_entity_key_columns = [
-                    event_timestamp_column,
+                    timestamp_field,
                     created_timestamp_column,
                 ] + join_keys
                 right_entity_key_columns = [c for c in right_entity_key_columns if c]
@@ -486,20 +486,20 @@ class YummyOfflineStore(OfflineStore):
 
                 df_to_join = backend.read_datasource(feature_view.batch_source, features, entity_df_with_features)
 
-                df_to_join, event_timestamp_column = backend.field_mapping(
+                df_to_join, timestamp_field = backend.field_mapping(
                     df_to_join,
                     feature_view,
                     features,
                     right_entity_key_columns,
                     entity_df_event_timestamp_col,
-                    event_timestamp_column,
+                    timestamp_field,
                     full_feature_names,
                 )
 
                 df_to_join = backend.merge(entity_df_with_features, df_to_join, join_keys, feature_view)
 
                 df_to_join = backend.normalize_timestamp(
-                    df_to_join, event_timestamp_column, created_timestamp_column
+                    df_to_join, timestamp_field, created_timestamp_column
                 )
 
 
@@ -507,19 +507,19 @@ class YummyOfflineStore(OfflineStore):
                     df_to_join,
                     feature_view,
                     entity_df_event_timestamp_col,
-                    event_timestamp_column,
+                    timestamp_field,
                 )
 
                 df_to_join = backend.drop_df_duplicates(
                     df_to_join,
                     all_join_keys,
-                    event_timestamp_column,
+                    timestamp_field,
                     created_timestamp_column,
                     entity_df_event_timestamp_col,
                 )
 
                 entity_df_with_features = backend.drop_columns(
-                    df_to_join, event_timestamp_column, created_timestamp_column
+                    df_to_join, timestamp_field, created_timestamp_column
                 )
 
                 # Ensure that we delete dataframes to free up memory
@@ -549,7 +549,7 @@ class YummyOfflineStore(OfflineStore):
         data_source: DataSource,
         join_key_columns: List[str],
         feature_name_columns: List[str],
-        event_timestamp_column: str,
+        timestamp_field: str,
         created_timestamp_column: Optional[str],
         start_date: datetime,
         end_date: datetime,
@@ -563,7 +563,7 @@ class YummyOfflineStore(OfflineStore):
             source_df = backend.read_datasource(data_source, feature_name_columns)
 
             source_df = backend.normalize_timestamp(
-                source_df, event_timestamp_column, created_timestamp_column
+                source_df, timestamp_field, created_timestamp_column
             )
 
             all_columns = backend.columns_list(source_df)
@@ -575,18 +575,18 @@ class YummyOfflineStore(OfflineStore):
                 )
 
             ts_columns = (
-                [event_timestamp_column, created_timestamp_column]
+                [timestamp_field, created_timestamp_column]
                 if created_timestamp_column
-                else [event_timestamp_column]
+                else [timestamp_field]
             )
 
-            source_df = backend.filter_time_range(source_df, event_timestamp_column, start_date, end_date)
+            source_df = backend.filter_time_range(source_df, timestamp_field, start_date, end_date)
 
             columns_to_extract = set(
                 join_key_columns + feature_name_columns + ts_columns
             )
             if join_key_columns:
-                source_df = backend.drop_df_duplicates(source_df, join_key_columns, event_timestamp_column, created_timestamp_column)
+                source_df = backend.drop_df_duplicates(source_df, join_key_columns, timestamp_field, created_timestamp_column)
             else:
                 source_df = backend.add_static_column(source_df, DUMMY_ENTITY_ID, DUMMY_ENTITY_VAL)
                 columns_to_extract.add(DUMMY_ENTITY_ID)
@@ -606,7 +606,7 @@ class YummyOfflineStore(OfflineStore):
         data_source: DataSource,
         join_key_columns: List[str],
         feature_name_columns: List[str],
-        event_timestamp_column: str,
+        timestamp_field: str,
         start_date: datetime,
         end_date: datetime,
     ) -> RetrievalJob:
@@ -614,9 +614,9 @@ class YummyOfflineStore(OfflineStore):
             config=config,
             data_source=data_source,
             join_key_columns=join_key_columns
-            + [event_timestamp_column],  # avoid deduplication
+            + [timestamp_field],  # avoid deduplication
             feature_name_columns=feature_name_columns,
-            event_timestamp_column=event_timestamp_column,
+            timestamp_field=timestamp_field,
             created_timestamp_column=None,
             start_date=start_date,
             end_date=end_date,

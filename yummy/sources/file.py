@@ -18,18 +18,29 @@ class YummyFileDataSource(YummyDataSource):
 
     def __init__(
         self,
-        event_timestamp_column: Optional[str] = "",
+        *,
+        event_timestamp_column: Optional[str] = None,
+        created_timestamp_column: Optional[str] = None,
+        field_mapping: Optional[Dict[str, str]] = None,
+        date_partition_column: Optional[str] = None,
+        description: Optional[str] = "",
+        tags: Optional[Dict[str, str]] = None,
+        owner: Optional[str] = "",
+        name: Optional[str] = None,
+        timestamp_field: Optional[str] = None,
         path: Optional[str] = None,
         s3_endpoint_override: Optional[str] = None,
-        field_mapping: Optional[Dict[str, str]] = None,
-        created_timestamp_column: Optional[str] = "",
-        date_partition_column: Optional[str] = "",
     ):
         super().__init__(
             event_timestamp_column=event_timestamp_column,
             created_timestamp_column=created_timestamp_column,
             field_mapping=field_mapping,
             date_partition_column=date_partition_column,
+            description=description,
+            tags=tags,
+            owner=owner,
+            name=name,
+            timestamp_field=timestamp_field,
         )
         self._path = path
         self._s3_endpoint_override = s3_endpoint_override
@@ -64,16 +75,21 @@ class YummyFileDataSource(YummyDataSource):
             {"path": self.path, "s3_endpoint_override": self.s3_endpoint_override}
         )
         data_source_proto = DataSourceProto(
+            name=self.name,
             type=DataSourceProto.CUSTOM_SOURCE,
             field_mapping=self.field_mapping,
+            description=self.description,
+            tags=self.tags,
+            owner=self.owner,
+            timestamp_field=self.timestamp_field,
+            created_timestamp_column=self.created_timestamp_column,
             custom_options=DataSourceProto.CustomSourceOptions(
                 configuration=bytes(config_json, encoding="utf8")
             ),
         )
 
-        data_source_proto.event_timestamp_column = self.event_timestamp_column
+        data_source_proto.timestamp_field = self.timestamp_field
         data_source_proto.created_timestamp_column = self.created_timestamp_column
-        data_source_proto.date_partition_column = self.date_partition_column
 
         return data_source_proto
 
@@ -89,25 +105,36 @@ class YummyFileDataSource(YummyDataSource):
         return type_map.pa_to_feast_value_type
 
 
-class ParquetDataSource(YummyFileDataSource):
+class ParquetSource(YummyFileDataSource):
     """Custom data source class for parquets files"""
 
     def __init__(
         self,
-        event_timestamp_column: Optional[str] = "",
+        *,
+        event_timestamp_column: Optional[str] = None,
+        created_timestamp_column: Optional[str] = None,
+        field_mapping: Optional[Dict[str, str]] = None,
+        date_partition_column: Optional[str] = None,
+        description: Optional[str] = "",
+        tags: Optional[Dict[str, str]] = None,
+        owner: Optional[str] = "",
+        name: Optional[str] = None,
+        timestamp_field: Optional[str] = None,
         path: Optional[str] = None,
         s3_endpoint_override: Optional[str] = None,
-        field_mapping: Optional[Dict[str, str]] = None,
-        created_timestamp_column: Optional[str] = "",
-        date_partition_column: Optional[str] = "",
     ):
         super().__init__(
             event_timestamp_column=event_timestamp_column,
-            path=path,
-            s3_endpoint_override=s3_endpoint_override,
             created_timestamp_column=created_timestamp_column,
             field_mapping=field_mapping,
             date_partition_column=date_partition_column,
+            description=description,
+            tags=tags,
+            owner=owner,
+            name=name,
+            timestamp_field=timestamp_field,
+            path=path,
+            s3_endpoint_override=s3_endpoint_override,
         )
 
     @property
@@ -115,7 +142,7 @@ class ParquetDataSource(YummyFileDataSource):
         """
         Returns the reader type which will read data source
         """
-        return ParquetDataSourceReader
+        return ParquetSourceReader
 
     @staticmethod
     def from_proto(data_source: DataSourceProto) -> Any:
@@ -128,37 +155,51 @@ class ParquetDataSource(YummyFileDataSource):
         )
         path = json.loads(custom_source_options)["path"]
         s3_endpoint_override = json.loads(custom_source_options)["s3_endpoint_override"]
-        return ParquetDataSource(
+        return ParquetSource(
+            name=data_source.name,
             field_mapping=dict(data_source.field_mapping),
+            timestamp_field=data_source.timestamp_field,
+            created_timestamp_column=data_source.created_timestamp_column,
+            description=data_source.description,
+            tags=dict(data_source.tags),
+            owner=data_source.owner,
             path=path,
             s3_endpoint_override=s3_endpoint_override,
-            event_timestamp_column=data_source.event_timestamp_column,
-            created_timestamp_column=data_source.created_timestamp_column,
-            date_partition_column=data_source.date_partition_column,
         )
 
 
-class CsvDataSource(YummyFileDataSource):
+class CsvSource(YummyFileDataSource):
     """Custom data source class for parquets files"""
 
     def __init__(
         self,
-        event_timestamp_column: Optional[str] = "",
+        *,
+        event_timestamp_column: Optional[str] = None,
+        created_timestamp_column: Optional[str] = None,
+        field_mapping: Optional[Dict[str, str]] = None,
+        date_partition_column: Optional[str] = None,
+        description: Optional[str] = "",
+        tags: Optional[Dict[str, str]] = None,
+        owner: Optional[str] = "",
+        name: Optional[str] = None,
+        timestamp_field: Optional[str] = None,
         path: Optional[str] = None,
         s3_endpoint_override: Optional[str] = None,
-        field_mapping: Optional[Dict[str, str]] = None,
-        created_timestamp_column: Optional[str] = "",
-        date_partition_column: Optional[str] = "",
         delimiter: Optional[str] = ',',
         header: Optional[bool] = True,
     ):
         super().__init__(
             event_timestamp_column=event_timestamp_column,
-            path=path,
-            s3_endpoint_override=s3_endpoint_override,
             created_timestamp_column=created_timestamp_column,
             field_mapping=field_mapping,
             date_partition_column=date_partition_column,
+            description=description,
+            tags=tags,
+            owner=owner,
+            name=name,
+            timestamp_field=timestamp_field,
+            path=path,
+            s3_endpoint_override=s3_endpoint_override,
         )
         self._delimiter = delimiter
         self._header = header
@@ -168,7 +209,7 @@ class CsvDataSource(YummyFileDataSource):
         """
         Returns the reader type which will read data source
         """
-        return CsvDataSourceReader
+        return CsvSourceReader
 
     @property
     def delimiter(self):
@@ -191,16 +232,21 @@ class CsvDataSource(YummyFileDataSource):
              }
         )
         data_source_proto = DataSourceProto(
+            name=self.name,
             type=DataSourceProto.CUSTOM_SOURCE,
             field_mapping=self.field_mapping,
+            description=self.description,
+            tags=self.tags,
+            owner=self.owner,
+            timestamp_field=self.timestamp_field,
+            created_timestamp_column=self.created_timestamp_column,
             custom_options=DataSourceProto.CustomSourceOptions(
                 configuration=bytes(config_json, encoding="utf8")
             ),
         )
 
-        data_source_proto.event_timestamp_column = self.event_timestamp_column
+        data_source_proto.timestamp_field = self.timestamp_field
         data_source_proto.created_timestamp_column = self.created_timestamp_column
-        data_source_proto.date_partition_column = self.date_partition_column
 
         return data_source_proto
 
@@ -217,19 +263,22 @@ class CsvDataSource(YummyFileDataSource):
         s3_endpoint_override = json.loads(custom_source_options)["s3_endpoint_override"]
         delimiter = json.loads(custom_source_options)["delimiter"]
         header = json.loads(custom_source_options)["header"]
-        return CsvDataSource(
+        return CsvSource(
+            name=data_source.name,
             field_mapping=dict(data_source.field_mapping),
+            timestamp_field=data_source.timestamp_field,
+            created_timestamp_column=data_source.created_timestamp_column,
+            description=data_source.description,
+            tags=dict(data_source.tags),
+            owner=data_source.owner,
             path=path,
             s3_endpoint_override=s3_endpoint_override,
-            event_timestamp_column=data_source.event_timestamp_column,
-            created_timestamp_column=data_source.created_timestamp_column,
-            date_partition_column=data_source.date_partition_column,
             delimiter=delimiter,
             header=header,
         )
 
 
-class ParquetDataSourceReader(YummyDataSourceReader):
+class ParquetSourceReader(YummyDataSourceReader):
 
     def read_datasource(
         self,
@@ -269,7 +318,7 @@ class ParquetDataSourceReader(YummyDataSourceReader):
         )
 
 
-class CsvDataSourceReader(ParquetDataSourceReader):
+class CsvSourceReader(ParquetSourceReader):
 
     def read_datasource(
         self,
@@ -279,7 +328,7 @@ class CsvDataSourceReader(ParquetDataSourceReader):
         entity_df: Optional[Union[pd.DataFrame, Any]] = None,
     ) -> Union[pyarrow.Table, pd.DataFrame, Any]:
         backend_type = backend.backend_type
-        event_timestamp_column = data_source.event_timestamp_column
+        timestamp_field = data_source.timestamp_field
         created_timestamp_column = data_source.created_timestamp_column
 
         if backend_type == BackendType.spark:
@@ -300,7 +349,7 @@ class CsvDataSourceReader(ParquetDataSourceReader):
                 storage_options=self._storage_options(data_source),
                 delimiter=data_source.delimiter,
             )
-            csv_df[event_timestamp_column] = dd.to_datetime(csv_df[event_timestamp_column])
+            csv_df[timestamp_field] = dd.to_datetime(csv_df[timestamp_field])
             if created_timestamp_column:
                 csv_df[created_timestamp_column] = dd.to_datetime(csv_df[created_timestamp_column])
 

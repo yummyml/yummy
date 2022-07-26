@@ -144,23 +144,23 @@ class DaskBackend(Backend):
     def normalize_timestamp(
         self,
         df_to_join: Union[pd.DataFrame, Any],
-        event_timestamp_column: str,
+        timestamp_field: str,
         created_timestamp_column: str,
     ) -> Union[pd.DataFrame, Any]:
         df_to_join_types = df_to_join.dtypes
-        event_timestamp_column_type = df_to_join_types[event_timestamp_column]
+        timestamp_field_type = df_to_join_types[timestamp_field]
 
         if created_timestamp_column:
             created_timestamp_column_type = df_to_join_types[created_timestamp_column]
 
         if (
-            not hasattr(event_timestamp_column_type, "tz")
-            or event_timestamp_column_type.tz != pytz.UTC
+            not hasattr(timestamp_field_type, "tz")
+            or timestamp_field_type.tz != pytz.UTC
         ):
             # Make sure all timestamp fields are tz-aware. We default tz-naive fields to UTC
-            df_to_join[event_timestamp_column] = df_to_join[event_timestamp_column].apply(
+            df_to_join[timestamp_field] = df_to_join[timestamp_field].apply(
                 lambda x: x if x.tzinfo is not None else x.replace(tzinfo=pytz.utc),
-                meta=(event_timestamp_column, "datetime64[ns, UTC]"),
+                meta=(timestamp_field, "datetime64[ns, UTC]"),
             )
 
         if created_timestamp_column and (
@@ -171,7 +171,7 @@ class DaskBackend(Backend):
                 created_timestamp_column
             ].apply(
                 lambda x: x if x.tzinfo is not None else x.replace(tzinfo=pytz.utc),
-                meta=(event_timestamp_column, "datetime64[ns, UTC]"),
+                meta=(timestamp_field, "datetime64[ns, UTC]"),
             )
 
         return df_to_join.persist()
@@ -181,17 +181,17 @@ class DaskBackend(Backend):
         df_to_join: Union[pd.DataFrame, Any],
         feature_view: FeatureView,
         entity_df_event_timestamp_col: str,
-        event_timestamp_column: str,
+        timestamp_field: str,
     ) -> Union[pd.DataFrame, Any]:
         # Filter rows by defined timestamp tolerance
         if feature_view.ttl and feature_view.ttl.total_seconds() != 0:
             df_to_join = df_to_join[
                 (
-                    df_to_join[event_timestamp_column]
+                    df_to_join[timestamp_field]
                     >= df_to_join[entity_df_event_timestamp_col] - feature_view.ttl
                 )
                 & (
-                    df_to_join[event_timestamp_column]
+                    df_to_join[timestamp_field]
                     <= df_to_join[entity_df_event_timestamp_col]
                 )
             ]
@@ -203,13 +203,13 @@ class DaskBackend(Backend):
     def filter_time_range(
         self,
         source_df: Union[pd.DataFrame, Any],
-        event_timestamp_column: str,
+        timestamp_field: str,
         start_date: datetime,
         end_date: datetime,
     ) -> Union[pd.DataFrame, Any]:
         source_df = source_df[
-            (source_df[event_timestamp_column] >= start_date)
-            & (source_df[event_timestamp_column] < end_date)
+            (source_df[timestamp_field] >= start_date)
+            & (source_df[timestamp_field] < end_date)
         ]
 
         return source_df.persist()

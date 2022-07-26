@@ -11,17 +11,23 @@ from feast.value_type import ValueType
 from yummy.sources.source import YummyDataSource
 from yummy.backends.backend import Backend, BackendType, YummyDataSourceReader
 
-class DeltaDataSource(YummyDataSource):
+class DeltaSource(YummyDataSource):
     """Custom data source class for local files"""
 
     def __init__(
         self,
-        event_timestamp_column: Optional[str] = "",
+        *,
+        event_timestamp_column: Optional[str] = None,
+        created_timestamp_column: Optional[str] = None,
+        field_mapping: Optional[Dict[str, str]] = None,
+        date_partition_column: Optional[str] = None,
+        description: Optional[str] = "",
+        tags: Optional[Dict[str, str]] = None,
+        owner: Optional[str] = "",
+        name: Optional[str] = None,
+        timestamp_field: Optional[str] = None,
         path: Optional[str] = None,
         s3_endpoint_override: Optional[str] = None,
-        field_mapping: Optional[Dict[str, str]] = None,
-        created_timestamp_column: Optional[str] = "",
-        date_partition_column: Optional[str] = "",
         range_join: Optional[int] = None,
     ):
         super().__init__(
@@ -29,6 +35,11 @@ class DeltaDataSource(YummyDataSource):
             created_timestamp_column=created_timestamp_column,
             field_mapping=field_mapping,
             date_partition_column=date_partition_column,
+            description=description,
+            tags=tags,
+            owner=owner,
+            name=name,
+            timestamp_field=timestamp_field,
         )
         self._path = path
         self._s3_endpoint_override = s3_endpoint_override
@@ -39,7 +50,7 @@ class DeltaDataSource(YummyDataSource):
         """
         Returns the reader type which will read data source
         """
-        return DeltaDataSourceReader
+        return DeltaSourceReader
 
     @property
     def path(self):
@@ -74,13 +85,16 @@ class DeltaDataSource(YummyDataSource):
         path = json.loads(custom_source_options)["path"]
         s3_endpoint_override = json.loads(custom_source_options)["s3_endpoint_override"]
         range_join = json.loads(custom_source_options)["range_join"]
-        return DeltaDataSource(
+        return DeltaSource(
+            name=data_source.name,
             field_mapping=dict(data_source.field_mapping),
+            timestamp_field=data_source.timestamp_field,
+            created_timestamp_column=data_source.created_timestamp_column,
+            description=data_source.description,
+            tags=dict(data_source.tags),
+            owner=data_source.owner,
             path=path,
             s3_endpoint_override=s3_endpoint_override,
-            event_timestamp_column=data_source.event_timestamp_column,
-            created_timestamp_column=data_source.created_timestamp_column,
-            date_partition_column=data_source.date_partition_column,
             range_join=range_join,
         )
 
@@ -93,16 +107,21 @@ class DeltaDataSource(YummyDataSource):
             {"path": self.path, "s3_endpoint_override": self.s3_endpoint_override, "range_join": self.range_join}
         )
         data_source_proto = DataSourceProto(
+            name=self.name,
             type=DataSourceProto.CUSTOM_SOURCE,
             field_mapping=self.field_mapping,
+            description=self.description,
+            tags=self.tags,
+            owner=self.owner,
+            timestamp_field=self.timestamp_field,
+            created_timestamp_column=self.created_timestamp_column,
             custom_options=DataSourceProto.CustomSourceOptions(
                 configuration=bytes(config_json, encoding="utf8")
             ),
         )
 
-        data_source_proto.event_timestamp_column = self.event_timestamp_column
+        data_source_proto.timestamp_field = self.timestamp_field
         data_source_proto.created_timestamp_column = self.created_timestamp_column
-        data_source_proto.date_partition_column = self.date_partition_column
 
         return data_source_proto
 
@@ -118,7 +137,7 @@ class DeltaDataSource(YummyDataSource):
         return type_map.pa_to_feast_value_type
 
 
-class DeltaDataSourceReader(YummyDataSourceReader):
+class DeltaSourceReader(YummyDataSourceReader):
 
     def read_datasource(
         self,
