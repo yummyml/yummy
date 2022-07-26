@@ -140,7 +140,7 @@ class SparkBackend(Backend):
     def normalize_timestamp(
         self,
         df_to_join: Union[pd.DataFrame, Any],
-        event_timestamp_column: str,
+        timestamp_field: str,
         created_timestamp_column: str,
     ) -> Union[pd.DataFrame, Any]:
         return df_to_join
@@ -150,19 +150,19 @@ class SparkBackend(Backend):
         df_to_join: Union[pd.DataFrame, Any],
         feature_view: FeatureView,
         entity_df_event_timestamp_col: str,
-        event_timestamp_column: str,
+        timestamp_field: str,
     ) -> Union[pd.DataFrame, Any]:
         # Filter rows by defined timestamp tolerance
         if feature_view.ttl and feature_view.ttl.total_seconds() != 0:
             ttl_seconds = feature_view.ttl.total_seconds()
             df_to_join= df_to_join.filter(
                 (
-                    col(event_timestamp_column)
+                    col(timestamp_field)
                     >= col(entity_df_event_timestamp_col)
                     - expr(f"INTERVAL {ttl_seconds} seconds")
                 )
                 & (
-                    col(event_timestamp_column)
+                    col(timestamp_field)
                     <= col(entity_df_event_timestamp_col)
                 )
             )
@@ -172,13 +172,13 @@ class SparkBackend(Backend):
     def filter_time_range(
         self,
         source_df: Union[pd.DataFrame, Any],
-        event_timestamp_column: str,
+        timestamp_field: str,
         start_date: datetime,
         end_date: datetime,
     ) -> Union[pd.DataFrame, Any]:
         return source_df.filter(
-            (col(event_timestamp_column) >= start_date)
-            & (col(event_timestamp_column) < end_date)
+            (col(timestamp_field) >= start_date)
+            & (col(timestamp_field) < end_date)
         )
 
     def drop_duplicates(
@@ -214,16 +214,16 @@ class SparkBackend(Backend):
         self,
         df_to_join: Union[pd.DataFrame, Any],
         all_join_keys: List[str],
-        event_timestamp_column: str,
+        timestamp_field: str,
         created_timestamp_column: Optional[str],
         entity_df_event_timestamp_col: Optional[str] = None,
     ) -> Union[pd.DataFrame, Any]:
         # This must be overriten and df must be reversed because in pyspark
         # there is no keep last in dropDuplicates
         if created_timestamp_column:
-            df_to_join =  self.sort_values(df_to_join, ascending=False, by=[created_timestamp_column, event_timestamp_column], na_position="last")
+            df_to_join =  self.sort_values(df_to_join, ascending=False, by=[created_timestamp_column, timestamp_field], na_position="last")
         else:
-            df_to_join = self.sort_values(df_to_join, ascending=False, by=event_timestamp_column, na_position="last")
+            df_to_join = self.sort_values(df_to_join, ascending=False, by=timestamp_field, na_position="last")
 
         if entity_df_event_timestamp_col:
             return self.drop_duplicates(df_to_join,subset=all_join_keys + [entity_df_event_timestamp_col])

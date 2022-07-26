@@ -4,24 +4,24 @@ NAME = "yummy"
 REQUIRES_PYTHON = ">=3.7.0"
 
 INSTALL_REQUIRE = [
-    "feast==0.18.0",
-    "polars==0.13.18",
+    "feast>=0.18.0",
+    "polars>=0.13.18",
 ]
 
 DASK_REQUIRE = [
-    "dask[distributed]==2021.11.0",
+    "dask[distributed]>=2021.11.0",
 ]
 
 RAY_REQUIRE = DASK_REQUIRE + [
-    "ray[default,data]==1.9.1",
+    "ray[default,data]>=1.9.1",
 ]
 
 SPARK_REQUIRE = [
-    "pyspark==3.2.0",
+    "pyspark>=3.0.0",
 ]
 
 DELTA_REQUIRE = [
-    "deltalake==0.5.6",
+    "deltalake>=0.5.6",
 ]
 
 DEV_REQUIRE = RAY_REQUIRE + \
@@ -30,9 +30,9 @@ DEV_REQUIRE = RAY_REQUIRE + \
     "flake8",
     "black==21.10b0",
     "isort>=5",
-    "mypy==0.790",
-    "build==0.7.0",
-    "twine==3.4.2",
+    "mypy>=0.790",
+    "build>=0.7.0",
+    "twine>=3.4.2",
     "pytest>=6.0.0",
 ]
 

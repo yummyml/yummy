@@ -16,7 +16,7 @@ class DeltaDataSource(YummyDataSource):
 
     def __init__(
         self,
-        event_timestamp_column: Optional[str] = "",
+        timestamp_field: Optional[str] = "",
         path: Optional[str] = None,
         s3_endpoint_override: Optional[str] = None,
         field_mapping: Optional[Dict[str, str]] = None,
@@ -25,7 +25,7 @@ class DeltaDataSource(YummyDataSource):
         range_join: Optional[int] = None,
     ):
         super().__init__(
-            event_timestamp_column=event_timestamp_column,
+            timestamp_field=timestamp_field,
             created_timestamp_column=created_timestamp_column,
             field_mapping=field_mapping,
             date_partition_column=date_partition_column,
@@ -78,7 +78,7 @@ class DeltaDataSource(YummyDataSource):
             field_mapping=dict(data_source.field_mapping),
             path=path,
             s3_endpoint_override=s3_endpoint_override,
-            event_timestamp_column=data_source.event_timestamp_column,
+            timestamp_field=data_source.timestamp_field,
             created_timestamp_column=data_source.created_timestamp_column,
             date_partition_column=data_source.date_partition_column,
             range_join=range_join,
@@ -100,7 +100,7 @@ class DeltaDataSource(YummyDataSource):
             ),
         )
 
-        data_source_proto.event_timestamp_column = self.event_timestamp_column
+        data_source_proto.timestamp_field = self.timestamp_field
         data_source_proto.created_timestamp_column = self.created_timestamp_column
         data_source_proto.date_partition_column = self.date_partition_column
 

@@ -115,7 +115,7 @@ class PolarsBackend(Backend):
     def normalize_timestamp(
         self,
         df_to_join: Union[pd.DataFrame, Any],
-        event_timestamp_column: str,
+        timestamp_field: str,
         created_timestamp_column: str,
     ) -> Union[pd.DataFrame, Any]:
         return df_to_join
@@ -125,17 +125,17 @@ class PolarsBackend(Backend):
         df_to_join: Union[pd.DataFrame, Any],
         feature_view: FeatureView,
         entity_df_event_timestamp_col: str,
-        event_timestamp_column: str,
+        timestamp_field: str,
     ) -> Union[pd.DataFrame, Any]:
         # Filter rows by defined timestamp tolerance
         if feature_view.ttl and feature_view.ttl.total_seconds() != 0:
             df_to_join = df_to_join.filter(
                 (
-                    pl.col(event_timestamp_column)
+                    pl.col(timestamp_field)
                     >= pl.col(entity_df_event_timestamp_col) - feature_view.ttl
                 )
                 & (
-                    pl.col(event_timestamp_column)
+                    pl.col(timestamp_field)
                     <= pl.col(entity_df_event_timestamp_col)
                 )
             )
@@ -145,13 +145,13 @@ class PolarsBackend(Backend):
     def filter_time_range(
         self,
         source_df: Union[pd.DataFrame, Any],
-        event_timestamp_column: str,
+        timestamp_field: str,
         start_date: datetime,
         end_date: datetime,
     ) -> Union[pd.DataFrame, Any]:
         return source_df.filter(
-            (pl.col(event_timestamp_column) >= start_date)
-            & (pl.col(event_timestamp_column) < end_date)
+            (pl.col(timestamp_field) >= start_date)
+            & (pl.col(timestamp_field) < end_date)
         )
 
     def drop_duplicates(

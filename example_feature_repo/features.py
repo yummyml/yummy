@@ -4,18 +4,18 @@ from yummy import ParquetDataSource, CsvDataSource, DeltaDataSource
 
 my_stats_parquet = ParquetDataSource(
     path="/home/jovyan/notebooks/ray/dataset/all_data.parquet",
-    event_timestamp_column="datetime",
+    timestamp_field="datetime",
 )
 
 my_stats_delta = DeltaDataSource(
     path="dataset/all",
-    event_timestamp_column="datetime",
+    timestamp_field="datetime",
     #range_join=10,
 )
 
 my_stats_csv = CsvDataSource(
     path="/home/jovyan/notebooks/ray/dataset/all_data.csv",
-    event_timestamp_column="datetime",
+    timestamp_field="datetime",
 )
 
 my_entity = Entity(name="entity_id", value_type=ValueType.INT64, description="entity id",)

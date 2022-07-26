@@ -9,7 +9,8 @@ from datetime import datetime, timezone, timedelta
 from sklearn.datasets import make_hastie_10_2
 from enum import Enum
 from google.protobuf.duration_pb2 import Duration
-from feast import Entity, Feature, FeatureView, ValueType
+from feast import Entity, Feature, FeatureView, ValueType, Field
+from feast.types import Float32
 from yummy import ParquetDataSource, CsvDataSource, DeltaDataSource, IcebergDataSource
 
 start_date = datetime.strptime("2021-10-01", "%Y-%m-%d")
@@ -84,17 +85,17 @@ class Generator(ABC):
     @property
     def features(self):
         return [
-            Feature(name="f0", dtype=ValueType.FLOAT),
-            Feature(name="f1", dtype=ValueType.FLOAT),
-            Feature(name="f2", dtype=ValueType.FLOAT),
-            Feature(name="f3", dtype=ValueType.FLOAT),
-            Feature(name="f4", dtype=ValueType.FLOAT),
-            Feature(name="f5", dtype=ValueType.FLOAT),
-            Feature(name="f6", dtype=ValueType.FLOAT),
-            Feature(name="f7", dtype=ValueType.FLOAT),
-            Feature(name="f8", dtype=ValueType.FLOAT),
-            Feature(name="f9", dtype=ValueType.FLOAT),
-            Feature(name="y", dtype=ValueType.FLOAT),
+            Field(name="f0", dtype=Float32),
+            Field(name="f1", dtype=Float32),
+            Field(name="f2", dtype=Float32),
+            Field(name="f3", dtype=Float32),
+            Field(name="f4", dtype=Float32),
+            Field(name="f5", dtype=Float32),
+            Field(name="f6", dtype=Float32),
+            Field(name="f7", dtype=Float32),
+            Field(name="f8", dtype=Float32),
+            Field(name="f9", dtype=Float32),
+            Field(name="y", dtype=Float32),
         ]
 
     def generate(self, path: str, size: int = 10, year: int = 2021, month: int = 10, day: int = 1) -> Tuple[FeatureView, str]:
@@ -118,9 +119,9 @@ class Generator(ABC):
             name=name,
             entities=["entity_id"],
             ttl=Duration(seconds=3600*24*20),
-            features=self.features,
+            schema=self.features,
             online=True,
-            input=source,
+            source=source,
             tags={},), name
 
 
@@ -136,7 +137,7 @@ class CsvGenerator(Generator):
     def prepare_source(self, path: str):
         return CsvDataSource(
             path=path,
-            event_timestamp_column="datetime",
+            timestamp_field="datetime",
         )
 
 class ParquetGenerator(Generator):
@@ -151,7 +152,7 @@ class ParquetGenerator(Generator):
     def prepare_source(self, path: str):
         return ParquetDataSource(
             path=path,
-            event_timestamp_column="datetime",
+            timestamp_field="datetime",
         )
 
 class DeltaGenerator(Generator):
@@ -180,7 +181,7 @@ class DeltaGenerator(Generator):
     def prepare_source(self, path: str):
         return DeltaDataSource(
             path=path,
-            event_timestamp_column="datetime",
+            timestamp_field="datetime",
         )
 
 
@@ -218,7 +219,7 @@ class IcebergGenerator(Generator):
     def prepare_source(self, path: str):
         return IcebergDataSource(
             path=os.path.basename(path),
-            event_timestamp_column="datetime",
+            timestamp_field="datetime",
         )
 
 
