@@ -38,7 +38,7 @@ DEV_REQUIRE = RAY_REQUIRE + \
 
 setup(
     name=NAME,
-    version="0.0.2",
+    version="0.0.3",
     author="Qooba",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
