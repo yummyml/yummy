@@ -24,19 +24,19 @@ publish-testpypi: ## Publish to testpipy
 publish-pypi: ## Publish to pipy
 	twine upload --repository pypi dist/*
 
-test-polars:
+test-polars: ## Run tests for polars backend
 	FEAST_USAGE=False IS_TEST=True python3 ./tests/run.py --polars
 
-test-dask:
+test-dask: ## Run tests for dask backend
 	FEAST_USAGE=False IS_TEST=True python3 ./tests/run.py --dask
 
-test-ray:
+test-ray: ## Run tests for ray backend
 	FEAST_USAGE=False IS_TEST=True python3 ./tests/run.py --ray
 
-test-nospark:
+test-nospark: 
 	FEAST_USAGE=False IS_TEST=True python3 ./tests/run.py --nospark
 
-test-spark:
+test-spark: ## Run tests for spark backend
 	PYSPARK_PYTHON=/opt/conda/bin/python3 PYSPARK_DRIVER_PYTHON=/opt/conda/bin/python3 FEAST_USAGE=False IS_TEST=True spark-submit \
 				   --packages io.delta:delta-core_2.12:1.1.0 \
 				   --conf "spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension" \

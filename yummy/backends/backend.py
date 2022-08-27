@@ -28,6 +28,17 @@ from feast.saved_dataset import SavedDatasetStorage
 from feast.usage import log_exceptions_and_usage
 from feast.importer import import_class
 from enum import Enum
+import pandas as pd
+from datetime import datetime
+
+YUMMY_ALL = "@yummy*"
+
+def select_all(event_timestamp: datetime):
+    """
+    selects all entities during fetching historical features for specified event timestamp
+    """
+    return pd.DataFrame.from_dict({YUMMY_ALL: ["*"], DEFAULT_ENTITY_DF_EVENT_TIMESTAMP_COL: [ event_timestamp ]})
+
 
 class BackendType(str, Enum):
     dask = "dask"
@@ -59,6 +70,18 @@ class Backend(ABC):
     @property
     def retrival_job_type(self):
         raise NotImplementedError("Retrival job type not defined")
+
+    @abstractmethod
+    def first_event_timestamp(
+        self,
+        entity_df: Union[pd.DataFrame, Any],
+        column_name: str
+    ) -> datetime:
+        """
+        Fetch first event timestamp
+        """
+        ...
+
 
     @abstractmethod
     def prepare_entity_df(
@@ -184,17 +207,20 @@ class Backend(ABC):
         # tmp join keys needed for cross join with null join table view
         tmp_join_keys = []
         if not join_keys:
-            self.add_static_column(entity_df_with_features, "__tmp", 1)
-            self.add_static_column(df_to_join, "__tmp", 1)
+            entity_df_with_features=self.add_static_column(entity_df_with_features, "__tmp", 1)
+            df_to_join=self.add_static_column(df_to_join, "__tmp", 1)
             tmp_join_keys = ["__tmp"]
 
         # Get only data with requested entities
-        df_to_join = self.join(
-            entity_df_with_features,
-            df_to_join,
-            join_keys or tmp_join_keys,
-            feature_view,
-        )
+        if YUMMY_ALL in entity_df_with_features.columns:
+            df_to_join=self.add_static_column(df_to_join, DEFAULT_ENTITY_DF_EVENT_TIMESTAMP_COL, self.first_event_timestamp(entity_df_with_features, DEFAULT_ENTITY_DF_EVENT_TIMESTAMP_COL))
+        else:
+            df_to_join = self.join(
+                entity_df_with_features,
+                df_to_join,
+                join_keys or tmp_join_keys,
+                feature_view,
+            )
 
         if tmp_join_keys:
             df_to_join = self.drop(df_to_join, tmp_join_keys)

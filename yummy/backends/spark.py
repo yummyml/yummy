@@ -45,6 +45,16 @@ class SparkBackend(Backend):
     def spark_session(self) -> SparkSession:
         return self._spark_session
 
+    def first_event_timestamp(
+        self,
+        entity_df: Union[pd.DataFrame, Any],
+        column_name: str
+    ) -> datetime:
+        """
+        Fetch first event timestamp
+        """
+        return entity_df.toPandas()[column_name][0]
+
     def prepare_entity_df(
         self,
         entity_df: Union[pd.DataFrame, Any],

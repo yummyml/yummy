@@ -1,8 +1,10 @@
 import os
-from .backends.backend import YummyOfflineStore, YummyOfflineStoreConfig
+from .backends.backend import YummyOfflineStore, YummyOfflineStoreConfig, select_all
 from .sources.file import ParquetSource, CsvSource
 from .sources.delta import DeltaSource
 from .sources.iceberg import IcebergSource
+from .providers.provider import YummyProvider
+from .registries.registry import YummyRegistryStore
 
 class DeprecationHelper(object):
     def __init__(self, new_target, old_name):
@@ -27,4 +29,16 @@ DeltaDataSource=DeprecationHelper(DeltaSource, "DeltaDataSource")
 IcebergDataSource=DeprecationHelper(IcebergSource, "IcebergDataSource")
 
 os.environ["FEAST_USAGE"]="False"
-__all__ = ["YummyOfflineStore", "YummyOfflineStoreConfig", "ParquetSource", "CsvSource", "DeltaSource", "IcebergSource", "ParquetDataSource", "CsvDataSource", "DeltaDataSource", "IcebergDataSource"]
+__all__ = ["YummyProvider",
+           "YummyRegistryStore",
+           "YummyOfflineStore",
+           "YummyOfflineStoreConfig",
+           "ParquetSource",
+           "CsvSource",
+           "DeltaSource",
+           "IcebergSource",
+           "ParquetDataSource",
+           "CsvDataSource",
+           "DeltaDataSource",
+           "IcebergDataSource",
+           "select_all"]
