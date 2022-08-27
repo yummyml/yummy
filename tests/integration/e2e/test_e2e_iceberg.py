@@ -36,7 +36,6 @@ def test_e2e_iceberg_only(feature_store: FeatureStore, tmp_dir: TemporaryDirecto
         ], entity_df=entity_df, full_feature_names=True
     ).to_df()
 
-    print(feature_vector)
     assert(feature_vector[feature_vector.entity_id == 1][f"{iceberg_fv_name}__f0"] is not None)
 
 @pytest.mark.parametrize("backend", ["spark"])

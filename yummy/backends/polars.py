@@ -37,6 +37,17 @@ class PolarsBackend(Backend):
     def retrival_job_type(self):
         return PolarsRetrievalJob
 
+    def first_event_timestamp(
+        self,
+        entity_df: Union[pd.DataFrame, Any],
+        column_name: str
+    ) -> datetime:
+        """
+        Fetch first event timestamp
+        """
+        return entity_df[column_name][0]
+
+
     def prepare_entity_df(
         self,
         entity_df: Union[pd.DataFrame, Any],
@@ -159,7 +170,7 @@ class PolarsBackend(Backend):
         df_to_join: Union[pd.DataFrame, Any],
         subset: List[str],
     ) -> Union[pd.DataFrame, Any]:
-        return df_to_join.distinct(subset=subset, keep='last')
+        return df_to_join.unique(subset=subset, keep='last')
 
     def drop(
         self,
