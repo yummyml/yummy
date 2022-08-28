@@ -17,7 +17,7 @@ class YummyRegistryStore(RegistryStore):
 
         if path.startswith("s3://"):
             from feast.infra.aws import S3RegistryStore
-            if hasattr(registry_config, "endpoint_url"):
+            if hasattr(registry_config, "s3_endpoint_override"):
                 os.environ["FEAST_S3_ENDPOINT_URL"]=registry_config.s3_endpoint_override
             return S3RegistryStore(registry_config, repo_path)
         elif path.startswith("gs://"):
