@@ -1,8 +1,8 @@
 use crate::stores::OnlineStore;
-use crate::config::Config;
 use async_trait::async_trait;
 use r2d2::Pool;
 use redis::{pipe, Client};
+use yummy_core::config::Config;
 
 #[derive(Clone)]
 pub struct RedisOnlineStore {

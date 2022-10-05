@@ -1,0 +1,24 @@
+[package]
+name = "yummy-serve"
+version = "0.0.4"
+#version.workspace = true
+edition = "2021"
+repository = "https://github.com/yummyml/yummy"
+description = "Feature store server of the yummy-rs library"
+
+
+[dependencies]
+yummy-core = { path = "../yummy-core" }
+actix-web = "4"
+redis = { version = "0.21.6", features = ["tokio-comp", "cluster", "r2d2"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.9"
+r2d2 = "0.8.10"
+protobuf = "=3.1.0"
+protobuf-json-mapping = "=3.1.0"
+async-trait = "0.1.57"
+tokio = "1.20.0"
+env_logger = "0.9.1"
+chrono = "0.4.22"
+derive_more = "0.99.17"
+

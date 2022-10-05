@@ -1,7 +1,7 @@
 pub mod redis_store;
 use crate::stores::redis_store::RedisOnlineStore;
 use async_trait::async_trait;
-use crate::config::Config;
+use yummy_core::config::Config;
 
 #[async_trait]
 pub trait OnlineStore {
@@ -24,5 +24,3 @@ impl OnlineStoreFactory {
         online_store
     }
 }
-
-
