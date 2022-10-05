@@ -1,0 +1,8 @@
+project_name: adjusted_drake
+registry: tests/registry.db
+provider: local
+online_store:
+  type: redis
+  connection_string: "redis://redis/"
+entity_key_serialization_version: 2
+go_feature_serving: True

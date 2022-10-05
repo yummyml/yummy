@@ -131,3 +131,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+/target
+.env
+yummy-rs/protos
+Cargo.lock
