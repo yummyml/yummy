@@ -1,0 +1,10 @@
+registry: /home/jovyan/feast-yummy/yummy-rs/tests/benchmark/registry.db
+project: feature_repo
+provider: local
+online_store:
+  type: redis
+  connection_string: "redis://redis"
+offline_store:
+  type: file
+entity_key_serialization_version: 1
+go_feature_retrieval: True

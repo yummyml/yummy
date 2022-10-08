@@ -3,9 +3,10 @@ use std::fs;
 
 #[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
 pub struct Config {
-    pub project_name: String,
+    pub project: String,
     pub registry: String,
     pub online_store: OnlineStoreConfig,
+    pub entity_key_serialization_version: i32
 }
 
 #[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
@@ -40,5 +41,5 @@ fn parse_config() {
         _ => panic!("wrong job destination"),
     }
 
-    assert_eq!(config.project_name, "adjusted_drake");
+    assert_eq!(config.project, "adjusted_drake");
 }

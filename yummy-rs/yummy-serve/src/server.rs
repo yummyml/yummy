@@ -31,7 +31,12 @@ pub struct FeaturesRequest {
     feature_service: Option<String>,
     features: Option<Vec<String>>,
     entities: HashMap<String, Vec<EntityValue>>,
+    #[serde(default = "default_full_feature_names")]
     full_feature_names: bool,
+}
+
+fn default_full_feature_names() -> bool {
+    false
 }
 
 #[derive(Serialize)]
@@ -62,8 +67,8 @@ pub async fn get_online_features(
     config: web::Data<Config>,
     registry: web::Data<Registry>,
 ) -> Result<impl Responder, FeaturesError> {
-    let project_name = &config.project_name;
-    let serialization_version: i32 = 2;
+    let project_name = &config.project;
+    let serialization_version: i32 = config.entity_key_serialization_version;
 
     let join_keys: Vec<String> = feature_request
         .entities

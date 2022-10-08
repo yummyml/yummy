@@ -1,4 +1,4 @@
-project_name: adjusted_drake
+project: adjusted_drake
 registry: /home/jovyan/feast-yummy/yummy-rs/tests/registry.db
 provider: local
 online_store:
