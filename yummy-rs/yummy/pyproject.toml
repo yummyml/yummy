@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "yummy-rs"
-version = "0.0.4"
+version = "0.0.5"
 requires-python = ">=3.7"
 description = "Yummy rust extensions"
 readme = "README.md"
