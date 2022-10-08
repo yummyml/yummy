@@ -1,0 +1,9 @@
+[workspace]
+members = [
+    "yummy",
+    "yummy-core",
+    "yummy-serve",
+]
+
+[workspace.package]
+version = "0.0.4"
