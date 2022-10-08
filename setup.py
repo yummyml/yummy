@@ -6,6 +6,7 @@ REQUIRES_PYTHON = ">=3.7.0"
 INSTALL_REQUIRE = [
     "feast~=0.22.1",
     "polars>=0.13.18",
+    "yummy-rs~=0.0.5",
 ]
 
 DASK_REQUIRE = [
@@ -38,7 +39,7 @@ DEV_REQUIRE = RAY_REQUIRE + \
 
 setup(
     name=NAME,
-    version="0.0.4.2",
+    version="0.0.5",
     author="Qooba",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
@@ -63,4 +64,5 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
     ],
+    entry_points={"console_scripts": ["yummy=yummy.cli:cli"]},
 )
