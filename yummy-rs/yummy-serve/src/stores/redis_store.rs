@@ -11,7 +11,11 @@ pub struct RedisOnlineStore {
 
 impl RedisOnlineStore {
     pub fn new(config: Config) -> RedisOnlineStore {
-        let redis_client = redis::Client::open(config.online_store.connection_string).unwrap();
+
+        let connection_string = if config.online_store.connection_string.starts_with("redis://") { config.online_store.connection_string } else {
+            format!("redis://{}",config.online_store.connection_string)
+        };
+        let redis_client = redis::Client::open(connection_string).unwrap();
         let pool = r2d2::Pool::new(redis_client).unwrap();
         RedisOnlineStore { pool: pool }
     }
