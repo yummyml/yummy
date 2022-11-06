@@ -14,15 +14,23 @@ pub struct MLConfig {
 
 #[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
 pub struct Flavours {
-    pub catboost: Catboost,
+    pub catboost: Option<CatboostConfig>,
+    pub lightgbm: Option<LightgbmConfig>,
 }
 
 #[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
-pub struct Catboost {
+pub struct CatboostConfig {
     pub catboost_version: String,
     pub data: String,
     pub model_type: String,
     pub save_format: String,
+}
+
+#[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
+pub struct LightgbmConfig {
+    pub data: String,
+    pub lgb_version: String,
+    pub model_class: String,
 }
 
 impl MLConfig {
@@ -41,12 +49,12 @@ fn parse_config() {
     println!("{:?}", config);
 
     match config.flavors.catboost {
-        Catboost {
+        Some(CatboostConfig {
             catboost_version,
             data,
             model_type,
             save_format,
-        } => {
+        }) => {
             assert_eq!(catboost_version, "1.1");
             assert_eq!(data, "model.cb");
             assert_eq!(model_type, "CatBoostClassifier");

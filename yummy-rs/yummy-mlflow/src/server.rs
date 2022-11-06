@@ -39,9 +39,6 @@ pub async fn invocations(
     config: web::Data<MLConfig>,
 ) -> Result<impl Responder, FeaturesError> {
     println!("{:?}", mlmodel_request);
-
-    let mut resp = Vec::new();
-    resp.push(1.0);
-
+    let resp = mlmodel.predict(mlmodel_request.columns.clone(), mlmodel_request.data.clone());
     Ok(web::Json(resp))
 }

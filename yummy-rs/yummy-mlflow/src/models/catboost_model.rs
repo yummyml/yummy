@@ -14,15 +14,15 @@ pub struct CatboostModel {
 
 impl CatboostModel {
     pub fn new(config: MLConfig) -> CatboostModel {
-        //let connection_string = if config.online_store.connection_string.starts_with("redis://") { config.online_store.connection_string } else {
-        //    format!("redis://{}",config.online_store.connection_string)
-        //};
-        //let redis_client = redis::Client::open(connection_string).unwrap();
-        //let pool = r2d2::Pool::new(redis_client).unwrap();
+        let model_data = match config.flavors.catboost {
+            Some(c) => c.data,
+            _ => panic!("Wrong catboost config")
+        };
+        
         let model_path = format!(
             "{}/{}",
             config.base_path.unwrap().replace("/MLmodel", ""),
-            config.flavors.catboost.data.clone()
+            model_data
         );
         let model = catboost::Model::load(model_path).unwrap();
         CatboostModel { model }
@@ -31,7 +31,7 @@ impl CatboostModel {
 
 impl MLModel for CatboostModel {
 
-    fn predict(&self, columns: Vec<String>, data: Vec<Vec<EntityValue>>) -> Vec<f64>{
+    fn predict(&self, columns: Vec<String>, data: Vec<Vec<EntityValue>>) -> Vec<Vec<f64>>{
         let mut numeric_features: Vec<Vec<f32>> = Vec::new();
         let mut categorical_features: Vec<Vec<String>> = Vec::new();
 
@@ -62,7 +62,7 @@ impl MLModel for CatboostModel {
             .calc_model_prediction(numeric_features, categorical_features)
             .unwrap();
 
-        predictions.iter().map(|x| sigmoid(x.to_owned())).collect()
+        predictions.iter().map(|x| vec![sigmoid(x.to_owned())]).collect()
     }
 }
 

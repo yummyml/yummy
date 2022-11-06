@@ -18,3 +18,4 @@ env_logger = "0.9.1"
 chrono = "0.4.22"
 derive_more = "0.99.17"
 catboost = { git = "https://github.com/catboost/catboost" }
+lightgbm = "0.2.3"
