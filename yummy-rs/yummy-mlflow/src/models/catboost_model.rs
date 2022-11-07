@@ -21,7 +21,7 @@ impl CatboostModel {
         
         let model_path = format!(
             "{}/{}",
-            config.base_path.unwrap().replace("/MLmodel", ""),
+            config.base_path.unwrap(),
             model_data
         );
         let model = catboost::Model::load(model_path).unwrap();
@@ -68,8 +68,8 @@ impl MLModel for CatboostModel {
 
 #[test]
 fn load_model_and_predict() {
-    let path = "../tests/mlflow/catboost_model/my_model/MLmodel".to_string();
-    //let path = "../tests/mlflow/catboost_model/iris_my_model/MLmodel".to_string();
+    let path = "../tests/mlflow/catboost_model/my_model".to_string();
+    //let path = "../tests/mlflow/catboost_model/iris_my_model".to_string();
     let config = MLConfig::new(&path);
     println!("{:?}", config);
     let catboost_model = CatboostModel::new(config);

@@ -35,7 +35,8 @@ pub struct LightgbmConfig {
 
 impl MLConfig {
     pub fn new(path: &String) -> MLConfig {
-        let s = fs::read_to_string(path).unwrap();
+        let config_path = format!("{}/MLmodel",path);
+        let s = fs::read_to_string(config_path).unwrap();
         let mut config: MLConfig = serde_yaml::from_str(&s).unwrap();
         config.base_path = Some(path.to_string());
         config
@@ -44,7 +45,7 @@ impl MLConfig {
 
 #[test]
 fn parse_config() {
-    let path = "../tests/mlflow/catboost_model/my_model/MLmodel".to_string();
+    let path = "../tests/mlflow/catboost_model/my_model".to_string();
     let config = MLConfig::new(&path);
     println!("{:?}", config);
 
