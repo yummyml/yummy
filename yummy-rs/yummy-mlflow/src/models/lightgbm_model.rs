@@ -1,12 +1,7 @@
 use crate::config::MLConfig;
 use crate::models::MLModel;
 use lightgbm;
-use std::collections::HashMap;
 use yummy_core::encoding::EntityValue;
-
-fn sigmoid(x: f64) -> f64 {
-    1. / (1. + (-x).exp())
-}
 
 pub struct LightgbmModel {
     pub model: lightgbm::Booster
@@ -32,7 +27,7 @@ impl LightgbmModel {
 
 impl MLModel for LightgbmModel {
 
-    fn predict(&self, columns: Vec<String>, data: Vec<Vec<EntityValue>>) -> Vec<Vec<f64>>{
+    fn predict(&self, _columns: Vec<String>, data: Vec<Vec<EntityValue>>) -> Vec<Vec<f64>>{
         let mut numeric_features: Vec<Vec<f64>> = Vec::new();
         let mut categorical_features: Vec<Vec<String>> = Vec::new();
 

@@ -3,16 +3,14 @@ use crate::models::MLModel;
 use actix_web::http::StatusCode;
 use actix_web::{error, web, HttpResponse, Responder, Result};
 use derive_more::{Display, Error};
-use std::collections::HashMap;
+use serde::Deserialize;
 use yummy_core::encoding::EntityValue;
-use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Debug)]
 pub struct MLModelRequest {
     columns: Vec<String>,
     data: Vec<Vec<EntityValue>>,
 }
-
 
 #[derive(Debug, Display, Error)]
 #[display(fmt = "request error: {}", name)]
@@ -36,9 +34,12 @@ pub async fn health() -> impl Responder {
 pub async fn invocations(
     mlmodel_request: web::Json<MLModelRequest>,
     mlmodel: web::Data<Box<dyn MLModel>>,
-    config: web::Data<MLConfig>,
+    _config: web::Data<MLConfig>,
 ) -> Result<impl Responder, FeaturesError> {
     println!("{:?}", mlmodel_request);
-    let resp = mlmodel.predict(mlmodel_request.columns.clone(), mlmodel_request.data.clone());
+    let resp = mlmodel.predict(
+        mlmodel_request.columns.clone(),
+        mlmodel_request.data.clone(),
+    );
     Ok(web::Json(resp))
 }
