@@ -36,6 +36,7 @@ impl MLModel for LightgbmModel {
         let mut numeric_features: Vec<Vec<f64>> = Vec::new();
         let mut categorical_features: Vec<Vec<String>> = Vec::new();
 
+        let num = (&data).len();
         for f in data {
             let mut num: Vec<f64> = Vec::new();
             let mut cat: Vec<String> = Vec::new();
@@ -61,7 +62,14 @@ impl MLModel for LightgbmModel {
 
         let predictions = self.model.predict(numeric_features).unwrap();
 
-        predictions.iter().map(|x| x.iter().map(|v| v.to_owned()).collect()).collect()
+        println!("{:?}", predictions);
+        let num_pred = (&predictions[0]).len();
+        if num_pred == num {
+            predictions[0].iter().map(|x| vec![x.to_owned()]).collect()
+        }
+        else {
+            predictions.iter().map(|x| x.iter().map(|v| v.to_owned()).collect()).collect()
+        }
     }
 }
 
