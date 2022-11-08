@@ -26,7 +26,7 @@ impl Config {
 
 #[test]
 fn parse_config() {
-    let path = "./tests/feature_store.yaml".to_string();
+    let path = "../tests/feature_store.yaml".to_string();
     let config = Config::new(&path);
     println!("{:?}", config);
 
