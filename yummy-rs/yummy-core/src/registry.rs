@@ -131,7 +131,7 @@ impl Registry {
 
 #[test]
 fn read_registry_test() {
-    let path = "./tests/feature_store.yaml".to_string();
+    let path = "../tests/feature_store.yaml".to_string();
     let config = Config::new(&path);
     println!("{:?}", config);
     let registry = Registry::new(config);

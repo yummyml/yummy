@@ -3,7 +3,8 @@ members = [
     "yummy",
     "yummy-core",
     "yummy-serve",
+    "yummy-mlflow",
 ]
 
 [workspace.package]
-version = "0.0.4"
+version = "0.0.6"

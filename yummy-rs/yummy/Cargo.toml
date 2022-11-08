@@ -1,6 +1,6 @@
 [package]
 name = "yummy-rs"
-version = "0.0.4"
+version = "0.0.6"
 edition = "2021"
 repository = "https://github.com/yummyml/yummy"
 description = "The yummy-rs library"
@@ -15,6 +15,7 @@ rustflags = ["-C", "target-cpu=native"]
 [dependencies]
 #yummy-core = { path = "../yummy-core" }
 yummy-serve = { path = "../yummy-serve" }
+yummy-mlflow = { path = "../yummy-mlflow" }
 #actix-web = "4"
 #redis = { version = "0.21.6", features = ["tokio-comp", "cluster", "r2d2"] }
 pyo3 = { version = "0.16.5", features = ["extension-module"] }
