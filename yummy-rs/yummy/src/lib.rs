@@ -29,6 +29,7 @@ fn model_serve(model_path: String, host: String, port: u16, log_level: String) -
 #[pymodule]
 fn yummy_rs(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(serve, m)?)?;
+    m.add_function(wrap_pyfunction!(model_serve, m)?)?;
 
     Ok(())
 }

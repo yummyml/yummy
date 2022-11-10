@@ -53,9 +53,6 @@ impl MLModel for CatboostModel {
             categorical_features.push(cat);
         }
 
-        println!("{:?}", numeric_features);
-        println!("{:?}", categorical_features);
-
         let predictions = self
             .model
             .calc_model_prediction(numeric_features, categorical_features)

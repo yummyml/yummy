@@ -51,13 +51,8 @@ impl MLModel for LightgbmModel {
             categorical_features.push(cat);
         }
 
-        println!("{:?}", numeric_features);
-        println!("{:?}", categorical_features);
-
-
         let predictions = self.model.predict(numeric_features).unwrap();
 
-        println!("{:?}", predictions);
         let num_pred = (&predictions[0]).len();
         if num_pred == num {
             predictions[0].iter().map(|x| vec![x.to_owned()]).collect()
