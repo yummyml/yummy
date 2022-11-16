@@ -82,7 +82,7 @@ impl LightgbmModel {
 }
 
 impl MLModel for LightgbmModel {
-    fn predict(&self, _columns: Vec<String>, data: Vec<Vec<EntityValue>>) -> Vec<Vec<f64>> {
+    fn predict(&self, columns: Vec<String>, data: Vec<Vec<EntityValue>>) -> Vec<Vec<f64>> {
         let mut numeric_features: Vec<Vec<f64>> = Vec::new();
         let mut categorical_features: Vec<Vec<String>> = Vec::new();
 
@@ -107,6 +107,7 @@ impl MLModel for LightgbmModel {
         }
 
         self.validate(&numeric_features);
+        numeric_features = self.reorder_all(columns, numeric_features);
 
         let predictions = self.model.predict(numeric_features).unwrap();
 
@@ -220,7 +221,7 @@ fn load_model_and_predict_multiclass() {
     let mut columns = Vec::new();
     let mut data = Vec::new();
 
-    columns.push("0".to_string());
+    columns.push("12".to_string());
     columns.push("1".to_string());
     columns.push("2".to_string());
     columns.push("3".to_string());
@@ -232,10 +233,10 @@ fn load_model_and_predict_multiclass() {
     columns.push("9".to_string());
     columns.push("10".to_string());
     columns.push("11".to_string());
-    columns.push("12".to_string());
+    columns.push("0".to_string());
 
     let mut d1 = Vec::new();
-    d1.push(EntityValue::FLOAT32(0.913333));
+    d1.push(EntityValue::FLOAT32(0.997086));
     d1.push(EntityValue::FLOAT32(-0.598156));
     d1.push(EntityValue::FLOAT32(-0.425909));
     d1.push(EntityValue::FLOAT32(-0.929365));
@@ -247,7 +248,7 @@ fn load_model_and_predict_multiclass() {
     d1.push(EntityValue::FLOAT32(0.342557));
     d1.push(EntityValue::FLOAT32(-0.164303));
     d1.push(EntityValue::FLOAT32(0.830961));
-    d1.push(EntityValue::FLOAT32(0.997086));
+    d1.push(EntityValue::FLOAT32(0.913333));
     data.push(d1.clone());
     data.push(d1.clone());
 
