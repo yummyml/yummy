@@ -9,28 +9,55 @@ fn sigmoid(x: f64) -> f64 {
 
 pub struct CatboostModel {
     pub model: catboost::Model,
+    pub cat_features_count: usize,
+    pub float_features_count: usize,
 }
 
 impl CatboostModel {
     pub fn new(config: MLConfig) -> CatboostModel {
         let model_data = match config.flavors.catboost {
             Some(c) => c.data,
-            _ => panic!("Wrong catboost config")
+            _ => panic!("Wrong catboost config"),
         };
-        
-        let model_path = format!(
-            "{}/{}",
-            config.base_path.unwrap(),
-            model_data
-        );
+
+        let model_path = format!("{}/{}", config.base_path.unwrap(), model_data);
         let model = catboost::Model::load(model_path).unwrap();
-        CatboostModel { model }
+        let cat_features_count = model.get_cat_features_count();
+        let float_features_count = model.get_float_features_count();
+        CatboostModel {
+            model,
+            cat_features_count,
+            float_features_count,
+        }
+    }
+
+    fn validate(&self, numeric_features: &Vec<Vec<f32>>, categorical_features: &Vec<Vec<String>>) {
+        if numeric_features.len() == 0 && categorical_features.len() == 0 {
+            panic!("Please provide numeric or categorical features");
+        }
+
+        if numeric_features.len() > 0
+            && numeric_features.first().unwrap().len() != self.float_features_count
+        {
+            panic!(
+                "Wrong number of numeric features (required {})",
+                &self.float_features_count
+            );
+        }
+
+        if categorical_features.len() > 0
+            && categorical_features.first().unwrap().len() != self.cat_features_count
+        {
+            panic!(
+                "Wrong number of categorical features (required {})",
+                &self.float_features_count
+            );
+        }
     }
 }
 
 impl MLModel for CatboostModel {
-
-    fn predict(&self, _columns: Vec<String>, data: Vec<Vec<EntityValue>>) -> Vec<Vec<f64>>{
+    fn predict(&self, _columns: Vec<String>, data: Vec<Vec<EntityValue>>) -> Vec<Vec<f64>> {
         let mut numeric_features: Vec<Vec<f32>> = Vec::new();
         let mut categorical_features: Vec<Vec<String>> = Vec::new();
 
@@ -53,13 +80,27 @@ impl MLModel for CatboostModel {
             categorical_features.push(cat);
         }
 
+        self.validate(&numeric_features, &categorical_features);
+
         let predictions = self
             .model
             .calc_model_prediction(numeric_features, categorical_features)
             .unwrap();
 
-        predictions.iter().map(|x| vec![sigmoid(x.to_owned())]).collect()
+        predictions
+            .iter()
+            .map(|x| vec![sigmoid(x.to_owned())])
+            .collect()
     }
+}
+
+#[test]
+fn test_feature_names() {
+    let path = "../tests/mlflow/catboost_model/my_model".to_string();
+    //let path = "../tests/mlflow/catboost_model/iris_my_model".to_string();
+    let config = MLConfig::new(&path);
+    println!("{:?}", config);
+    let _catboost_model = CatboostModel::new(config);
 }
 
 #[test]
@@ -72,7 +113,6 @@ fn load_model_and_predict() {
 
     let mut columns = Vec::new();
     let mut data = Vec::new();
-
 
     columns.push("age".to_string());
     columns.push("workclass".to_string());
@@ -106,7 +146,7 @@ fn load_model_and_predict() {
     d.push(EntityValue::STRING("United-States".to_string()));
 
     data.push(d);
-    println!("{:?}",data);
+    println!("{:?}", data);
 
     let predictions = catboost_model.predict(columns, data);
 
