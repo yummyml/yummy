@@ -1,3 +1,4 @@
+use crate::common::reorder;
 use crate::config::MLConfig;
 use crate::models::MLModel;
 use lightgbm;
@@ -41,44 +42,6 @@ impl LightgbmModel {
             );
         }
     }
-
-    pub fn reorder_all(
-        &self,
-        columns: Vec<String>,
-        mut numeric_features: Vec<Vec<f64>>,
-    ) -> Vec<Vec<f64>> {
-        let num_rows = numeric_features.len();
-        for n in 0..num_rows {
-            numeric_features[n] = self.reorder(columns.clone(),numeric_features[n].clone());
-        }
-
-        numeric_features
-    }
-
-    fn find_swap(&self, columns: &Vec<String>) -> Option<(usize,usize)> {
-        let num = columns.len();
-        for i in 0..num {
-            let col = &columns[i];
-            if col != &self.feature_names[i] {
-                for j in i..num {
-                    if col == &self.feature_names[j] {
-                        return Some((i,j));
-                    }
-                }
-            }
-        }
-
-        None
-    }
-
-    pub fn reorder(&self, mut columns: Vec<String>, mut numeric_features: Vec<f64>) -> Vec<f64> {
-        while let Some(swap) = self.find_swap(&columns) {
-            columns.swap(swap.0,swap.1);
-            numeric_features.swap(swap.0,swap.1);
-        }
-
-        numeric_features
-    }
 }
 
 impl MLModel for LightgbmModel {
@@ -107,7 +70,8 @@ impl MLModel for LightgbmModel {
         }
 
         self.validate(&numeric_features);
-        numeric_features = self.reorder_all(columns, numeric_features);
+
+        numeric_features = reorder(&self.feature_names, columns, numeric_features);
 
         let predictions = self.model.predict(numeric_features).unwrap();
 
@@ -147,7 +111,7 @@ fn load_model_and_predict() {
     let mut columns = Vec::new();
     let mut data = Vec::new();
 
-    columns.push("age".to_string());
+    columns.push("".to_string());
 
     let mut d1 = Vec::new();
     d1.push(EntityValue::INT32(8));
@@ -162,52 +126,6 @@ fn load_model_and_predict() {
     let predictions = lgb_model.predict(columns, data);
 
     println!("{:?}", predictions);
-}
-
-#[test]
-fn test_reorder() {
-    let path = "../tests/mlflow/lightgbm_model/lightgbm_wine_model/".to_string();
-    //let path = "../tests/mlflow/catboost_model/iris_my_model".to_string();
-    let config = MLConfig::new(&path);
-    println!("{:?}", config);
-    let lgb_model = LightgbmModel::new(config);
-
-    let mut columns = Vec::new();
-
-    columns.push("12".to_string());
-    columns.push("1".to_string());
-    columns.push("2".to_string());
-    columns.push("3".to_string());
-    columns.push("5".to_string());
-    columns.push("6".to_string());
-    columns.push("7".to_string());
-    columns.push("8".to_string());
-    columns.push("9".to_string());
-    columns.push("4".to_string());
-    columns.push("10".to_string());
-    columns.push("11".to_string());
-    columns.push("0".to_string());
-
-    let mut data = Vec::new();
-    let mut d1 = Vec::new();
-    d1.push(-1.2);
-    d1.push(-0.1);
-    d1.push(-0.2);
-    d1.push(-0.3);
-    d1.push(-0.4);
-    d1.push(-0.5);
-    d1.push(-0.6);
-    d1.push(-0.7);
-    d1.push(-0.8);
-    d1.push(-0.9);
-    d1.push(-1.0);
-    d1.push(-1.1);
-    d1.push(-0.0);
-    data.push(d1.clone());
-    data.push(d1.clone());
-
-    let d2 = lgb_model.reorder_all(columns, data);
-    println!("{:?}", d2);
 }
 
 #[test]
