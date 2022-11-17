@@ -36,7 +36,6 @@ pub async fn invocations(
     mlmodel: web::Data<Box<dyn MLModel>>,
     _config: web::Data<MLConfig>,
 ) -> Result<impl Responder, FeaturesError> {
-    println!("{:?}", mlmodel_request);
     let resp = mlmodel.predict(
         mlmodel_request.columns.clone(),
         mlmodel_request.data.clone(),

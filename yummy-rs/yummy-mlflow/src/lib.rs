@@ -1,6 +1,7 @@
 pub mod config;
 pub mod models;
 pub mod server;
+pub mod common;
 
 use actix_web::middleware::Logger;
 use actix_web::{web, App, HttpServer};
