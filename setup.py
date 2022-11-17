@@ -6,7 +6,7 @@ REQUIRES_PYTHON = ">=3.7.0"
 INSTALL_REQUIRE = [
     "feast~=0.22.1",
     "polars>=0.13.18",
-    "yummy-rs~=0.0.5",
+    "yummy-rs~=0.0.6",
 ]
 
 DASK_REQUIRE = [
