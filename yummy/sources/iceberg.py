@@ -8,6 +8,7 @@ from feast.data_source import DataSource
 from feast.protos.feast.core.DataSource_pb2 import DataSource as DataSourceProto
 from feast.repo_config import RepoConfig
 from feast.value_type import ValueType
+from feast.feature_view import FeatureView
 from yummy.sources.source import YummyDataSource
 from yummy.backends.backend import Backend, BackendType, YummyDataSourceReader
 
@@ -145,6 +146,9 @@ class IcebergSourceReader(YummyDataSourceReader):
         features: List[str],
         backend: Backend,
         entity_df: Optional[Union[pd.DataFrame, Any]] = None,
+        feature_view: FeatureView = None,
+        start_date: datetime = None,
+        end_date: datetime = None,
     ) -> Union[pyarrow.Table, pd.DataFrame, Any]:
         backend_type = backend.backend_type
         path = data_source.path

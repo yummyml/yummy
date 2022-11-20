@@ -7,6 +7,7 @@ from feast.data_source import DataSource
 from feast.protos.feast.core.DataSource_pb2 import DataSource as DataSourceProto
 from feast.repo_config import RepoConfig
 from feast.value_type import ValueType
+from feast.feature_view import FeatureView
 import pandas as pd
 import pyarrow
 from yummy.sources.source import YummyDataSource
@@ -286,6 +287,9 @@ class ParquetSourceReader(YummyDataSourceReader):
         features: List[str],
         backend: Backend,
         entity_df: Optional[Union[pd.DataFrame, Any]] = None,
+        feature_view: FeatureView = None,
+        start_date: datetime = None,
+        end_date: datetime = None,
     ) -> Union[pyarrow.Table, pd.DataFrame, Any]:
         backend_type = backend.backend_type
         if backend_type == BackendType.spark:
@@ -326,6 +330,9 @@ class CsvSourceReader(ParquetSourceReader):
         features: List[str],
         backend: Backend,
         entity_df: Optional[Union[pd.DataFrame, Any]] = None,
+        feature_view: FeatureView = None,
+        start_date: datetime = None,
+        end_date: datetime = None,
     ) -> Union[pyarrow.Table, pd.DataFrame, Any]:
         backend_type = backend.backend_type
         timestamp_field = data_source.timestamp_field
@@ -363,7 +370,7 @@ class CsvSourceReader(ParquetSourceReader):
                 storage_options=self._storage_options(data_source),
                 parse_dates=True,
                 has_header=data_source.header,
-                delimiter=data_source.delimiter,
+                sep=data_source.delimiter,
             )
 
 

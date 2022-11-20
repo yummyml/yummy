@@ -21,12 +21,17 @@ SPARK_REQUIRE = [
     "pyspark>=3.0.0",
 ]
 
+CONNECTORX_REQUIRE = [
+    "connectorx>=0.3.1",
+]
+
 DELTA_REQUIRE = [
     "deltalake>=0.5.6",
 ]
 
 DEV_REQUIRE = RAY_REQUIRE + \
     SPARK_REQUIRE + \
+    CONNECTORX_REQUIRE + \
     DELTA_REQUIRE + [
     "flake8",
     "black==21.10b0",
@@ -53,6 +58,7 @@ setup(
         "ray": RAY_REQUIRE,
         "spark": SPARK_REQUIRE,
         "delta": DELTA_REQUIRE,
+        "connectorx": CONNECTORX_REQUIRE,
     },
     keywords=("feast featurestore polars dask ray pyspark offlinestore"),
     license='Apache License, Version 2.0',
