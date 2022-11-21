@@ -1,4 +1,5 @@
 import json
+from jinja2 import Environment, BaseLoader
 from datetime import datetime
 from typing import Callable, Dict, List, Optional, Union, Any
 import pandas as pd
@@ -129,6 +130,28 @@ class ConnectorXSource(YummyDataSource):
 
 class ConnectorXSourceReader(YummyDataSourceReader):
 
+    def _prepare_query(
+        self,
+        data_source,
+        features: List[str],
+        backend: Backend,
+        entity_df: Optional[Union[pd.DataFrame, Any]] = None,
+        feature_view: FeatureView = None,
+        start_date: datetime = None,
+        end_date: datetime = None,
+    ) -> Union[pyarrow.Table, pd.DataFrame, Any]:
+        query = data_source.query
+        template = Environment(loader=BaseLoader()).from_string(query)
+
+        if feature_view is not None:
+            import polars as pl
+            ttl=feature_view.ttl
+            edf=pl.from_pandas(entity_df)['event_timestamp']
+            start_date=str(edf.min()-ttl)
+            end_date=str(edf.max())
+
+        return template.render(start_date=start_date,end_date=start_date)
+
     def read_datasource(
         self,
         data_source,
@@ -142,13 +165,13 @@ class ConnectorXSourceReader(YummyDataSourceReader):
         backend_type = backend.backend_type
         import connectorx as cx
         conn = data_source.conn
-        query = data_source.query
+        query = self._prepare_query(data_source, features, backend, entity_df, feature_view, start_date, end_date)
         if backend_type == BackendType.spark:
             from yummy.backends.spark import SparkBackend
             spark_backend: SparkBackend = backend
             spark_session = spark_backend.spark_session
-
-            return spark_session.read.format('delta').load(path)
+            df = cx.read_sql(conn, query, return_type="pandas")
+            return spark_session.createDataFrame(df)
         elif backend_type in [BackendType.ray, BackendType.dask]:
             return cx.read_sql(conn, query, return_type="dask")
         elif backend_type == BackendType.polars:
