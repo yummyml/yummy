@@ -72,6 +72,25 @@ class Backend(ABC):
         raise NotImplementedError("Retrival job type not defined")
 
     @abstractmethod
+    def to_df(
+        self,
+        entity_df: Union[pd.DataFrame, Any],
+    ) -> pd.DataFrame:
+        """
+        Convert to DataFrame
+        """
+        ...
+
+    def to_series(
+        self,
+        entity_df: Union[pd.DataFrame, Any],
+        column_name: str
+    ) -> pd.Series:
+        """
+        Convert to series
+        """
+        return self.to_df()[column_name]
+
     def first_event_timestamp(
         self,
         entity_df: Union[pd.DataFrame, Any],
@@ -80,8 +99,7 @@ class Backend(ABC):
         """
         Fetch first event timestamp
         """
-        ...
-
+        return self.to_series()[0]
 
     @abstractmethod
     def prepare_entity_df(

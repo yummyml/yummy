@@ -61,16 +61,14 @@ class DaskBackend(Backend):
 
         return entity_df
 
-    def first_event_timestamp(
+    def to_df(
         self,
         entity_df: Union[pd.DataFrame, Any],
-        column_name: str
-    ) -> datetime:
+    ) -> pd.DataFrame:
         """
-        Fetch first event timestamp
+        Convert to DataFrame
         """
-        return entity_df.compute()[column_name][0]
-
+        return entity_df.compute()
 
     def normalize_timezone(
         self,

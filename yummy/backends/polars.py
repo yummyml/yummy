@@ -37,16 +37,14 @@ class PolarsBackend(Backend):
     def retrival_job_type(self):
         return PolarsRetrievalJob
 
-    def first_event_timestamp(
+    def to_df(
         self,
         entity_df: Union[pd.DataFrame, Any],
-        column_name: str
-    ) -> datetime:
+    ) -> pd.DataFrame:
         """
-        Fetch first event timestamp
+        Convert to DataFrame
         """
-        return entity_df[column_name][0]
-
+        return entity_df
 
     def prepare_entity_df(
         self,

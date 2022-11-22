@@ -30,6 +30,7 @@ class ConnectorXSource(YummyDataSource):
         timestamp_field: Optional[str] = None,
         conn: Optional[str] = None,
         query: Optional[str] = None,
+        table: Optional[str] = None,
     ):
         super().__init__(
             event_timestamp_column=event_timestamp_column,
@@ -42,8 +43,13 @@ class ConnectorXSource(YummyDataSource):
             name=name,
             timestamp_field=timestamp_field,
         )
+
+        if conn is None:
+            raise NotImplementedError(f'Please provide conn argument')
+
         self._conn = conn
         self._query = query
+        self._table = table
 
     @property
     def reader_type(self):
@@ -66,6 +72,14 @@ class ConnectorXSource(YummyDataSource):
         """
         return self._query
 
+    @property
+    def table(self):
+        """
+        Returns the table of this feature data source.
+        """
+        return self._table
+
+
 
     @staticmethod
     def from_proto(data_source: DataSourceProto):
@@ -76,7 +90,10 @@ class ConnectorXSource(YummyDataSource):
         custom_source_options = str(
             data_source.custom_options.configuration, encoding="utf8"
         )
-        sql = json.loads(custom_source_options)["sql"]
+
+        conn = json.loads(custom_source_options)["conn"]
+        query = json.loads(custom_source_options).get("query", None)
+        table = json.loads(custom_source_options).get("table", None)
         return ConnectorXSource(
             name=data_source.name,
             field_mapping=dict(data_source.field_mapping),
@@ -87,6 +104,7 @@ class ConnectorXSource(YummyDataSource):
             owner=data_source.owner,
             conn=conn,
             query=query,
+            table=table,
         )
 
     def to_proto(self) -> DataSourceProto:
@@ -95,7 +113,7 @@ class ConnectorXSource(YummyDataSource):
         custom options into the custom_options field as a binary encoded json string.
         """
         config_json = json.dumps(
-            {"conn": self.conn, "query": self.query}
+            {"conn": self.conn, "query": self.query, "table": self.table}
         )
         data_source_proto = DataSourceProto(
             name=self.name,
@@ -130,28 +148,6 @@ class ConnectorXSource(YummyDataSource):
 
 class ConnectorXSourceReader(YummyDataSourceReader):
 
-    def _prepare_query(
-        self,
-        data_source,
-        features: List[str],
-        backend: Backend,
-        entity_df: Optional[Union[pd.DataFrame, Any]] = None,
-        feature_view: FeatureView = None,
-        start_date: datetime = None,
-        end_date: datetime = None,
-    ) -> Union[pyarrow.Table, pd.DataFrame, Any]:
-        query = data_source.query
-        template = Environment(loader=BaseLoader()).from_string(query)
-
-        if feature_view is not None:
-            import polars as pl
-            ttl=feature_view.ttl
-            edf=pl.from_pandas(entity_df)['event_timestamp']
-            start_date=str(edf.min()-ttl)
-            end_date=str(edf.max())
-
-        return template.render(start_date=start_date,end_date=start_date)
-
     def read_datasource(
         self,
         data_source,
@@ -178,4 +174,51 @@ class ConnectorXSourceReader(YummyDataSourceReader):
             return cx.read_sql(conn, query, return_type="polars")
 
         raise NotImplementedError(f'Delta lake support not implemented for {backend_type}')
+
+    def _build_query(
+        self,
+        data_source,
+        feature_view: FeatureView = None,
+    ) -> str:
+        query_template = """
+        select {% for feature in features %}{{feature}}{{',' if not loop.last else '' }}{% endfor %}
+        from {{table}}
+        """
+        return query_template
+
+
+    def _prepare_query(
+        self,
+        data_source,
+        features: List[str],
+        backend: Backend,
+        entity_df: Optional[Union[pd.DataFrame, Any]] = None,
+        feature_view: FeatureView = None,
+        start_date: datetime = None,
+        end_date: datetime = None,
+    ) -> Union[pyarrow.Table, pd.DataFrame, Any]:
+        edf = backend.to_df(entity_df)
+
+        if feature_view is not None:
+            ttl=feature_view.ttl
+            edf_et=edf['event_timestamp']
+            start_date=str(edf_et.min()-ttl)
+            end_date=str(edf_et.max())
+
+        table = data_source.table
+        if table is not None:
+            query = self._build_query(data_source, feature_view)
+        else:
+            query = data_source.query
+
+        template = Environment(loader=BaseLoader()).from_string(query)
+        q = template.render(
+            start_date=start_date,
+            end_date=start_date,
+            entity_df=entity_df,
+            features=features,
+            table=table)
+
+        print(q)
+        return q
 

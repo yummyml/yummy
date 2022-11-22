@@ -3,6 +3,7 @@ from .backends.backend import YummyOfflineStore, YummyOfflineStoreConfig, select
 from .sources.file import ParquetSource, CsvSource
 from .sources.delta import DeltaSource
 from .sources.iceberg import IcebergSource
+from .sources.connectorx import ConnectorXSource
 from .providers.provider import YummyProvider
 from .registries.registry import YummyRegistryStore
 
@@ -41,4 +42,5 @@ __all__ = ["YummyProvider",
            "CsvDataSource",
            "DeltaDataSource",
            "IcebergDataSource",
+           "ConnectorXSource",
            "select_all"]
