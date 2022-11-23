@@ -89,7 +89,7 @@ class Backend(ABC):
         """
         Convert to series
         """
-        return self.to_df()[column_name]
+        return self.to_df(entity_df)[column_name]
 
     def first_event_timestamp(
         self,
@@ -99,7 +99,7 @@ class Backend(ABC):
         """
         Fetch first event timestamp
         """
-        return self.to_series()[0]
+        return self.to_series(entity_df, column_name)[0]
 
     @abstractmethod
     def prepare_entity_df(
@@ -388,13 +388,14 @@ class Backend(ABC):
         feature_view: FeatureView = None,
         start_date: datetime = None,
         end_date: datetime = None,
+        join_key_columns: List[str] = None,
     ) -> Union[pyarrow.Table, pd.DataFrame, Any]:
         """
         Reads data source
         """
         assert issubclass(data_source.reader_type, YummyDataSourceReader)
         reader: YummyDataSourceReader = data_source.reader_type()
-        return reader.read_datasource(data_source, features, self, entity_df, feature_view, start_date, end_date)
+        return reader.read_datasource(data_source, features, self, entity_df, feature_view, start_date, end_date, join_key_columns)
 
 
 class BackendFactory:
@@ -439,6 +440,7 @@ class YummyDataSourceReader(ABC):
         feature_view: FeatureView = None,
         start_date: datetime = None,
         end_date: datetime = None,
+        join_key_columns: List[str] = None,
     ) -> Union[pyarrow.Table, pd.DataFrame, Any]:
         ...
 
@@ -534,7 +536,7 @@ class YummyOfflineStore(OfflineStore):
 
                 all_join_keys = list(set(all_join_keys + join_keys))
 
-                df_to_join = backend.read_datasource(feature_view.batch_source, features, entity_df_with_features, feature_view=feature_view)
+                df_to_join = backend.read_datasource(feature_view.batch_source, features, entity_df_with_features, feature_view=feature_view, join_key_columns=join_keys)
 
                 df_to_join, timestamp_field = backend.field_mapping(
                     df_to_join,
@@ -610,7 +612,7 @@ class YummyOfflineStore(OfflineStore):
 
         # Create lazy function that is only called from the RetrievalJob object
         def evaluate_offline_job():
-            source_df = backend.read_datasource(data_source, feature_name_columns, start_date=start_date, end_date=end_date)
+            source_df = backend.read_datasource(data_source, feature_name_columns, start_date=start_date, end_date=end_date, join_key_columns=join_key_columns)
 
             source_df = backend.normalize_timestamp(
                 source_df, timestamp_field, created_timestamp_column

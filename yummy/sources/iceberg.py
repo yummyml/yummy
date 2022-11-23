@@ -149,6 +149,7 @@ class IcebergSourceReader(YummyDataSourceReader):
         feature_view: FeatureView = None,
         start_date: datetime = None,
         end_date: datetime = None,
+        join_key_columns: List[str] = None,
     ) -> Union[pyarrow.Table, pd.DataFrame, Any]:
         backend_type = backend.backend_type
         path = data_source.path

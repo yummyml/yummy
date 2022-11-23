@@ -290,6 +290,7 @@ class ParquetSourceReader(YummyDataSourceReader):
         feature_view: FeatureView = None,
         start_date: datetime = None,
         end_date: datetime = None,
+        join_key_columns: List[str] = None,
     ) -> Union[pyarrow.Table, pd.DataFrame, Any]:
         backend_type = backend.backend_type
         if backend_type == BackendType.spark:
@@ -333,6 +334,7 @@ class CsvSourceReader(ParquetSourceReader):
         feature_view: FeatureView = None,
         start_date: datetime = None,
         end_date: datetime = None,
+        join_key_columns: List[str] = None,
     ) -> Union[pyarrow.Table, pd.DataFrame, Any]:
         backend_type = backend.backend_type
         timestamp_field = data_source.timestamp_field

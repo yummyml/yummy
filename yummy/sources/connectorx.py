@@ -157,11 +157,12 @@ class ConnectorXSourceReader(YummyDataSourceReader):
         feature_view: FeatureView = None,
         start_date: datetime = None,
         end_date: datetime = None,
+        join_key_columns: List[str] = None,
     ) -> Union[pyarrow.Table, pd.DataFrame, Any]:
         backend_type = backend.backend_type
         import connectorx as cx
         conn = data_source.conn
-        query = self._prepare_query(data_source, features, backend, entity_df, feature_view, start_date, end_date)
+        query = self._prepare_query(data_source, features, backend, entity_df, feature_view, start_date, end_date, join_key_columns)
         if backend_type == BackendType.spark:
             from yummy.backends.spark import SparkBackend
             spark_backend: SparkBackend = backend
@@ -182,6 +183,8 @@ class ConnectorXSourceReader(YummyDataSourceReader):
     ) -> str:
         query_template = """select
         {{event_timestamp_column}},
+        {{created_timestamp_column+',' if created_timestamp_column else ''}}
+        {% for join_key in join_key_columns %}{{join_key}},{% endfor %}
         {% for feature in features %}{{feature}}{{',' if not loop.last else '' }}{% endfor %}
         from {{table}}"""
         return query_template
@@ -196,6 +199,7 @@ class ConnectorXSourceReader(YummyDataSourceReader):
         feature_view: FeatureView = None,
         start_date: datetime = None,
         end_date: datetime = None,
+        join_key_columns: List[str] = None,
     ) -> Union[pyarrow.Table, pd.DataFrame, Any]:
         edf = backend.to_df(entity_df)
 
@@ -221,6 +225,7 @@ class ConnectorXSourceReader(YummyDataSourceReader):
             table=table,
             event_timestamp_column=data_source.timestamp_field,
             created_timestamp_column=data_source.created_timestamp_column,
+            join_key_columns=join_key_columns,
         )
 
         print(q)
