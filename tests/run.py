@@ -11,6 +11,7 @@ parser.add_argument("--ray", dest="ray", action=argparse.BooleanOptionalAction)
 parser.add_argument("--nospark", dest="nospark", action=argparse.BooleanOptionalAction)
 parser.add_argument("--delta", dest="delta", action=argparse.BooleanOptionalAction)
 parser.add_argument("--iceberg", dest="iceberg", action=argparse.BooleanOptionalAction)
+parser.add_argument("--connectorx", dest="connectorx", action=argparse.BooleanOptionalAction)
 
 args = parser.parse_args()
 if __name__ == "__main__":
@@ -30,5 +31,8 @@ if __name__ == "__main__":
         pytest.main(["-s","-m","delta","-x","tests"])
     elif args.iceberg:
         pytest.main(["-s","-m","iceberg","-x","tests"])
+    elif args.connectorx:
+        pytest.main(["-s","-m","connectorx","-x","tests"])
+
     else:
         pytest.main(["-s","-x","tests"])

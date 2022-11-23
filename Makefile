@@ -36,6 +36,10 @@ test-ray: ## Run tests for ray backend
 test-nospark: 
 	FEAST_USAGE=False IS_TEST=True python3 ./tests/run.py --nospark
 
+test-connectorx: 
+	FEAST_USAGE=False IS_TEST=True python3 ./tests/run.py --connectorx
+
+
 test-spark: ## Run tests for spark backend
 	PYSPARK_PYTHON=/opt/conda/bin/python3 PYSPARK_DRIVER_PYTHON=/opt/conda/bin/python3 FEAST_USAGE=False IS_TEST=True spark-submit \
 				   --packages io.delta:delta-core_2.12:1.1.0 \

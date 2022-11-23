@@ -171,7 +171,7 @@ class ConnectorXSourceReader(YummyDataSourceReader):
         elif backend_type in [BackendType.ray, BackendType.dask]:
             return cx.read_sql(conn, query, return_type="dask")
         elif backend_type == BackendType.polars:
-            return cx.read_sql(conn, query, return_type="polars")
+            return cx.read_sql(conn, query, return_type="polars2")
 
         raise NotImplementedError(f'Delta lake support not implemented for {backend_type}')
 
@@ -180,10 +180,10 @@ class ConnectorXSourceReader(YummyDataSourceReader):
         data_source,
         feature_view: FeatureView = None,
     ) -> str:
-        query_template = """
-        select {% for feature in features %}{{feature}}{{',' if not loop.last else '' }}{% endfor %}
-        from {{table}}
-        """
+        query_template = """select
+        {{event_timestamp_column}},
+        {% for feature in features %}{{feature}}{{',' if not loop.last else '' }}{% endfor %}
+        from {{table}}"""
         return query_template
 
 
@@ -212,12 +212,16 @@ class ConnectorXSourceReader(YummyDataSourceReader):
             query = data_source.query
 
         template = Environment(loader=BaseLoader()).from_string(query)
+
         q = template.render(
             start_date=start_date,
             end_date=start_date,
             entity_df=entity_df,
             features=features,
-            table=table)
+            table=table,
+            event_timestamp_column=data_source.timestamp_field,
+            created_timestamp_column=data_source.created_timestamp_column,
+        )
 
         print(q)
         return q

@@ -10,7 +10,7 @@ from sklearn.datasets import make_hastie_10_2
 from enum import Enum
 from feast import Entity, Feature, FeatureView, ValueType, Field
 from feast.types import Float32, Int32
-from yummy import ParquetSource, CsvSource, DeltaSource, IcebergSource
+from yummy import ParquetSource, CsvSource, DeltaSource, IcebergSource, ConnectorXSource
 
 start_date = datetime.strptime("2021-10-01", "%Y-%m-%d")
 end_date = start_date + timedelta(days=100)
@@ -20,6 +20,7 @@ class DataType(str, Enum):
     parquet = "parquet"
     delta = "delta"
     iceberg = "iceberg"
+    connectox = "connectox"
 
 class Generator(ABC):
 
@@ -226,6 +227,34 @@ class IcebergGenerator(Generator):
             timestamp_field="datetime",
         )
 
+class ConnectorXGenerator(Generator):
+
+    @property
+    def data_type(self) -> DataType:
+        return DataType.connectox
+
+    @property
+    def connection_string(self) -> str:
+        return 'postgresql+psycopg2://postgres:postgres@postgres'
+
+    @property
+    def table(self) -> str:
+        return 'mystats'
+
+    def write_data(self, df: pd.DataFrame, path: str):
+        from sqlalchemy import create_engine
+        alchemyEngine = create_engine(self.connection_string, pool_recycle=3600);
+        dbConnection = alchemyEngine.connect();
+        df.to_sql(self.table, dbConnection, if_exists='replace')
+
+    def prepare_source(self, path: str):
+        return ConnectorXSource(
+            name="connectorx",
+            conn="postgresql://postgres:postgres@postgres:5432/postgres",
+            table=self.table,
+            timestamp_field="datetime",
+        )
+
 
 def _base(tmp_dir: str, path: str, generator: Generator):
     x_dataset = str(Path(tmp_dir) / path)
@@ -241,6 +270,9 @@ def parquet(tmp_dir: str):
 
 def delta(tmp_dir: str):
     return _base(tmp_dir, "delta", DeltaGenerator())
+
+def connectorx(tmp_dir: str):
+    return _base(tmp_dir, "delta", ConnectorXGenerator())
 
 def iceberg(tmp_dir: str):
     i = str(random.randint(0, 100))
