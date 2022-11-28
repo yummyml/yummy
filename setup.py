@@ -6,8 +6,8 @@ REQUIRES_PYTHON = ">=3.7.0"
 INSTALL_REQUIRE = [
     "feast~=0.22.1",
     "polars>=0.13.18",
-    "yummy-rs~=0.0.6",
-    "yummy-mlflow~=0.0.6",
+    "yummy-rs~=0.0.7",
+    "yummy-mlflow~=0.0.7",
 ]
 
 DASK_REQUIRE = [
@@ -40,7 +40,7 @@ DEV_REQUIRE = RAY_REQUIRE + \
 
 setup(
     name=NAME,
-    version="0.0.6.6",
+    version="0.0.7",
     author="Qooba",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
