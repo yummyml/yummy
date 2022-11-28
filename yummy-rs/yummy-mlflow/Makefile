@@ -13,15 +13,7 @@ publish-testpypi: ## Publish to testpipy
 publish-pypi: ## Publish to pipy
 	twine upload --repository pypi ../target/wheels/*
 
-
 test-mlflow:
-	cd ../yummy-mlflow/ && cargo test -- --show-output
+	cargo test -- --show-output
 	#cd ../yummy-mlflow/ && cargo test -- models::lightgbm_model::load_model_and_predict_multiclass  --show-output
-
-test-core:
-	cd ../yummy-core/ && cargo test -- --show-output
-
-test-serve:
-	cd ../yummy-serve/ && cargo test -- --show-output
-
 

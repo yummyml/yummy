@@ -1,5 +1,6 @@
 import click
 import yummy_rs
+import yummy_mlflow
 
 
 @click.group()
@@ -43,7 +44,7 @@ def serve_command(
     log_level: str,
 ):
     """Start rust feature server."""
-    yummy_rs.serve(filename,host,port,log_level)
+    yummy_rs.serve(filename, host, port, log_level)
 
 @cli.group(name='models')
 def models_cmd():
@@ -79,11 +80,11 @@ def serve_command(
     ctx: click.Context,
     host: str,
     port: int,
-    filename: str,
+    model_uri: str,
     log_level: str,
 ):
     """Start rust feature server."""
-    yummy_rs.serve(filename,host,port,log_level)
+    yummy_mlflow.model_serve(model_uri, host, port, log_level)
 
 
 if __name__ == '__main__':
