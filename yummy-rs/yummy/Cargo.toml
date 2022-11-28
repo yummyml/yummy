@@ -1,6 +1,6 @@
 [package]
 name = "yummy-rs"
-version = "0.0.6"
+version = "0.0.7"
 edition = "2021"
 repository = "https://github.com/yummyml/yummy"
 description = "The yummy-rs library"
@@ -13,22 +13,6 @@ crate-type = ["cdylib"]
 rustflags = ["-C", "target-cpu=native"]
 
 [dependencies]
-#yummy-core = { path = "../yummy-core" }
 yummy-serve = { path = "../yummy-serve" }
-yummy-mlflow = { path = "../yummy-mlflow" }
-#actix-web = "4"
-#redis = { version = "0.21.6", features = ["tokio-comp", "cluster", "r2d2"] }
 pyo3 = { version = "0.16.5", features = ["extension-module"] }
-#serde = { version = "1.0", features = ["derive"] }
-#serde_yaml = "0.9"
-#r2d2 = "0.8.10"
-#byteorder = "1.4.3"
-#fasthash = "0.4.0"
-#protobuf = "=3.1.0"
-#protobuf-json-mapping = "=3.1.0"
-#async-trait = "0.1.57"
 tokio = "1.20.0"
-#env_logger = "0.9.1"
-#chrono = "0.4.22"
-#derive_more = "0.99.17"
-
