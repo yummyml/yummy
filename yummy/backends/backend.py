@@ -1,11 +1,10 @@
 from datetime import datetime
-from typing import Callable, List, Optional, Tuple, Union, Dict, Any
+from typing import Callable, List, Optional, Tuple, Union, Dict, Any, Iterable
 from abc import ABC, abstractmethod
 import pandas as pd
 import pyarrow
 import pytz
 from pydantic.typing import Literal
-
 from feast import FileSource, OnDemandFeatureView
 from feast.data_source import DataSource
 from feast.errors import FeastJoinKeysDuringMaterialization
@@ -418,6 +417,25 @@ class YummyDataSourceReader(ABC):
     ) -> Union[pyarrow.Table, pd.DataFrame, Any]:
         ...
 
+    def read_schema(
+        self,
+        data_source,
+        config: RepoConfig,
+    ) -> Iterable[Tuple[str, str]]:
+        backend_type = config.offline_store.backend
+        backend = BackendFactory.create(backend_type, config.offline_store)
+        timestamp_field = data_source.timestamp_field
+        created_timestamp_column = data_source.created_timestamp_column
+
+        df = self.read_datasource(data_source, None, backend)
+
+        if backend_type == BackendType.spark:
+            return [(field.name, _spark_type_map[field.dataType.simpleString()]) for field in df.schema]
+        elif backend_type in [BackendType.ray, BackendType.dask]:
+            return [(k,str(v)) for (k,v) in df.dtypes.to_dict().items()]
+        elif backend_type == BackendType.polars:
+            return [(k,v.__name__.lower()) for (k,v) in df.schema.items()]
+
 
 class YummyOfflineStoreConfig(BackendConfig):
     """Offline store config for local (file-based) store"""
@@ -648,4 +666,17 @@ class YummyOfflineStore(OfflineStore):
             end_date=end_date,
         )
 
+_spark_type_map: Dict[str, str] = {
+        "null": "null",
+        "byte": "byte",
+        "string": "string",
+        "int": "int32",
+        "short": "int32",
+        "bigint": "int64",
+        "long": "int64",
+        "double": "float64",
+        "float": "float",
+        "boolean": "bool",
+        "timestamp": "timestamp",
+    }
 

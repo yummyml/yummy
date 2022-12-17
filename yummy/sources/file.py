@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from typing import Callable, Dict, List, Optional, Union, Any
+from typing import Callable, Dict, List, Optional, Union, Any, Iterable, Tuple
 
 from feast import type_map
 from feast.data_source import DataSource
@@ -10,7 +10,7 @@ from feast.value_type import ValueType
 import pandas as pd
 import pyarrow
 from yummy.sources.source import YummyDataSource
-from yummy.backends.backend import Backend, BackendType, YummyDataSourceReader
+from yummy.backends.backend import Backend, BackendType, YummyDataSourceReader, BackendFactory
 
 
 class YummyFileDataSource(YummyDataSource):
@@ -99,10 +99,6 @@ class YummyFileDataSource(YummyDataSource):
     def validate(self, config: RepoConfig):
         # TODO: validate a FileSource
         pass
-
-    @staticmethod
-    def source_datatype_to_feast_value_type() -> Callable[[str], ValueType]:
-        return type_map.pa_to_feast_value_type
 
 
 class ParquetSource(YummyFileDataSource):
@@ -365,7 +361,4 @@ class CsvSourceReader(ParquetSourceReader):
                 has_header=data_source.header,
                 delimiter=data_source.delimiter,
             )
-
-
-
 
