@@ -61,12 +61,8 @@ class YummyDataSource(DataSource):
         raise NotImplementedError
 
     @staticmethod
-    @abstractmethod
     def source_datatype_to_feast_value_type() -> Callable[[str], ValueType]:
-        """
-        Returns the callable method that returns Feast type given the raw column type.
-        """
-        raise NotImplementedError
+        return _map_value_type
 
     def get_table_column_names_and_types(
         self, config: RepoConfig
@@ -76,7 +72,7 @@ class YummyDataSource(DataSource):
         Args:
             config: Configuration object used to configure a feature store.
         """
-        raise NotImplementedError
+        return self.reader_type().read_schema(self, config)
 
     def get_table_query_string(self) -> str:
         """
@@ -85,3 +81,35 @@ class YummyDataSource(DataSource):
         raise NotImplementedError
 
 
+
+source_type_map = {
+    "int32": ValueType.INT32,
+    "int64": ValueType.INT64,
+    "double": ValueType.DOUBLE,
+    "float": ValueType.FLOAT,
+    "float64": ValueType.DOUBLE,
+    "string": ValueType.STRING,
+    "binary": ValueType.BYTES,
+    "bool": ValueType.BOOL,
+    "object": ValueType.UNKNOWN,
+    "utf8": ValueType.STRING,
+    "null": ValueType.NULL,
+}
+
+def _map_value_type(pa_type_as_str: str) -> ValueType:
+    is_list = False
+    if pa_type_as_str.startswith("list<item: "):
+        is_list = True
+        pa_type_as_str = pa_type_as_str.replace("list<item: ", "").replace(">", "")
+
+    if pa_type_as_str.startswith("timestamp"):
+        value_type = ValueType.UNIX_TIMESTAMP
+    elif pa_type_as_str.startswith("datetime"):
+        value_type = ValueType.UNIX_TIMESTAMP
+    else:
+        value_type = source_type_map[pa_type_as_str]
+
+    if is_list:
+        value_type = ValueType[value_type.name + "_LIST"]
+
+    return value_type

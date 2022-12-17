@@ -132,10 +132,6 @@ class DeltaSource(YummyDataSource):
         # TODO: validate a DeltaSource
         pass
 
-    @staticmethod
-    def source_datatype_to_feast_value_type() -> Callable[[str], ValueType]:
-        return type_map.pa_to_feast_value_type
-
 
 class DeltaSourceReader(YummyDataSourceReader):
 
