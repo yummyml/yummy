@@ -1,3 +1,19 @@
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(untagged)]
+#[derive(Clone)]
+pub enum EntityValue {
+    None,
+    INT64(i64),
+    INT32(i32),
+    FLOAT32(f32),
+    FLOAT64(f64),
+    BOOL(bool),
+    STRING(String),
+    BYTES(Vec<u8>),
+}
+
 fn find_swap(feature_names: &Vec<String>, columns: &Vec<String>) -> Option<(usize, usize)> {
     let num = columns.len();
     for i in 0..num {

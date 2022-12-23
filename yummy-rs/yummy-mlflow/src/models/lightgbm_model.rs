@@ -1,8 +1,8 @@
 use crate::common::reorder;
+use crate::common::EntityValue;
 use crate::config::MLConfig;
 use crate::models::MLModel;
 use lightgbm;
-use yummy_core::encoding::EntityValue;
 
 pub struct LightgbmModel {
     pub model: lightgbm::Booster,

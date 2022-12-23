@@ -1,9 +1,9 @@
 pub mod catboost_model;
 pub mod lightgbm_model;
+use crate::common::EntityValue;
 use crate::config::MLConfig;
 use catboost_model::CatboostModel;
 use lightgbm_model::LightgbmModel;
-use yummy_core::encoding::EntityValue;
 
 pub trait MLModel {
     fn predict(&self, columns: Vec<String>, data: Vec<Vec<EntityValue>>) -> Vec<Vec<f64>>;
@@ -24,4 +24,3 @@ impl MLModelFactory {
         ml_model
     }
 }
-
