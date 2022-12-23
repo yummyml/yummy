@@ -4,6 +4,7 @@ members = [
     "yummy-core",
     "yummy-serve",
     "yummy-mlflow",
+#    "yummy-delta"
 ]
 
 [workspace.package]

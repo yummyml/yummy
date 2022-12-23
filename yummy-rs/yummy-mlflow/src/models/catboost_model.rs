@@ -1,7 +1,7 @@
+use crate::common::EntityValue;
 use crate::config::MLConfig;
 use crate::models::MLModel;
 use catboost;
-use yummy_core::encoding::EntityValue;
 
 fn sigmoid(x: f64) -> f64 {
     1. / (1. + (-x).exp())
