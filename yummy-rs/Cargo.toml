@@ -1,0 +1,11 @@
+[workspace]
+members = [
+    "yummy",
+    "yummy-core",
+    "yummy-features",
+    "yummy-mlflow",
+    "yummy-delta"
+]
+
+[workspace.package]
+version = "0.0.7"

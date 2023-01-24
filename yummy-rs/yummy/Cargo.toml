@@ -1,0 +1,18 @@
+[package]
+name = "yummy-rs"
+version = "0.0.7"
+edition = "2021"
+repository = "https://github.com/yummyml/yummy-rs"
+description = "The yummy-rs library"
+
+[lib]
+name = "yummy_rs"
+crate-type = ["cdylib"]
+
+[build]
+rustflags = ["-C", "target-cpu=native"]
+
+[dependencies]
+yummy-features = { path = "../yummy-features" }
+pyo3 = { version = "0.16.5", features = ["extension-module"] }
+tokio = "1.20.0"
