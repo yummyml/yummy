@@ -1,0 +1,5 @@
+stores:
+  - name: local
+    path: "/tmp/delta-test-1/"
+  - name: az
+    path: "az://delta-test-1/"

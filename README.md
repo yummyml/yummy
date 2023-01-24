@@ -1,7 +1,5 @@
 # [Yummy](https://github.com/yummyml/yummy) - delicious [Feast](https://github.com/feast-dev/feast) extension
 
-⚠️yummy-rs 🦀 was moved to : [yummyml/yummy-rs](https://github.com/yummyml/yummy-rs)
-
 Yummy project adds possiblity to run [Feast](https://github.com/feast-dev/feast) on multiple backends:
 * [polars](https://github.com/pola-rs/polars)
 * [dask](https://github.com/dask/dask)
