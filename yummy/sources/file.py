@@ -359,6 +359,6 @@ class CsvSourceReader(ParquetSourceReader):
                 storage_options=self._storage_options(data_source),
                 parse_dates=True,
                 has_header=data_source.header,
-                delimiter=data_source.delimiter,
+                sep=data_source.delimiter,
             )
 
