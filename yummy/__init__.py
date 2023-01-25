@@ -1,10 +1,4 @@
 import os
-from .backends.backend import YummyOfflineStore, YummyOfflineStoreConfig, select_all
-from .sources.file import ParquetSource, CsvSource
-from .sources.delta import DeltaSource
-from .sources.iceberg import IcebergSource
-from .providers.provider import YummyProvider
-from .registries.registry import YummyRegistryStore
 
 class DeprecationHelper(object):
     def __init__(self, new_target, old_name):
@@ -23,22 +17,38 @@ class DeprecationHelper(object):
         self._warn()
         return getattr(self.new_target, attr)
 
-CsvDataSource=DeprecationHelper(CsvSource, "CsvDataSource")
-ParquetDataSource=DeprecationHelper(ParquetSource, "ParquetDataSource")
-DeltaDataSource=DeprecationHelper(DeltaSource, "DeltaDataSource")
-IcebergDataSource=DeprecationHelper(IcebergSource, "IcebergDataSource")
 
-os.environ["FEAST_USAGE"]="False"
-__all__ = ["YummyProvider",
-           "YummyRegistryStore",
-           "YummyOfflineStore",
-           "YummyOfflineStoreConfig",
-           "ParquetSource",
-           "CsvSource",
-           "DeltaSource",
-           "IcebergSource",
-           "ParquetDataSource",
-           "CsvDataSource",
-           "DeltaDataSource",
-           "IcebergDataSource",
-           "select_all"]
+try:
+    from .backends.backend import YummyOfflineStore, YummyOfflineStoreConfig, select_all
+    from .sources.file import ParquetSource, CsvSource
+    from .sources.delta import DeltaSource
+    from .sources.iceberg import IcebergSource
+    from .providers.provider import YummyProvider
+    from .registries.registry import YummyRegistryStore
+
+
+    CsvDataSource=DeprecationHelper(CsvSource, "CsvDataSource")
+    ParquetDataSource=DeprecationHelper(ParquetSource, "ParquetDataSource")
+    DeltaDataSource=DeprecationHelper(DeltaSource, "DeltaDataSource")
+    IcebergDataSource=DeprecationHelper(IcebergSource, "IcebergDataSource")
+
+    os.environ["FEAST_USAGE"]="False"
+    __all__ = ["YummyProvider",
+               "YummyRegistryStore",
+               "YummyOfflineStore",
+               "YummyOfflineStoreConfig",
+               "ParquetSource",
+               "CsvSource",
+               "DeltaSource",
+               "IcebergSource",
+               "ParquetDataSource",
+               "CsvDataSource",
+               "DeltaDataSource",
+               "IcebergDataSource",
+               "select_all"]
+
+except ModuleNotFoundError:
+    OKGREEN = '\033[92m'
+    ENDC = '\033[0m'
+    BOLD = "\033[1m"
+    print(f"\t{BOLD}Please install:{ENDC}\t{OKGREEN}yummy[feast]{ENDC}{BOLD} before using yummy feast extensions{ENDC}")

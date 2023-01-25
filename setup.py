@@ -4,10 +4,19 @@ NAME = "yummy"
 REQUIRES_PYTHON = ">=3.7.0"
 
 INSTALL_REQUIRE = [
+    "click>=7.0.0"
+]
+
+YUMMY_MLFLOW_REQUIRE = [ "yummy-mlflow~=0.0.7" ]
+
+YUMMY_DELTA_REQUIRE = [ "yummy-delta~=0.0.7" ]
+
+YUMMY_FEATURES_REQUIRE = [ "yummy-rs~=0.0.7" ]
+
+FEAST_REQUIRE = [
     "feast~=0.22.1",
     "polars>=0.13.18",
-    "yummy-rs~=0.0.7",
-    "yummy-mlflow~=0.0.7",
+    "deltalake>=0.5.6",
 ]
 
 DASK_REQUIRE = [
@@ -22,13 +31,12 @@ SPARK_REQUIRE = [
     "pyspark>=3.0.0",
 ]
 
-DELTA_REQUIRE = [
-    "deltalake>=0.5.6",
-]
-
 DEV_REQUIRE = RAY_REQUIRE + \
     SPARK_REQUIRE + \
-    DELTA_REQUIRE + [
+    FEAST_REQUIRE + \
+    YUMMY_MLFLOW_REQUIRE + \
+    YUMMY_DELTA_REQUIRE + \
+    YUMMY_FEATURES_REQUIRE + [
     "flake8",
     "black==21.10b0",
     "isort>=5",
@@ -49,11 +57,14 @@ setup(
     packages=find_packages(exclude=["test*", "feature_repo*"]),
     install_requires=INSTALL_REQUIRE,
     extras_require={
-        "dev": DEV_REQUIRE,
+        "delta": YUMMY_DELTA_REQUIRE,
+        "features": YUMMY_FEATURES_REQUIRE,
+        "mlflow": YUMMY_MLFLOW_REQUIRE,
+        "feast": FEAST_REQUIRE,
         "dask": DASK_REQUIRE,
         "ray": RAY_REQUIRE,
         "spark": SPARK_REQUIRE,
-        "delta": DELTA_REQUIRE,
+        "dev": DEV_REQUIRE,
     },
     keywords=("feast featurestore polars dask ray pyspark offlinestore"),
     license='Apache License, Version 2.0',
