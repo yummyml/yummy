@@ -1,4 +1,4 @@
-# yummy[feast] - [Feast](https://github.com/feast-dev/feast) feature store extension
+# Yummy-[Feast](https://github.com/feast-dev/feast) feature store extension
 
 Yummy project adds possiblity to run [Feast](https://github.com/feast-dev/feast) on multiple backends:
 * [polars](https://github.com/pola-rs/polars)
