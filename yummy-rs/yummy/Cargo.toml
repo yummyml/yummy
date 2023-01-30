@@ -2,7 +2,7 @@
 name = "yummy-rs"
 version = "0.0.7"
 edition = "2021"
-repository = "https://github.com/yummyml/yummy-rs"
+repository = "https://github.com/yummyml/yummy"
 description = "The yummy-rs library"
 
 [lib]

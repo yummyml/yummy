@@ -1,5 +1,11 @@
 import click
 
+def package_installation_hint(package_name: str):
+    OKGREEN = '\033[92m'
+    ENDC = '\033[0m'
+    BOLD = "\033[1m"
+    print(f"\t{BOLD}Please install:{ENDC}\t{OKGREEN}{package_name}{ENDC}{BOLD}{ENDC}")
+
 @click.group()
 @click.pass_context
 def cli(
@@ -46,8 +52,12 @@ def delta_server_command(
     log_level: str,
 ):
     """Start rust delta."""
-    import yummy_delta
-    yummy_delta.serve(filename, host, port, log_level)
+    try:
+        import yummy_delta
+        yummy_delta.run(filename, host, port, log_level)
+    except ModuleNotFoundError:
+        package_installation_hint("yummy[delta]")
+
 
 
 @cli.group(name='features')
@@ -89,8 +99,13 @@ def features_serve_command(
     log_level: str,
 ):
     """Start rust feature server."""
-    import yummy_rs
-    yummy_rs.serve(filename, host, port, log_level)
+    try:
+        import yummy_features
+        yummy_features.serve(filename, host, port, log_level)
+    except ModuleNotFoundError:
+        package_installation_hint("yummy[features]")
+
+
 
 @cli.group(name='models')
 def models_cmd():
@@ -130,8 +145,11 @@ def models_serve_command(
     log_level: str,
 ):
     """Start mlflow model server."""
-    import yummy_mlflow
-    yummy_mlflow.model_serve(model_uri, host, port, log_level)
+    try:
+        import yummy_mlflow
+        yummy_mlflow.serve(model_uri, host, port, log_level)
+    except ModuleNotFoundError:
+        package_installation_hint("yummy[mlflow]")
 
 
 if __name__ == '__main__':

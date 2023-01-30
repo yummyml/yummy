@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "yummy-delta"
-version = "0.0.7"
+version = "0.0.8"
 requires-python = ">=3.7"
 description = "Yummy mlflow rust extensions"
 readme = "README.md"
@@ -16,4 +16,4 @@ classifiers = [
 ]
 
 [project.urls]
-repository = "https://github.com/yummyml/yummy-rs"
+repository = "https://github.com/yummyml/yummy"

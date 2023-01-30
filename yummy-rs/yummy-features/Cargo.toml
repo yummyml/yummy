@@ -1,11 +1,17 @@
 [package]
 name = "yummy-features"
-version = "0.0.7"
+version = "0.0.8"
 #version.workspace = true
 edition = "2021"
-repository = "https://github.com/yummyml/yummy-rs"
+repository = "https://github.com/yummyml/yummy"
 description = "Feature store server of the yummy-rs library"
 
+[lib]
+name = "yummy_features"
+crate-type = ["cdylib"]
+
+[build]
+rustflags = ["-C", "target-cpu=native"]
 
 [dependencies]
 #yummy-core = { path = "../yummy-core" }

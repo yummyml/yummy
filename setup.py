@@ -7,11 +7,11 @@ INSTALL_REQUIRE = [
     "click>=7.0.0"
 ]
 
-YUMMY_MLFLOW_REQUIRE = [ "yummy-mlflow~=0.0.7" ]
+YUMMY_MLFLOW_REQUIRE = [ "yummy-mlflow~=0.0.8" ]
 
-YUMMY_DELTA_REQUIRE = [ "yummy-delta~=0.0.7" ]
+YUMMY_DELTA_REQUIRE = [ "yummy-delta~=0.0.8" ]
 
-YUMMY_FEATURES_REQUIRE = [ "yummy-rs~=0.0.7" ]
+YUMMY_FEATURES_REQUIRE = [ "yummy-features~=0.0.8" ]
 
 FEAST_REQUIRE = [
     "feast~=0.22.1",
@@ -48,7 +48,7 @@ DEV_REQUIRE = RAY_REQUIRE + \
 
 setup(
     name=NAME,
-    version="0.0.7",
+    version="0.0.8",
     author="Qooba",
     long_description=open("README.md").read(),
     long_description_content_type="text/markdown",
