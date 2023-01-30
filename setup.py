@@ -7,11 +7,11 @@ INSTALL_REQUIRE = [
     "click>=7.0.0"
 ]
 
-YUMMY_MLFLOW_REQUIRE = [ "yummy-mlflow~=0.0.7" ]
+YUMMY_MLFLOW_REQUIRE = [ "yummy-mlflow~=0.0.8" ]
 
-YUMMY_DELTA_REQUIRE = [ "yummy-delta~=0.0.7" ]
+YUMMY_DELTA_REQUIRE = [ "yummy-delta~=0.0.8" ]
 
-YUMMY_FEATURES_REQUIRE = [ "yummy-rs~=0.0.7" ]
+YUMMY_FEATURES_REQUIRE = [ "yummy-features~=0.0.8" ]
 
 FEAST_REQUIRE = [
     "feast~=0.22.1",

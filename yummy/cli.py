@@ -54,7 +54,7 @@ def delta_server_command(
     """Start rust delta."""
     try:
         import yummy_delta
-        yummy_delta.serve(filename, host, port, log_level)
+        yummy_delta.run(filename, host, port, log_level)
     except ModuleNotFoundError:
         package_installation_hint("yummy[delta]")
 
@@ -100,8 +100,8 @@ def features_serve_command(
 ):
     """Start rust feature server."""
     try:
-        import yummy_rs
-        yummy_rs.serve(filename, host, port, log_level)
+        import yummy_features
+        yummy_features.serve(filename, host, port, log_level)
     except ModuleNotFoundError:
         package_installation_hint("yummy[features]")
 
@@ -147,7 +147,7 @@ def models_serve_command(
     """Start mlflow model server."""
     try:
         import yummy_mlflow
-        yummy_mlflow.model_serve(model_uri, host, port, log_level)
+        yummy_mlflow.serve(model_uri, host, port, log_level)
     except ModuleNotFoundError:
         package_installation_hint("yummy[mlflow]")
 
