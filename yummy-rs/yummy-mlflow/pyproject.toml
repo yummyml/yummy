@@ -16,4 +16,4 @@ classifiers = [
 ]
 
 [project.urls]
-repository = "https://github.com/yummyml/yummy-rs"
+repository = "https://github.com/yummyml/yummy"

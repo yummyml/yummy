@@ -1,9 +1,9 @@
 [package]
 name = "yummy-delta"
-version = "0.0.7"
+version = "0.0.8"
 #version.workspace = true
 edition = "2021"
-repository = "https://github.com/yummyml/yummy-rs"
+repository = "https://github.com/yummyml/yummy"
 description = "Delta lake yummy library"
 
 [lib]
