@@ -8,7 +8,7 @@ use std::error::Error;
 #[derive(thiserror::Error, Debug)]
 pub enum EncodingError {
     #[error("Wrong Entity value.")]
-    WrongEntityValue
+    WrongEntityValue,
 }
 
 #[derive(Serialize, Deserialize, Debug)]

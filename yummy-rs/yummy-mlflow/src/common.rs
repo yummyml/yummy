@@ -4,12 +4,11 @@ use std::error::Error;
 #[derive(thiserror::Error, Debug)]
 pub enum SwapError {
     #[error("Wrong number of columns (required: {0}, provided: {1})")]
-    ValidationWrongNumberOfColumns(usize,usize),
+    ValidationWrongNumberOfColumns(usize, usize),
 
     #[error("Provided columns not match model requirements {0:?}")]
     ValidationWrongFeatureNames(Vec<String>),
 }
-
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
