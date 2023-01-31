@@ -31,7 +31,9 @@ impl DeltaInfo for DeltaManager {
         table_version: Option<i64>,
         table_date: Option<String>,
     ) -> Result<ResponseTable, Box<dyn Error>> {
-        let table = self.table(store_name, table_name, table_version, table_date).await?;
+        let table = self
+            .table(store_name, table_name, table_version, table_date)
+            .await?;
         let schema = table.schema().ok_or(Box::new(DeltaError::InvalidSchema))?;
         let version = table.version();
         let path = self.path(store_name, table_name)?;
@@ -127,12 +129,14 @@ mod test {
 
         let table = create_delta(&store_name, &table_name).await?;
 
-        let resp = create_manager().await?.details(&store_name, &table_name, None, None).await?;
+        let resp = create_manager()
+            .await?
+            .details(&store_name, &table_name, None, None)
+            .await?;
         assert_eq!(table.version(), 0);
         assert_eq!(resp.version, 0);
 
         drop_delta(&table_name).await?;
         Ok(())
     }
-
 }

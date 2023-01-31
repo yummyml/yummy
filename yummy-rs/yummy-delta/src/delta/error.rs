@@ -29,5 +29,4 @@ pub enum DeltaError {
 
     #[error("Can't convert type, try cast to primitive type eg. CAST(col1 as STRING)")]
     ReadTypeConversionError,
-
 }
