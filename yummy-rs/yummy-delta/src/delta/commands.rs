@@ -119,7 +119,7 @@ mod test {
     use crate::common::EntityValue;
     use crate::delta::test_delta_util::{create_delta, create_manager, drop_delta};
     use crate::delta::{DeltaCommands, DeltaWrite, OptimizeRequest, VacuumRequest};
-    use crate::models::WriteRequest;
+    use crate::models::{WriteRequest};
     use deltalake::action::SaveMode;
     use std::collections::HashMap;
     use std::error::Error;
@@ -127,7 +127,7 @@ mod test {
     #[tokio::test]
     async fn test_delta_create() -> Result<(), Box<dyn Error>> {
         let store_name = String::from("local");
-        let table_name = String::from("test_delta_1");
+        let table_name = String::from("test_delta_1_com_cr");
 
         let table = create_delta(&store_name, &table_name).await?;
 
@@ -140,7 +140,7 @@ mod test {
     #[tokio::test]
     async fn test_delta_optimize() -> Result<(), Box<dyn Error>> {
         let store_name = String::from("local");
-        let table_name = String::from("test_delta_1");
+        let table_name = String::from("test_delta_1_com_opt");
 
         let table = create_delta(&store_name, &table_name).await?;
         assert_eq!(table.version(), 0);
@@ -197,7 +197,7 @@ mod test {
     #[tokio::test]
     async fn test_delta_optimize_filters() -> Result<(), Box<dyn Error>> {
         let store_name = String::from("local");
-        let table_name = String::from("test_delta_1_f");
+        let table_name = String::from("test_delta_1_com_optf");
 
         let table = create_delta(&store_name, &table_name).await?;
         assert_eq!(table.version(), 0);
@@ -237,6 +237,16 @@ mod test {
             .await?;
 
         println!("{:?}", optimize_response);
+
+        let vacuum_request = VacuumRequest {
+            retention_period_seconds: Some(0),
+            enforce_retention_duration: Some(false),
+            dry_run: Some(false),
+        };
+        let vacuum_response = create_manager().await?.vacuum(&store_name, &table_name, vacuum_request).await?;
+
+        println!("{:?}", vacuum_response);
+
 
         drop_delta(&table_name).await?;
         Ok(())
