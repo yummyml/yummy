@@ -1,3 +1,3 @@
 mlflow
 catboost==1.1
-ipython==8.6.0
+ipython>=8.10
