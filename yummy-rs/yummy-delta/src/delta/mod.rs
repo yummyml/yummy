@@ -11,9 +11,10 @@ use crate::models::{
 };
 use async_trait::async_trait;
 use chrono::Duration;
+use datafusion::datasource::TableProvider;
 use datafusion::physical_plan::SendableRecordBatchStream;
 use deltalake::arrow::{datatypes::DataType, record_batch::RecordBatch};
-use deltalake::vacuum::Vacuum;
+use deltalake::operations::vacuum::VacuumBuilder;
 use deltalake::{action::SaveMode, DeltaOps, DeltaTable, Schema, SchemaDataType};
 use std::error::Error;
 
@@ -204,7 +205,7 @@ impl DeltaManager {
     ) -> Result<VacuumResponse, Box<dyn Error>> {
         let mut table = self.table(store_name, table_name, None, None).await?;
 
-        let mut vacuum_op = Vacuum::default();
+        let mut vacuum_op = VacuumBuilder::new(table.object_store(), table.state.clone());
 
         if let Some(retention_period_seconds) = vacuum_request.retention_period_seconds {
             vacuum_op =
@@ -212,14 +213,14 @@ impl DeltaManager {
         }
 
         if let Some(dry_run) = vacuum_request.dry_run {
-            vacuum_op = vacuum_op.dry_run(dry_run);
+            vacuum_op = vacuum_op.with_dry_run(dry_run);
         }
 
         if let Some(enforce_retention_duration) = vacuum_request.enforce_retention_duration {
-            vacuum_op = vacuum_op.enforce_retention_duration(enforce_retention_duration);
+            vacuum_op = vacuum_op.with_enforce_retention_duration(enforce_retention_duration);
         }
 
-        let result = vacuum_op.execute(&mut table).await?;
+        let (table, result) = vacuum_op.await?;
 
         Ok(VacuumResponse {
             dry_run: result.dry_run,
@@ -270,6 +271,8 @@ pub mod test_delta_util {
             schema,
             partition_columns: Some(partition_columns),
             comment: Some(comment),
+            configuration: None,
+            metadata: None,
         };
 
         let _res_create = delta_manager.create(&store_name, request).await?;

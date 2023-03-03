@@ -1,5 +1,7 @@
 stores:
   - name: local
     path: "/tmp/delta-test-1/"
+  - name: local2
+    path: "/tmp/delta-test-2/"
   - name: az
     path: "az://delta-test-1/"

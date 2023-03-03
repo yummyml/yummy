@@ -3,8 +3,6 @@ use crate::delta::error::DeltaError;
 use crate::delta::{DeltaManager, DeltaRead};
 use crate::models::QueryResponse;
 use async_trait::async_trait;
-use datafusion::execution::context::SessionContext;
-use datafusion::physical_plan::SendableRecordBatchStream;
 use deltalake::arrow::record_batch::RecordBatch;
 use deltalake::arrow::{
     array::{
@@ -14,6 +12,8 @@ use deltalake::arrow::{
     datatypes::{DataType, Field, Schema as ArrowSchema},
     downcast_dictionary_array, downcast_primitive_array,
 };
+use datafusion::execution::context::SessionContext;
+use datafusion::physical_plan::SendableRecordBatchStream;
 use deltalake::operations::collect_sendable_stream;
 use deltalake::DeltaOps;
 use deltalake::{Schema, SchemaField};
@@ -210,7 +210,7 @@ mod test {
     #[tokio::test]
     async fn test_delta_query() -> Result<(), Box<dyn Error>> {
         let store_name = String::from("local");
-        let table_name = String::from("test_delta_1");
+        let table_name = String::from("test_delta_1_rd_q");
 
         let _table = create_delta(&store_name, &table_name).await?;
 
