@@ -15,6 +15,7 @@ use deltalake::{action::SaveMode, DeltaOps};
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::Arc;
+use anyhow::{anyhow, Result};
 
 #[async_trait]
 impl DeltaWrite for DeltaManager {
@@ -91,12 +92,12 @@ impl DeltaWrite for DeltaManager {
 
 fn type_mapper<U>(
     values: &Vec<EntityValue>,
-    mapper: impl Fn(&EntityValue) -> Result<U, Box<dyn Error>>,
+    mapper: impl Fn(&EntityValue) -> Result<U>,
 ) -> Result<Vec<U>, Box<dyn Error>> {
     let arr = values
         .iter()
-        .map(|x| -> Result<U, Box<dyn Error>> { mapper(x) })
-        .collect::<Result<Vec<U>, Box<dyn Error>>>()?;
+        .map(|x| -> Result<U> { mapper(x) })
+        .collect::<Result<Vec<U>>>()?;
     Ok(arr)
 }
 

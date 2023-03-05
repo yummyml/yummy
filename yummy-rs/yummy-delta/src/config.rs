@@ -1,7 +1,7 @@
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::fs;
-use anyhow::Result;
 
 #[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
 pub struct DeltaConfig {
