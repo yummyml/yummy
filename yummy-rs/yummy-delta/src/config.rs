@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::fs;
+use anyhow::Result;
 
 #[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
 pub struct DeltaConfig {
@@ -14,7 +15,7 @@ pub struct DeltaStoreConfig {
 }
 
 impl DeltaConfig {
-    pub fn new(path: &String) -> Result<DeltaConfig, Box<dyn Error>> {
+    pub fn new(path: &String) -> Result<DeltaConfig> {
         let s = fs::read_to_string(path)?;
         let config: DeltaConfig = serde_yaml::from_str(&s)?;
         Ok(config)
@@ -29,7 +30,7 @@ pub struct ColumnSchema {
 }
 
 #[test]
-fn test_config() -> Result<(), Box<dyn Error>> {
+fn test_config() -> Result<()> {
     let path = "../tests/delta/config.yaml".to_string();
     let config = DeltaConfig::new(&path)?;
     println!("{:?}", config);
