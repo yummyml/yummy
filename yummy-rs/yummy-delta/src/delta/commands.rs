@@ -2,11 +2,15 @@ use crate::config::ColumnSchema;
 use crate::delta::{DeltaCommands, DeltaManager};
 use crate::models::{CreateRequest, CreateResponse, OptimizeRequest, OptimizeResponse};
 use async_trait::async_trait;
-use deltalake::{optimize::Optimize, PartitionFilter};
+use deltalake::delta_config::DeltaConfigKey;
+use deltalake::operations::optimize::{create_merge_plan, MetricDetails, Metrics};
+use deltalake::PartitionFilter;
 use deltalake::{DeltaOps, SchemaDataType, SchemaField};
+use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
 use std::path::Path;
+use std::str::FromStr;
 
 #[async_trait]
 impl DeltaCommands for DeltaManager {
@@ -55,7 +59,9 @@ impl DeltaCommands for DeltaManager {
         }
 
         if let Some(config) = configuration {
-            table = table.with_configuration(config);
+            for (k, v) in config.into_iter() {
+                table = table.with_configuration_property(DeltaConfigKey::from_str(&k).unwrap(), v);
+            }
         }
 
         if let Some(meta) = metadata {
@@ -100,13 +106,15 @@ impl DeltaCommands for DeltaManager {
             })
             .collect::<Result<Vec<PartitionFilter<&str>>, Box<dyn Error>>>()?;
 
-        let mut optimize = Optimize::default().target_size(optimize_requst.target_size);
+        let mut optimize = DeltaOps(table)
+            .optimize()
+            .with_target_size(optimize_requst.target_size);
 
         if filters.len() > 0 {
-            optimize = optimize.filter(&filters);
+            optimize = optimize.with_filters(&filters);
         }
 
-        let metrics = optimize.execute(&mut table).await?;
+        let (dt, metrics) = optimize.await?;
 
         //let commit_info = table.history(None).await?;
 
@@ -119,7 +127,7 @@ mod test {
     use crate::common::EntityValue;
     use crate::delta::test_delta_util::{create_delta, create_manager, drop_delta};
     use crate::delta::{DeltaCommands, DeltaWrite, OptimizeRequest, VacuumRequest};
-    use crate::models::{WriteRequest};
+    use crate::models::WriteRequest;
     use deltalake::action::SaveMode;
     use std::collections::HashMap;
     use std::error::Error;
@@ -243,10 +251,12 @@ mod test {
             enforce_retention_duration: Some(false),
             dry_run: Some(false),
         };
-        let vacuum_response = create_manager().await?.vacuum(&store_name, &table_name, vacuum_request).await?;
+        let vacuum_response = create_manager()
+            .await?
+            .vacuum(&store_name, &table_name, vacuum_request)
+            .await?;
 
         println!("{:?}", vacuum_response);
-
 
         drop_delta(&table_name).await?;
         Ok(())

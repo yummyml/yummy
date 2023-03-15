@@ -3,6 +3,7 @@ pub mod config;
 pub mod delta;
 pub mod models;
 pub mod server;
+pub mod apply;
 
 use actix_web::middleware::Logger;
 use actix_web::{web, App, HttpServer};

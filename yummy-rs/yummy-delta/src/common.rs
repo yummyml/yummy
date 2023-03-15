@@ -1,7 +1,6 @@
+use anyhow::{anyhow, Result};
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
-use std::error::Error;
-use anyhow::{anyhow, Result};
 
 pub fn print_type_of<T>(_: &T) {
     println!("{}", std::any::type_name::<T>())

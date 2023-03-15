@@ -1,0 +1,39 @@
+kind: table
+metadata: 
+  name: mytable
+  store: "az://delta-test-1/"
+spec:
+  table: "test_delta_4"
+  schema:
+    - name: col1
+      type: integer
+      nullable: false
+    - name: col2
+      type: string
+      nullable: false
+  partition_columns: ["col2"]
+  comment: "Hello from delta"
+---
+kind: optimize
+metadata: 
+  name: optimize_test_4
+  table: "test_delta_4"
+  store: "az://delta-test-1/"
+spec:
+  target_size: 2000000
+  filters: 
+    - column: col2
+      operator: "="
+      value: "B"
+---
+kind: vacuum
+metadata: 
+  name: vacuum_test_4
+  table: "test_delta_4"
+  store: "az://delta-test-1/"
+spec:
+  retention_period_seconds: 0
+  enforce_retention_duration: false
+  dry_run: false
+
+

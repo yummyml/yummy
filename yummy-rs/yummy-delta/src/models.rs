@@ -98,7 +98,7 @@ pub struct OptimizeRequest {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct OptimizeResponse {
-    pub metrics: deltalake::optimize::Metrics,
+    pub metrics: deltalake::operations::optimize::Metrics,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
