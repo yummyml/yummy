@@ -1,7 +1,19 @@
+kind: config
+metadata: 
+  name: myconfig
+spec:
+  stores:
+    - name: local
+      path: "/tmp/delta-test-1/"
+    - name: local2
+      path: "/tmp/delta-test-2/"
+    - name: az
+      path: "az://delta-test-1/"
+---
 kind: table
 metadata: 
   name: mytable
-  store: "az://delta-test-1/"
+  store: az
 spec:
   table: "test_delta_4"
   schema:
@@ -18,7 +30,7 @@ kind: optimize
 metadata: 
   name: optimize_test_4
   table: "test_delta_4"
-  store: "az://delta-test-1/"
+  store: az
 spec:
   target_size: 2000000
   filters: 
@@ -30,7 +42,7 @@ kind: vacuum
 metadata: 
   name: vacuum_test_4
   table: "test_delta_4"
-  store: "az://delta-test-1/"
+  store: az
 spec:
   retention_period_seconds: 0
   enforce_retention_duration: false

@@ -1,24 +1,53 @@
 use crate::common::EntityValue;
 use crate::config::{ColumnSchema, DeltaConfig};
 use crate::models::{CreateRequest, OptimizeRequest, VacuumRequest, WriteRequest};
-use anyhow::{anyhow, Result};
+//use anyhow::{anyhow, Result};
 use deltalake::Schema;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 use std::collections::HashMap;
+use std::error::Error;
 use std::fs;
+
+/*
+pub type Result<T> = core::result::Result<T, Box<dyn Error>>;
+
+macro_rules! err{
+    ($e:expr) => {
+        Box::new($e)
+    };
+}
+*/
+
+pub type Result<T> = anyhow::Result<T>;
+
+macro_rules! err {
+    ($e:expr) => {
+        anyhow::anyhow!($e)
+    };
+}
+
+#[derive(thiserror::Error, Debug)]
+pub enum ApplyError {
+    #[error("Delta config kind required")]
+    NoConfig,
+}
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Metadata {
     pub name: String,
-    pub store: String,
+    pub store: Option<String>,
     pub table: Option<String>,
 }
 
 #[derive(Deserialize, Debug)]
 #[serde(tag = "kind", rename_all = "camelCase")]
 pub enum DeltaObject {
+    Config {
+        metadata: Metadata,
+        spec: DeltaConfig,
+    },
     Table {
         metadata: Metadata,
         spec: CreateRequest,
@@ -47,12 +76,22 @@ impl DeltaApply {
             objects.push(o);
         }
 
+        if !objects.iter().any(|x| match x {
+            DeltaObject::Config { metadata, spec } => true,
+            _ => false,
+        }) {
+            return Err(err!(ApplyError::NoConfig));
+        }
+
         Ok(DeltaApply {
             delta_objects: objects,
         })
     }
-}
 
+    pub async fn apply(&self) -> Result<()> {
+        Ok(())
+    }
+}
 
 #[test]
 fn test_apply() -> Result<()> {
@@ -60,7 +99,6 @@ fn test_apply() -> Result<()> {
     let config = DeltaApply::new(&path)?;
     println!("{:?}", config);
 
-    assert_eq!(config.delta_objects.len(), 3);
+    assert_eq!(config.delta_objects.len(), 4);
     Ok(())
 }
-
