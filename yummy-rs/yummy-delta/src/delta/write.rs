@@ -1,6 +1,7 @@
 use crate::common::EntityValue;
 use crate::delta::error::DeltaError;
 use crate::delta::{DeltaManager, DeltaWrite};
+use crate::err;
 use crate::models::{WriteRequest, WriteResponse};
 use async_trait::async_trait;
 use deltalake::arrow::record_batch::RecordBatch;
@@ -15,7 +16,6 @@ use deltalake::{action::SaveMode, DeltaOps};
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::Arc;
-use anyhow::{anyhow, Result};
 
 #[async_trait]
 impl DeltaWrite for DeltaManager {
@@ -92,12 +92,12 @@ impl DeltaWrite for DeltaManager {
 
 fn type_mapper<U>(
     values: &Vec<EntityValue>,
-    mapper: impl Fn(&EntityValue) -> Result<U>,
+    mapper: impl Fn(&EntityValue) -> crate::common::Result<U>,
 ) -> Result<Vec<U>, Box<dyn Error>> {
     let arr = values
         .iter()
-        .map(|x| -> Result<U> { mapper(x) })
-        .collect::<Result<Vec<U>>>()?;
+        .map(|x| -> crate::common::Result<U> { mapper(x) })
+        .collect::<crate::common::Result<Vec<U>>>()?;
     Ok(arr)
 }
 

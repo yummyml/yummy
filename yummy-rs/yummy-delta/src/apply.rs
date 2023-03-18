@@ -1,5 +1,6 @@
-use crate::common::EntityValue;
+use crate::common::{EntityValue, Result};
 use crate::config::{ColumnSchema, DeltaConfig};
+use crate::err;
 use crate::models::{CreateRequest, OptimizeRequest, VacuumRequest, WriteRequest};
 //use anyhow::{anyhow, Result};
 use deltalake::Schema;
@@ -8,24 +9,6 @@ use serde_json::{Map, Value};
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
-
-/*
-pub type Result<T> = core::result::Result<T, Box<dyn Error>>;
-
-macro_rules! err{
-    ($e:expr) => {
-        Box::new($e)
-    };
-}
-*/
-
-pub type Result<T> = anyhow::Result<T>;
-
-macro_rules! err {
-    ($e:expr) => {
-        anyhow::anyhow!($e)
-    };
-}
 
 #[derive(thiserror::Error, Debug)]
 pub enum ApplyError {
