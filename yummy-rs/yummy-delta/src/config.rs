@@ -1,6 +1,5 @@
 use crate::common::Result;
 use serde::{Deserialize, Serialize};
-use std::error::Error;
 use std::fs;
 
 #[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
@@ -22,7 +21,7 @@ impl DeltaConfig {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ColumnSchema {
     pub name: String,
     pub r#type: String,

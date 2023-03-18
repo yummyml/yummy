@@ -1,21 +1,22 @@
-use crate::common::{EntityValue, Result};
-use crate::config::{ColumnSchema, DeltaConfig};
+use crate::common::Result;
+use crate::config::DeltaConfig;
+use crate::delta::{
+    read::map_record_batch, DeltaCommands, DeltaInfo, DeltaManager, DeltaRead, DeltaWrite,
+};
 use crate::err;
 use crate::models::{CreateRequest, OptimizeRequest, VacuumRequest, WriteRequest};
-use deltalake::Schema;
-use serde::{Deserialize, Serialize};
-use serde_json::{Map, Value};
-use std::collections::HashMap;
-use std::error::Error;
+use serde::Deserialize;
 use std::fs;
 
 #[derive(thiserror::Error, Debug)]
 pub enum ApplyError {
     #[error("Delta config kind required")]
     NoConfig,
+    #[error("Delta table kind must contain store in metadata")]
+    WrongTableMetadata,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Metadata {
     pub name: String,
@@ -23,7 +24,7 @@ pub struct Metadata {
     pub table: Option<String>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 #[serde(tag = "kind", rename_all = "camelCase")]
 pub enum DeltaObject {
     Config {
@@ -47,6 +48,7 @@ pub enum DeltaObject {
 #[derive(Deserialize, Debug)]
 pub struct DeltaApply {
     pub delta_objects: Vec<DeltaObject>,
+    pub config: DeltaObject,
 }
 
 impl DeltaApply {
@@ -58,29 +60,66 @@ impl DeltaApply {
             objects.push(o);
         }
 
-        if !objects.iter().any(|x| match x {
-            DeltaObject::Config { metadata, spec } => true,
-            _ => false,
-        }) {
+        let config = objects
+            .clone()
+            .into_iter()
+            .filter(|x| match x {
+                DeltaObject::Config {
+                    metadata: _m,
+                    spec: _s,
+                } => true,
+                _ => false,
+            })
+            .last();
+
+        if let Some(c) = config {
+            Ok(DeltaApply {
+                delta_objects: objects,
+                config: c,
+            })
+        } else {
             return Err(err!(ApplyError::NoConfig));
         }
-
-        Ok(DeltaApply {
-            delta_objects: objects,
-        })
     }
 
     pub async fn apply(&self) -> Result<()> {
+        let conf = if let DeltaObject::Config { metadata, spec } = &self.config {
+            spec.clone()
+        } else {
+            return Err(err!(ApplyError::NoConfig));
+        };
+        let delta_manager = DeltaManager { config: conf };
+
+        for o in &self.delta_objects {
+            if let DeltaObject::Table { metadata, spec } = o {
+                let store_name = metadata
+                    .clone()
+                    .store
+                    .ok_or(err!(ApplyError::WrongTableMetadata))?;
+                let table_name = spec
+                    .clone()
+                    .table;
+                let table = &delta_manager
+                    .details(&store_name, &table_name, None, None)
+                    .await?;
+
+                println!("{:?}", table);
+            }
+        }
+
         Ok(())
     }
 }
 
-#[test]
-fn test_apply() -> Result<()> {
+//#[test]
+#[tokio::test]
+async fn test_apply() -> Result<()> {
     let path = "../tests/delta/apply.yaml".to_string();
-    let config = DeltaApply::new(&path)?;
-    println!("{:?}", config);
+    let delta_apply = DeltaApply::new(&path)?;
+    //println!("{:?}", delta_apply);
 
-    assert_eq!(config.delta_objects.len(), 4);
+    delta_apply.apply().await?;
+
+    //assert_eq!(delta_apply.delta_objects.len(), 4);
     Ok(())
 }

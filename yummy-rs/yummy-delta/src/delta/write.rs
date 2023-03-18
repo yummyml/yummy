@@ -1,7 +1,6 @@
 use crate::common::EntityValue;
 use crate::delta::error::DeltaError;
 use crate::delta::{DeltaManager, DeltaWrite};
-use crate::err;
 use crate::models::{WriteRequest, WriteResponse};
 use async_trait::async_trait;
 use deltalake::arrow::record_batch::RecordBatch;

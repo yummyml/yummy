@@ -1,5 +1,5 @@
 use crate::common::EntityValue;
-use crate::config::{ColumnSchema, DeltaConfig};
+use crate::config::ColumnSchema;
 use deltalake::Schema;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
@@ -23,7 +23,7 @@ pub struct ResponseTables {
     pub tables: Vec<String>,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug, Clone)]
 pub struct ResponseTable {
     pub store: String,
     pub path: String,
@@ -32,7 +32,7 @@ pub struct ResponseTable {
     pub version: i64,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CreateRequest {
     pub table: String,
     pub schema: Vec<ColumnSchema>,
@@ -42,12 +42,12 @@ pub struct CreateRequest {
     pub metadata: Option<Map<String, Value>>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct CreateResponse {
     pub table: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct WriteRequest {
     pub record_batch_dict: Option<HashMap<String, Vec<EntityValue>>>,
     pub record_batch_list: Option<Vec<HashMap<String, EntityValue>>>,
@@ -65,7 +65,7 @@ pub struct DetailsQuery {
     pub table_date: Option<String>,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct QueryRequest {
     pub query: String,
     pub braces: Option<bool>,
@@ -73,7 +73,7 @@ pub struct QueryRequest {
     pub table_date: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct QueryBatch {
     pub columns: Option<HashMap<String, Vec<EntityValue>>>,
 }
@@ -83,14 +83,14 @@ pub struct QueryResponse {
     pub batches: Vec<BTreeMap<String, Vec<EntityValue>>>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct PartitionFilter {
     pub column: String,
     pub operator: String,
     pub value: EntityValue,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct OptimizeRequest {
     pub target_size: i64,
     pub filters: Option<Vec<PartitionFilter>>,
@@ -101,7 +101,7 @@ pub struct OptimizeResponse {
     pub metrics: deltalake::operations::optimize::Metrics,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct VacuumRequest {
     pub retention_period_seconds: Option<i64>,
     pub enforce_retention_duration: Option<bool>,

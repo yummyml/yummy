@@ -3,10 +3,8 @@ use crate::delta::{DeltaCommands, DeltaManager};
 use crate::models::{CreateRequest, CreateResponse, OptimizeRequest, OptimizeResponse};
 use async_trait::async_trait;
 use deltalake::delta_config::DeltaConfigKey;
-use deltalake::operations::optimize::{create_merge_plan, MetricDetails, Metrics};
 use deltalake::PartitionFilter;
 use deltalake::{DeltaOps, SchemaDataType, SchemaField};
-use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
 use std::path::Path;
@@ -78,7 +76,7 @@ impl DeltaCommands for DeltaManager {
         table_name: &String,
         optimize_requst: OptimizeRequest,
     ) -> Result<OptimizeResponse, Box<dyn Error>> {
-        let mut table = self.table(store_name, table_name, None, None).await?;
+        let table = self.table(store_name, table_name, None, None).await?;
 
         let optimize_filters: Vec<crate::models::PartitionFilter> =
             if let Some(f) = optimize_requst.filters {
@@ -114,7 +112,7 @@ impl DeltaCommands for DeltaManager {
             optimize = optimize.with_filters(&filters);
         }
 
-        let (dt, metrics) = optimize.await?;
+        let (_dt, metrics) = optimize.await?;
 
         //let commit_info = table.history(None).await?;
 

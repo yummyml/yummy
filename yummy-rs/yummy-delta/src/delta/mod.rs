@@ -3,7 +3,7 @@ pub mod error;
 pub mod info;
 pub mod read;
 pub mod write;
-use crate::config::{ColumnSchema, DeltaConfig, DeltaStoreConfig};
+use crate::config::{DeltaConfig, DeltaStoreConfig};
 use crate::delta::error::DeltaError;
 use crate::models::{
     CreateRequest, CreateResponse, OptimizeRequest, OptimizeResponse, QueryResponse, ResponseStore,
@@ -11,7 +11,6 @@ use crate::models::{
 };
 use async_trait::async_trait;
 use chrono::Duration;
-use datafusion::datasource::TableProvider;
 use datafusion::physical_plan::SendableRecordBatchStream;
 use deltalake::arrow::{datatypes::DataType, record_batch::RecordBatch};
 use deltalake::operations::vacuum::VacuumBuilder;
@@ -140,6 +139,7 @@ impl DeltaManager {
         Ok(table)
     }
 
+    #[allow(dead_code)]
     async fn schema(
         &self,
         store_name: &String,
@@ -203,7 +203,7 @@ impl DeltaManager {
         table_name: &String,
         vacuum_request: VacuumRequest,
     ) -> Result<VacuumResponse, Box<dyn Error>> {
-        let mut table = self.table(store_name, table_name, None, None).await?;
+        let table = self.table(store_name, table_name, None, None).await?;
 
         let mut vacuum_op = VacuumBuilder::new(table.object_store(), table.state.clone());
 
@@ -220,7 +220,7 @@ impl DeltaManager {
             vacuum_op = vacuum_op.with_enforce_retention_duration(enforce_retention_duration);
         }
 
-        let (table, result) = vacuum_op.await?;
+        let (_table, result) = vacuum_op.await?;
 
         Ok(VacuumResponse {
             dry_run: result.dry_run,

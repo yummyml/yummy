@@ -2,18 +2,15 @@ use crate::delta::{
     read::map_record_batch, DeltaCommands, DeltaInfo, DeltaManager, DeltaRead, DeltaWrite,
 };
 use crate::models::{
-    CreateRequest, DetailsQuery, OptimizeRequest, QueryRequest, ResponseStores, ResponseTables,
+    CreateRequest, DetailsQuery, OptimizeRequest, QueryRequest, ResponseStores,
     VacuumRequest, WriteRequest,
 };
-use actix_web::http::StatusCode;
-use actix_web::{error, get, post, web, HttpResponse, Responder, Result};
+use actix_web::{web, HttpResponse, Responder, Result};
 use deltalake::action::SaveMode;
-use derive_more::{Display, Error};
-use serde::{Deserialize, Serialize};
 use std::error::Error;
 
 use crate::delta::error::DeltaError;
-use bytes::{BufMut, Bytes, BytesMut};
+use bytes::{Bytes, BytesMut};
 
 use datafusion::physical_plan::SendableRecordBatchStream;
 use futures::stream::StreamExt;
