@@ -2,7 +2,6 @@ use crate::common::{EntityValue, Result};
 use crate::config::{ColumnSchema, DeltaConfig};
 use crate::err;
 use crate::models::{CreateRequest, OptimizeRequest, VacuumRequest, WriteRequest};
-//use anyhow::{anyhow, Result};
 use deltalake::Schema;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
