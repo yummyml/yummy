@@ -18,6 +18,25 @@ use std::sync::Arc;
 
 #[async_trait]
 impl DeltaWrite for DeltaManager {
+
+    async fn write_batches(&self,
+        store_name: &String,
+        table_name: &String,
+        record_batches: Vec<RecordBatch>,
+        save_mode: SaveMode,
+    ) -> Result<WriteResponse, Box<dyn Error>> {
+        let table = self.table(store_name, table_name, None, None).await?;
+        let table_new = DeltaOps(table)
+            .write(record_batches)
+            .with_save_mode(save_mode)
+            .await?;
+
+        Ok(WriteResponse {
+            table: table_name.to_string(),
+            version: table_new.version(),
+        })
+    }
+
     async fn write(
         &self,
         store_name: &String,

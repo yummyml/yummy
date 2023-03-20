@@ -5,8 +5,12 @@ use crate::delta::{
 };
 use crate::err;
 use crate::models::{CreateRequest, OptimizeRequest, VacuumRequest, WriteRequest};
+use datafusion::execution::context::SessionContext;
+use datafusion::prelude::*;
+use deltalake::DeltaOps;
 use serde::Deserialize;
 use std::fs;
+use url::Url;
 
 #[derive(thiserror::Error, Debug)]
 pub enum ApplyError {
@@ -14,6 +18,10 @@ pub enum ApplyError {
     NoConfig,
     #[error("Delta table kind must contain store in metadata")]
     WrongTableMetadata,
+    #[error("Delta optimize kind must contain store and table in metadata")]
+    WrongOptimizeMetadata,
+    #[error("Delta vacuum kind must contain store and table in metadata")]
+    WrongVacuumMetadata,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -91,19 +99,86 @@ impl DeltaApply {
         let delta_manager = DeltaManager { config: conf };
 
         for o in &self.delta_objects {
-            if let DeltaObject::Table { metadata, spec } = o {
-                let store_name = metadata
-                    .clone()
-                    .store
-                    .ok_or(err!(ApplyError::WrongTableMetadata))?;
-                let table_name = spec
-                    .clone()
-                    .table;
-                let table = &delta_manager
-                    .details(&store_name, &table_name, None, None)
-                    .await?;
+            match o {
+                DeltaObject::Table { metadata, spec } => {
+                    let store_name = metadata
+                        .clone()
+                        .store
+                        .ok_or(err!(ApplyError::WrongTableMetadata))?;
+                    let table_name = spec.clone().table;
 
-                println!("{:?}", table);
+                    match &delta_manager.create(&store_name, spec.clone()).await {
+                        Ok(r) => {
+                            println!("\x1b[92mSuccess - table created\x1b[0m");
+                            println!("\x1b[92m{:#?}\x1b[0m", spec.clone());
+                            println!("\x1b[92m{:#?}\x1b[0m", r);
+                        }
+                        Err(e) => {
+                            println!("\x1b[93mSkipped - {:#?}\x1b[0m", e.source().unwrap());
+                        }
+                    }
+
+                    /*
+                    let table = &delta_manager
+                        .details(&store_name, &table_name, None, None)
+                        .await?;
+
+                    println!("\x1b[92m{:#?}\x1b[0m", table);
+                    println!("\x1b[92m{:#?}\x1b[0m", spec);
+                    */
+                }
+                DeltaObject::Optimize { metadata, spec } => {
+                    let store_name = metadata
+                        .clone()
+                        .store
+                        .ok_or(err!(ApplyError::WrongOptimizeMetadata))?;
+                    let table_name = metadata
+                        .clone()
+                        .table
+                        .ok_or(err!(ApplyError::WrongOptimizeMetadata))?;
+
+                    match &delta_manager
+                        .optimize(&store_name, &table_name, spec.clone())
+                        .await
+                    {
+                        Ok(r) => {
+                            println!(
+                                "\x1b[92mSuccess - table {:#?} optimized\x1b[0m",
+                                &table_name
+                            );
+                            println!("\x1b[92m{:#?}\x1b[0m", spec.clone());
+                            println!("\x1b[92m{:#?}\x1b[0m", r);
+                        }
+                        Err(e) => {
+                            println!("\x1b[93mSkipped - {:#?}\x1b[0m", e.source().unwrap());
+                        }
+                    }
+                }
+                DeltaObject::Vacuum { metadata, spec } => {
+                    let store_name = metadata
+                        .clone()
+                        .store
+                        .ok_or(err!(ApplyError::WrongOptimizeMetadata))?;
+                    let table_name = metadata
+                        .clone()
+                        .table
+                        .ok_or(err!(ApplyError::WrongOptimizeMetadata))?;
+
+                    match &delta_manager
+                        .vacuum(&store_name, &table_name, spec.clone())
+                        .await
+                    {
+                        Ok(r) => {
+                            println!("\x1b[92mSuccess - table {:#?} vacuumed\x1b[0m", &table_name);
+                            println!("\x1b[92m{:#?}\x1b[0m", spec.clone());
+                            println!("\x1b[92m{:#?}\x1b[0m", r);
+                        }
+                        Err(e) => {
+                            println!("\x1b[93mSkipped - {:#?}\x1b[0m", e.source().unwrap());
+                        }
+                    }
+                }
+                DeltaObject::Config { metadata, spec } => {}
             }
         }
 
@@ -111,7 +186,6 @@ impl DeltaApply {
     }
 }
 
-//#[test]
 #[tokio::test]
 async fn test_apply() -> Result<()> {
     let path = "../tests/delta/apply.yaml".to_string();
@@ -120,6 +194,71 @@ async fn test_apply() -> Result<()> {
 
     delta_apply.apply().await?;
 
+    //https://github.com/mackwic/colored/blob/master/src/color.rs
+    //
+    //println!("\x1b[91mError\x1b[0m");
+    //println!("\x1b[92mSuccess\x1b[0m");
+    //println!("\x1b[93mWarning\x1b[0m");
     //assert_eq!(delta_apply.delta_objects.len(), 4);
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_read() -> Result<()> {
+    let path = "az://test/".to_string();
+
+    let ops = DeltaOps::try_from_uri(&path).await?;
+    let os = ops.0.object_store();
+    let url = Url::parse(&path)?;
+
+    println!("{:?}", os);
+
+    let ctx = SessionContext::new();
+
+    ctx.runtime_env().register_object_store(
+        url.scheme(),
+        url.host_str().unwrap_or_default(),
+        os.storage_backend(),
+    );
+
+    ctx.register_parquet(
+        "alltypes_plain",
+        &"az://test/data.parquet".to_string(),
+        ParquetReadOptions::default(),
+    )
+    .await?;
+
+    // execute the query
+    let df = ctx.sql("SELECT * FROM alltypes_plain limit 10").await?;
+
+    // print the results
+    //df.show().await?;
+    //df.collect_partitioned()
+    //df.coll
+    //
+    let path = "../tests/delta/apply.yaml".to_string();
+    let delta_apply = DeltaApply::new(&path)?;
+    let config = delta_apply.config;
+
+    let conf = if let DeltaObject::Config { metadata, spec } = &config {
+        spec.clone()
+    } else {
+        panic!("TTT");
+    };
+    let delta_manager = DeltaManager { config: conf };
+
+    let rb = df.collect().await?;
+
+    /*
+    println!("##############################################");
+    println!("{:#?}", rb[0].schema());
+    let tb = delta_manager.table(&"az".to_string(),&"test_delta_5".to_string(), None, None).await?;
+    let meta = tb.get_metadata()?;
+    //let curr_schema: ArrowSchemaRef = Arc::new((&meta.schema).try_into()?);
+    println!("##############################################");
+    println!("{:#?}", &meta.schema);
+    */
+    delta_manager.write_batches(&"az".to_string(),&"test_delta_5".to_string(), rb, deltalake::action::SaveMode::Append).await?;
+
     Ok(())
 }

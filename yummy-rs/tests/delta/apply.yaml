@@ -15,15 +15,54 @@ metadata:
   name: mytable
   store: az
 spec:
-  table: "test_delta_4"
+  table: "test_delta_5"
   schema:
-    - name: col1
-      type: integer
-      nullable: false
-    - name: col2
-      type: string
-      nullable: false
-  partition_columns: ["col2"]
+    - name: f0
+      type: double
+      nullable: true
+    - name: f1
+      type: double
+      nullable: true
+    - name: f2
+      type: double
+      nullable: true
+    - name: f3
+      type: double
+      nullable: true
+    - name: f4
+      type: double
+      nullable: true
+    - name: f5
+      type: double
+      nullable: true
+    - name: f6
+      type: double
+      nullable: true
+    - name: f7
+      type: double
+      nullable: true
+    - name: f8
+      type: double
+      nullable: true
+    - name: f9
+      type: double
+      nullable: true
+    - name: y
+      type: double
+      nullable: true
+    - name: entity_id
+      type: long
+      nullable: true
+    - name: datetime
+      type: timestamp
+      nullable: true
+    - name: created
+      type: timestamp
+      nullable: true
+    - name: month_year
+      type: timestamp
+      nullable: true
+  partition_columns: ["month_year"]
   comment: "Hello from delta"
 ---
 kind: optimize

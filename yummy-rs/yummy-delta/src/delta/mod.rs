@@ -80,6 +80,13 @@ pub trait DeltaRead {
 
 #[async_trait]
 pub trait DeltaWrite {
+    async fn write_batches(&self,
+        store_name: &String,
+        table_name: &String,
+        record_batches: Vec<RecordBatch>,
+        save_mode: SaveMode,
+    ) -> Result<WriteResponse, Box<dyn Error>>;
+
     async fn write(
         &self,
         store_name: &String,
@@ -121,7 +128,7 @@ impl DeltaManager {
         Ok(path)
     }
 
-    async fn table(
+    pub async fn table(
         &self,
         store_name: &String,
         table_name: &String,
