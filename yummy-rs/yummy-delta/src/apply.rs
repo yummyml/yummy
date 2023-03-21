@@ -51,6 +51,10 @@ pub enum DeltaObject {
         metadata: Metadata,
         spec: VacuumRequest,
     },
+    Job {
+        metadata: Metadata,
+        spec: VacuumRequest,
+    },
 }
 
 #[derive(Deserialize, Debug)]
@@ -178,7 +182,8 @@ impl DeltaApply {
                         }
                     }
                 }
-                DeltaObject::Config { metadata, spec } => {}
+                DeltaObject::Config { metadata, spec } => {},
+                DeltaObject::Job { metadata, spec } => {},
             }
         }
 

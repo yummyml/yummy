@@ -3,11 +3,13 @@ pub mod error;
 pub mod info;
 pub mod read;
 pub mod write;
+pub mod jobs;
 use crate::config::{DeltaConfig, DeltaStoreConfig};
 use crate::delta::error::DeltaError;
 use crate::models::{
-    CreateRequest, CreateResponse, OptimizeRequest, OptimizeResponse, QueryResponse, ResponseStore,
-    ResponseTable, ResponseTables, VacuumRequest, VacuumResponse, WriteRequest, WriteResponse,
+    CreateRequest, CreateResponse, JobRequest, JobResponse, OptimizeRequest, OptimizeResponse,
+    QueryResponse, ResponseStore, ResponseTable, ResponseTables, VacuumRequest, VacuumResponse,
+    WriteRequest, WriteResponse,
 };
 use async_trait::async_trait;
 use chrono::Duration;
@@ -16,6 +18,14 @@ use deltalake::arrow::{datatypes::DataType, record_batch::RecordBatch};
 use deltalake::operations::vacuum::VacuumBuilder;
 use deltalake::{action::SaveMode, DeltaOps, DeltaTable, Schema, SchemaDataType};
 use std::error::Error;
+
+#[async_trait]
+pub trait DeltaJobs {
+    async fn job(
+        &self,
+        job_request: JobRequest,
+    ) -> Result<JobResponse, Box<dyn Error>>;
+}
 
 #[async_trait]
 pub trait DeltaInfo {
@@ -80,7 +90,8 @@ pub trait DeltaRead {
 
 #[async_trait]
 pub trait DeltaWrite {
-    async fn write_batches(&self,
+    async fn write_batches(
+        &self,
         store_name: &String,
         table_name: &String,
         record_batches: Vec<RecordBatch>,

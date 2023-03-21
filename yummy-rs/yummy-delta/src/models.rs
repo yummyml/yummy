@@ -113,3 +113,50 @@ pub struct VacuumResponse {
     pub dry_run: bool,
     pub files_deleted: Vec<String>,
 }
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(tag = "type", rename_all = "camelCase")]
+pub enum JobTable {
+    Parquet {
+        name: String,
+        path: String,
+    },
+    Csv {
+        name: String,
+        path: String,
+    },
+    Json {
+        name: String,
+        path: String,
+    },
+    Delta {
+        name: String,
+        table: String,
+    },
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct JobSource {
+    pub store: String,
+    pub tables: Vec<JobTable>,
+}
+
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct JobSink {
+    pub name: String,
+    pub store: String,
+    pub table: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct JobRequest {
+    pub source: JobSource,
+    pub sql: String,
+    pub sink: JobSink,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct JobResponse {
+    pub success: bool,
+}
