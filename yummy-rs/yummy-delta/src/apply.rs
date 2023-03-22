@@ -1,10 +1,11 @@
 use crate::common::Result;
 use crate::config::DeltaConfig;
 use crate::delta::{
-    read::map_record_batch, DeltaCommands, DeltaInfo, DeltaManager, DeltaRead, DeltaWrite,
+    read::map_record_batch, DeltaCommands, DeltaInfo, DeltaJobs, DeltaManager, DeltaRead,
+    DeltaWrite,
 };
 use crate::err;
-use crate::models::{CreateRequest, OptimizeRequest, VacuumRequest, WriteRequest};
+use crate::models::{CreateRequest, JobRequest, OptimizeRequest, VacuumRequest, WriteRequest};
 use datafusion::execution::context::SessionContext;
 use datafusion::prelude::*;
 use deltalake::DeltaOps;
@@ -53,7 +54,7 @@ pub enum DeltaObject {
     },
     Job {
         metadata: Metadata,
-        spec: VacuumRequest,
+        spec: JobRequest,
     },
 }
 
@@ -182,8 +183,19 @@ impl DeltaApply {
                         }
                     }
                 }
-                DeltaObject::Config { metadata, spec } => {},
-                DeltaObject::Job { metadata, spec } => {},
+                DeltaObject::Config { metadata, spec } => {}
+                DeltaObject::Job { metadata, spec } => {
+                    match &delta_manager.job(spec.clone()).await {
+                        Ok(r) => {
+                            println!("\x1b[92mSuccess - job finished\x1b[0m");
+                            println!("\x1b[92m{:#?}\x1b[0m", spec.clone());
+                            println!("\x1b[92m{:#?}\x1b[0m", r);
+                        }
+                        Err(e) => {
+                            println!("\x1b[93mSkipped - {:#?}\x1b[0m", e.source().unwrap());
+                        }
+                    }
+                }
             }
         }
 
@@ -207,6 +219,24 @@ async fn test_apply() -> Result<()> {
     //assert_eq!(delta_apply.delta_objects.len(), 4);
     Ok(())
 }
+
+#[tokio::test]
+async fn test_apply_job() -> Result<()> {
+    let path = "../tests/delta/apply_job.yaml".to_string();
+    let delta_apply = DeltaApply::new(&path)?;
+    //println!("{:?}", delta_apply);
+
+    delta_apply.apply().await?;
+
+    //https://github.com/mackwic/colored/blob/master/src/color.rs
+    //
+    //println!("\x1b[91mError\x1b[0m");
+    //println!("\x1b[92mSuccess\x1b[0m");
+    //println!("\x1b[93mWarning\x1b[0m");
+    //assert_eq!(delta_apply.delta_objects.len(), 4);
+    Ok(())
+}
+
 
 #[tokio::test]
 async fn test_read() -> Result<()> {
@@ -263,7 +293,14 @@ async fn test_read() -> Result<()> {
     println!("##############################################");
     println!("{:#?}", &meta.schema);
     */
-    delta_manager.write_batches(&"az".to_string(),&"test_delta_5".to_string(), rb, deltalake::action::SaveMode::Append).await?;
+    delta_manager
+        .write_batches(
+            &"az".to_string(),
+            &"test_delta_5".to_string(),
+            rb,
+            deltalake::action::SaveMode::Append,
+        )
+        .await?;
 
     Ok(())
 }
