@@ -1,9 +1,9 @@
 pub mod commands;
 pub mod error;
 pub mod info;
+pub mod jobs;
 pub mod read;
 pub mod write;
-pub mod jobs;
 use crate::config::{DeltaConfig, DeltaStoreConfig};
 use crate::delta::error::DeltaError;
 use crate::models::{
@@ -16,15 +16,14 @@ use chrono::Duration;
 use datafusion::physical_plan::SendableRecordBatchStream;
 use deltalake::arrow::{datatypes::DataType, record_batch::RecordBatch};
 use deltalake::operations::vacuum::VacuumBuilder;
-use deltalake::{action::SaveMode, DeltaOps, DeltaTable, Schema, SchemaDataType};
+use deltalake::{
+    action::SaveMode, builder::DeltaTableBuilder, DeltaOps, DeltaTable, Schema, SchemaDataType,
+};
 use std::error::Error;
 
 #[async_trait]
 pub trait DeltaJobs {
-    async fn job(
-        &self,
-        job_request: JobRequest,
-    ) -> Result<JobResponse, Box<dyn Error>>;
+    async fn job(&self, job_request: JobRequest) -> Result<JobResponse, Box<dyn Error>>;
 }
 
 #[async_trait]
@@ -129,12 +128,11 @@ impl DeltaManager {
         Ok(store)
     }
 
-    fn path(&self, store_name: &String, table_name: &String) -> Result<String, Box<dyn Error>> {
-        let store = self.store(store_name)?.path.to_string();
-        let path = if store.ends_with("/") {
-            format!("{}{}", &store, table_name)
+    fn path(&self, store_path: &String, table_name: &String) -> Result<String, Box<dyn Error>> {
+        let path = if store_path.ends_with("/") {
+            format!("{}{}", &store_path, table_name)
         } else {
-            format!("{}/{}", &store, table_name)
+            format!("{}/{}", &store_path, table_name)
         };
         Ok(path)
     }
@@ -146,14 +144,36 @@ impl DeltaManager {
         table_version: Option<i64>,
         table_date: Option<String>,
     ) -> Result<DeltaTable, Box<dyn Error>> {
-        let path = self.path(&store_name, &table_name)?;
-        let table = if let Some(ver) = table_version {
-            deltalake::open_table_with_version(path, ver).await?
+        let store = self.store(store_name)?;
+        let table = self
+            .table_from_store(store, table_name, table_version, table_date)
+            .await?;
+        Ok(table)
+    }
+
+    async fn table_from_store(
+        &self,
+        store: &DeltaStoreConfig,
+        table_name: &String,
+        table_version: Option<i64>,
+        table_date: Option<String>,
+    ) -> Result<DeltaTable, Box<dyn Error>> {
+        let table_uri = self.path(&store.path, &table_name)?;
+
+        let mut builder = DeltaTableBuilder::from_uri(table_uri);
+
+        if let Some(ver) = table_version {
+            builder = builder.with_version(ver);
         } else if let Some(ds) = table_date {
-            deltalake::open_table_with_ds(path, ds).await?
-        } else {
-            deltalake::open_table(path).await?
-        };
+            builder = builder.with_datestring(ds)?;
+        }
+
+        if let Some(storage_options) = &store.storage_options {
+            builder = builder.with_storage_options(storage_options.clone());
+        }
+
+        let table = builder.load().await?;
+
         Ok(table)
     }
 

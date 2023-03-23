@@ -19,9 +19,15 @@ use url::Url;
 #[async_trait]
 impl DeltaJobs for DeltaManager {
     async fn job(&self, job_request: JobRequest) -> Result<JobResponse> {
-        let store_path = &self.store(&job_request.source.store)?.path;
+        let store = &self.store(&job_request.source.store)?;
+        let store_path = &store.path;
 
-        let ops = DeltaOps::try_from_uri(&store_path).await?;
+        let mut builder = DeltaTableBuilder::from_uri(&store_path);
+        if let Some(storage_options) = &store.storage_options {
+            builder = builder.with_storage_options(storage_options.clone());
+        }
+
+        let ops: DeltaOps = builder.build()?.into();
         let os = ops.0.object_store();
         let url = Url::parse(&store_path)?;
 

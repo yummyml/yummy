@@ -1,5 +1,6 @@
 use crate::common::Result;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::fs;
 
 #[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
@@ -11,6 +12,7 @@ pub struct DeltaConfig {
 pub struct DeltaStoreConfig {
     pub name: String,
     pub path: String,
+    pub storage_options: Option<HashMap<String, String>>,
 }
 
 impl DeltaConfig {
