@@ -11,7 +11,7 @@ use datafusion::prelude::*;
 use deltalake::DeltaOps;
 use serde::Deserialize;
 use std::fs;
-use url::Url;
+use url::{ParseError, Url};
 
 #[derive(thiserror::Error, Debug)]
 pub enum ApplyError {
@@ -65,8 +65,13 @@ pub struct DeltaApply {
 }
 
 impl DeltaApply {
-    pub fn new(path: &String) -> Result<DeltaApply> {
-        let s = fs::read_to_string(path)?;
+    pub async fn new(path: &String) -> Result<DeltaApply> {
+        let s = if Url::parse(path).is_ok() {
+            reqwest::get(path).await?.text().await?
+        } else {
+            fs::read_to_string(path)?
+        };
+
         let mut objects = Vec::new();
         for document in serde_yaml::Deserializer::from_str(&s) {
             let o = DeltaObject::deserialize(document)?;
@@ -204,9 +209,17 @@ impl DeltaApply {
 }
 
 #[tokio::test]
+async fn test_config_local() -> Result<()> {
+    let path = "../tests/delta/apply.yaml".to_string();
+    let delta_apply = DeltaApply::new(&path).await?;
+    println!("{:?}", delta_apply);
+    Ok(())
+}
+
+#[tokio::test]
 async fn test_apply() -> Result<()> {
     let path = "../tests/delta/apply.yaml".to_string();
-    let delta_apply = DeltaApply::new(&path)?;
+    let delta_apply = DeltaApply::new(&path).await?;
     //println!("{:?}", delta_apply);
 
     delta_apply.apply().await?;
@@ -223,7 +236,7 @@ async fn test_apply() -> Result<()> {
 #[tokio::test]
 async fn test_apply_job() -> Result<()> {
     let path = "../tests/delta/apply_job.yaml".to_string();
-    let delta_apply = DeltaApply::new(&path)?;
+    let delta_apply = DeltaApply::new(&path).await?;
     //println!("{:?}", delta_apply);
 
     delta_apply.apply().await?;
@@ -236,7 +249,6 @@ async fn test_apply_job() -> Result<()> {
     //assert_eq!(delta_apply.delta_objects.len(), 4);
     Ok(())
 }
-
 
 #[tokio::test]
 async fn test_read() -> Result<()> {
@@ -272,7 +284,7 @@ async fn test_read() -> Result<()> {
     //df.coll
     //
     let path = "../tests/delta/apply.yaml".to_string();
-    let delta_apply = DeltaApply::new(&path)?;
+    let delta_apply = DeltaApply::new(&path).await?;
     let config = delta_apply.config;
 
     let conf = if let DeltaObject::Config { metadata, spec } = &config {

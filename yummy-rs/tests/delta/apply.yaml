@@ -71,7 +71,7 @@ metadata:
   table: "test_delta_4"
   store: az
 spec:
-  target_size: 2000000
+  targetSize: 2000000
   filters: 
     - column: col2
       operator: "="
