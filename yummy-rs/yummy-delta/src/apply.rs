@@ -217,6 +217,15 @@ async fn test_config_local() -> Result<()> {
 }
 
 #[tokio::test]
+async fn test_config_url() -> Result<()> {
+    let path = "../tests/delta/apply.yaml".to_string();
+    let delta_apply = DeltaApply::new(&path).await?;
+    println!("{:?}", delta_apply);
+    Ok(())
+}
+
+
+#[tokio::test]
 async fn test_apply() -> Result<()> {
     let path = "../tests/delta/apply.yaml".to_string();
     let delta_apply = DeltaApply::new(&path).await?;

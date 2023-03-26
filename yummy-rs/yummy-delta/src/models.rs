@@ -33,6 +33,7 @@ pub struct ResponseTable {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(tag = "type", rename_all = "camelCase")]
 pub struct CreateRequest {
     pub table: String,
     pub schema: Vec<ColumnSchema>,
