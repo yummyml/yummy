@@ -1,4 +1,4 @@
-use crate::common::Result;
+use crate::common::{ReplaceTokens, Result};
 use crate::config::DeltaConfig;
 use crate::delta::{
     read::map_record_batch, DeltaCommands, DeltaInfo, DeltaJobs, DeltaManager, DeltaRead,
@@ -66,14 +66,16 @@ pub struct DeltaApply {
 
 impl DeltaApply {
     pub async fn new(path: &String) -> Result<DeltaApply> {
-        let s = if Url::parse(path).is_ok() {
+        let mut configuration_str = if Url::parse(path).is_ok() {
             reqwest::get(path).await?.text().await?
         } else {
             fs::read_to_string(path)?
         };
 
+        configuration_str = ReplaceTokens::replace(&configuration_str)?;
+
         let mut objects = Vec::new();
-        for document in serde_yaml::Deserializer::from_str(&s) {
+        for document in serde_yaml::Deserializer::from_str(&configuration_str) {
             let o = DeltaObject::deserialize(document)?;
             objects.push(o);
         }
@@ -188,7 +190,10 @@ impl DeltaApply {
                         }
                     }
                 }
-                DeltaObject::Config { metadata: _, spec: _ } => {}
+                DeltaObject::Config {
+                    metadata: _,
+                    spec: _,
+                } => {}
                 DeltaObject::Job { metadata: _, spec } => {
                     match &delta_manager.job(spec.clone()).await {
                         Ok(r) => {
@@ -223,7 +228,6 @@ async fn test_config_url() -> Result<()> {
     println!("{:?}", delta_apply);
     Ok(())
 }
-
 
 #[tokio::test]
 async fn test_apply() -> Result<()> {
