@@ -1,7 +1,6 @@
 use crate::common::Result;
-use crate::config::ColumnSchema;
 use crate::delta::{DeltaJobs, DeltaManager, DeltaWrite};
-use crate::models::{JobRequest, JobResponse, JobSink, JobSource, JobTable};
+use crate::models::{JobRequest, JobResponse, JobTable};
 use async_trait::async_trait;
 use datafusion::execution::context::SessionContext;
 use datafusion::prelude::*;

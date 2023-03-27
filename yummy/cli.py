@@ -15,7 +15,7 @@ def cli(
 
 @cli.group(name='delta')
 def delta_cmd():
-    """Features related commands"""
+    """Delta server run command"""
     pass
 
 @delta_cmd.command("server")
@@ -33,7 +33,7 @@ def delta_cmd():
               )
 @click.option("--filename","-f",
               type=click.STRING,
-              default="feature_store.yaml",
+              default="delta.yaml",
               show_default=True,
               help='Configuration filename for the feature server.'
               )
@@ -58,6 +58,24 @@ def delta_server_command(
     except ModuleNotFoundError:
         package_installation_hint("yummy[delta]")
 
+@delta_cmd.command("apply")
+@click.option("--filename","-f",
+              type=click.STRING,
+              default="apply.yaml",
+              show_default=True,
+              help='Configuration filename for the feature server.'
+              )
+@click.pass_context
+def delta_apply_command(
+    ctx: click.Context,
+    filename: str,
+):
+    """Start rust apply delta."""
+    try:
+        import yummy_delta
+        yummy_delta.run_apply(filename)
+    except ModuleNotFoundError:
+        package_installation_hint("yummy[delta]")
 
 
 @cli.group(name='features')

@@ -11,7 +11,7 @@ use datafusion::prelude::*;
 use deltalake::DeltaOps;
 use serde::Deserialize;
 use std::fs;
-use url::{ParseError, Url};
+use url::Url;
 
 #[derive(thiserror::Error, Debug)]
 pub enum ApplyError {
@@ -101,7 +101,7 @@ impl DeltaApply {
     }
 
     pub async fn apply(&self) -> Result<()> {
-        let conf = if let DeltaObject::Config { metadata, spec } = &self.config {
+        let conf = if let DeltaObject::Config { metadata: _, spec } = &self.config {
             spec.clone()
         } else {
             return Err(err!(ApplyError::NoConfig));
@@ -115,7 +115,7 @@ impl DeltaApply {
                         .clone()
                         .store
                         .ok_or(err!(ApplyError::WrongTableMetadata))?;
-                    let table_name = spec.clone().table;
+                    let _table_name = spec.clone().table;
 
                     match &delta_manager.create(&store_name, spec.clone()).await {
                         Ok(r) => {
@@ -188,12 +188,12 @@ impl DeltaApply {
                         }
                     }
                 }
-                DeltaObject::Config { metadata, spec } => {}
-                DeltaObject::Job { metadata, spec } => {
+                DeltaObject::Config { metadata: _, spec: _ } => {}
+                DeltaObject::Job { metadata: _, spec } => {
                     match &delta_manager.job(spec.clone()).await {
                         Ok(r) => {
                             println!("\x1b[92mSuccess - job finished\x1b[0m");
-                            println!("\x1b[92m{:#?}\x1b[0m", spec.clone());
+                            //println!("\x1b[92m{:#?}\x1b[0m", spec.clone());
                             println!("\x1b[92m{:#?}\x1b[0m", r);
                         }
                         Err(e) => {
@@ -218,7 +218,7 @@ async fn test_config_local() -> Result<()> {
 
 #[tokio::test]
 async fn test_config_url() -> Result<()> {
-    let path = "../tests/delta/apply.yaml".to_string();
+    let path = "https://raw.githubusercontent.com/yummyml/yummy/yummy-rs-delta-0.7.0/yummy-rs/tests/delta/apply.yaml".to_string();
     let delta_apply = DeltaApply::new(&path).await?;
     println!("{:?}", delta_apply);
     Ok(())
@@ -296,7 +296,7 @@ async fn test_read() -> Result<()> {
     let delta_apply = DeltaApply::new(&path).await?;
     let config = delta_apply.config;
 
-    let conf = if let DeltaObject::Config { metadata, spec } = &config {
+    let conf = if let DeltaObject::Config { metadata: _, spec } = &config {
         spec.clone()
     } else {
         panic!("TTT");
