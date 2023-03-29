@@ -4,7 +4,7 @@ use crate::models::{CreateRequest, CreateResponse, OptimizeRequest, OptimizeResp
 use async_trait::async_trait;
 use deltalake::delta_config::DeltaConfigKey;
 use deltalake::PartitionFilter;
-use deltalake::{DeltaOps, SchemaDataType, SchemaField, builder::DeltaTableBuilder};
+use deltalake::{builder::DeltaTableBuilder, DeltaOps, SchemaDataType, SchemaField};
 use std::error::Error;
 use std::fs;
 use std::path::Path;
@@ -26,9 +26,10 @@ impl DeltaCommands for DeltaManager {
         let configuration = create_request.configuration;
         let metadata = create_request.metadata;
 
-        if (path.starts_with("file://") || path.starts_with("/")) && !Path::exists(Path::new(&path))
-        {
-            fs::create_dir_all(&path)?;
+        if (path.starts_with("file://") || path.starts_with("/")) {
+            if !Path::exists(Path::new(&path)) {
+                fs::create_dir_all(&path)?;
+            }
             path = self.path(&store.path, &table_name)?;
         }
 

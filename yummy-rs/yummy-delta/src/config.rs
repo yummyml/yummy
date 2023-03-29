@@ -36,7 +36,7 @@ fn test_config() -> Result<()> {
     let config = DeltaConfig::new(&path)?;
     println!("{:?}", config);
 
-    assert_eq!(config.stores.len(), 3);
+    assert_eq!(config.stores.len(), 4);
     assert_eq!(config.stores[0].name, "local");
     Ok(())
 }

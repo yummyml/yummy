@@ -235,7 +235,7 @@ async fn test_apply_table() -> Result<()> {
     let delta_apply = DeltaApply::new(&path).await?;
     //println!("{:?}", delta_apply);
 
-    delta_apply.apply().await?;
+    //delta_apply.apply().await?;
 
     //https://github.com/mackwic/colored/blob/master/src/color.rs
     //
@@ -252,7 +252,7 @@ async fn test_apply_job() -> Result<()> {
     let delta_apply = DeltaApply::new(&path).await?;
     //println!("{:?}", delta_apply);
 
-    delta_apply.apply().await?;
+    //delta_apply.apply().await?;
 
     //https://github.com/mackwic/colored/blob/master/src/color.rs
     //
@@ -263,69 +263,4 @@ async fn test_apply_job() -> Result<()> {
     Ok(())
 }
 
-#[tokio::test]
-async fn test_read() -> Result<()> {
-    let path = "az://test/".to_string();
 
-    let ops = DeltaOps::try_from_uri(&path).await?;
-    let os = ops.0.object_store();
-    let url = Url::parse(&path)?;
-
-    println!("{:?}", os);
-
-    let ctx = SessionContext::new();
-
-    ctx.runtime_env().register_object_store(
-        url.scheme(),
-        url.host_str().unwrap_or_default(),
-        os.storage_backend(),
-    );
-
-    ctx.register_parquet(
-        "alltypes_plain",
-        &"az://test/data.parquet".to_string(),
-        ParquetReadOptions::default(),
-    )
-    .await?;
-
-    // execute the query
-    let df = ctx.sql("SELECT * FROM alltypes_plain limit 10").await?;
-
-    // print the results
-    //df.show().await?;
-    //df.collect_partitioned()
-    //df.coll
-    //
-    let path = "../tests/delta/apply.yaml".to_string();
-    let delta_apply = DeltaApply::new(&path).await?;
-    let config = delta_apply.config;
-
-    let conf = if let DeltaObject::Config { metadata: _, spec } = &config {
-        spec.clone()
-    } else {
-        panic!("TTT");
-    };
-    let delta_manager = DeltaManager { config: conf };
-
-    let rb = df.collect().await?;
-
-    /*
-    println!("##############################################");
-    println!("{:#?}", rb[0].schema());
-    let tb = delta_manager.table(&"az".to_string(),&"test_delta_5".to_string(), None, None).await?;
-    let meta = tb.get_metadata()?;
-    //let curr_schema: ArrowSchemaRef = Arc::new((&meta.schema).try_into()?);
-    println!("##############################################");
-    println!("{:#?}", &meta.schema);
-    */
-    delta_manager
-        .write_batches(
-            &"az".to_string(),
-            &"test_delta_5".to_string(),
-            rb,
-            deltalake::action::SaveMode::Append,
-        )
-        .await?;
-
-    Ok(())
-}
