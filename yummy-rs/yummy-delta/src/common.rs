@@ -136,6 +136,8 @@ async fn test_replace_tokens() -> Result<()> {
     env::set_var("Q_2", "TOKEN2");
     let mut text = "${Q_1} ${Q_2}".to_string();
     text = ReplaceTokens::replace(&text)?;
+    env::remove_var("Q_1");
+    env::remove_var("Q_2");
 
     assert_eq!(text, "TOKEN1 TOKEN2");
 

@@ -5,7 +5,7 @@ help: ## This help.
 
 tt:
 	#cargo test -- --show-output
-	cd ./yummy-delta/ && cargo test -- apply::test_apply  --show-output
+	cd ./yummy-delta/ && cargo test -- apply::test_apply_table  --show-output
 
 tr:
 	#cargo test -- --show-output

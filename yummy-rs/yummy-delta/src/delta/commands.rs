@@ -4,7 +4,7 @@ use crate::models::{CreateRequest, CreateResponse, OptimizeRequest, OptimizeResp
 use async_trait::async_trait;
 use deltalake::delta_config::DeltaConfigKey;
 use deltalake::PartitionFilter;
-use deltalake::{DeltaOps, SchemaDataType, SchemaField};
+use deltalake::{DeltaOps, SchemaDataType, SchemaField, builder::DeltaTableBuilder};
 use std::error::Error;
 use std::fs;
 use std::path::Path;
@@ -18,7 +18,8 @@ impl DeltaCommands for DeltaManager {
         create_request: CreateRequest,
     ) -> Result<CreateResponse, Box<dyn Error>> {
         let table_name = create_request.table;
-        let path = self.path(&store_name, &table_name)?;
+        let store = self.store(&store_name)?;
+        let mut path = (&store.path).clone();
         let schema: Vec<ColumnSchema> = create_request.schema;
         let partition_columns: Option<Vec<String>> = create_request.partition_columns;
         let comment: Option<String> = create_request.comment;
@@ -28,6 +29,7 @@ impl DeltaCommands for DeltaManager {
         if (path.starts_with("file://") || path.starts_with("/")) && !Path::exists(Path::new(&path))
         {
             fs::create_dir_all(&path)?;
+            path = self.path(&store.path, &table_name)?;
         }
 
         let delta_schema: Vec<SchemaField> = schema
@@ -42,7 +44,13 @@ impl DeltaCommands for DeltaManager {
             })
             .collect();
 
-        let ops = DeltaOps::try_from_uri(path).await?;
+        let mut builder = DeltaTableBuilder::from_uri(&path);
+        if let Some(storage_options) = &store.storage_options {
+            builder = builder.with_storage_options(storage_options.clone());
+        }
+
+        let ops: DeltaOps = builder.build()?.into();
+
         let mut table = ops
             .create()
             .with_columns(delta_schema)
