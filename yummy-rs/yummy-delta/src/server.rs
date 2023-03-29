@@ -2,8 +2,8 @@ use crate::delta::{
     read::map_record_batch, DeltaCommands, DeltaInfo, DeltaManager, DeltaRead, DeltaWrite,
 };
 use crate::models::{
-    CreateRequest, DetailsQuery, OptimizeRequest, QueryRequest, ResponseStores,
-    VacuumRequest, WriteRequest,
+    CreateRequest, DetailsQuery, OptimizeRequest, QueryRequest, ResponseStores, VacuumRequest,
+    WriteRequest,
 };
 use actix_web::{web, HttpResponse, Responder, Result};
 use deltalake::action::SaveMode;

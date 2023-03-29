@@ -1,14 +1,14 @@
+pub mod apply;
 pub mod common;
 pub mod config;
 pub mod delta;
 pub mod models;
 pub mod server;
-pub mod apply;
 
 use actix_web::middleware::Logger;
 use actix_web::{web, App, HttpServer};
-use delta::DeltaManager;
 use apply::DeltaApply;
+use delta::DeltaManager;
 use pyo3::prelude::*;
 use server::{
     append, create_table, details, health, list_stores, list_tables, optimize, overwrite,
@@ -45,10 +45,13 @@ fn yummy_delta(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
     Ok(())
 }
 
-pub async fn apply_delta(
-    config_path: String,
-) -> std::io::Result<()> {
-    DeltaApply::new(&config_path).await.unwrap().apply().await.unwrap();
+pub async fn apply_delta(config_path: String) -> std::io::Result<()> {
+    DeltaApply::new(&config_path)
+        .await
+        .unwrap()
+        .apply()
+        .await
+        .unwrap();
     Ok(())
 }
 

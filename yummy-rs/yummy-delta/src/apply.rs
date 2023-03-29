@@ -262,5 +262,3 @@ async fn test_apply_job() -> Result<()> {
     //assert_eq!(delta_apply.delta_objects.len(), 4);
     Ok(())
 }
-
-

@@ -18,8 +18,8 @@ use std::sync::Arc;
 
 #[async_trait]
 impl DeltaWrite for DeltaManager {
-
-    async fn write_batches(&self,
+    async fn write_batches(
+        &self,
         store_name: &String,
         table_name: &String,
         record_batches: Vec<RecordBatch>,
