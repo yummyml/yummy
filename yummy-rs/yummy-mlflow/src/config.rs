@@ -36,7 +36,7 @@ pub struct LightgbmConfig {
 
 impl MLConfig {
     pub fn new(path: &String) -> Result<MLConfig, Box<dyn Error>> {
-        let config_path = format!("{}/MLmodel", path);
+        let config_path = format!("{path}/MLmodel");
         let s = fs::read_to_string(config_path)?;
         let mut config: MLConfig = serde_yaml::from_str(&s)?;
         config.base_path = Some(path.to_string());

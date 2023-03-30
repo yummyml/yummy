@@ -100,7 +100,7 @@ pub async fn get_online_features(
             Some(feature_service) => {
                 let ff =
                     registry.get_feature_service(feature_service.clone(), project_name.clone());
-                (ff.clone(), serialize_fields(ff.clone()))
+                (ff.clone(), serialize_fields(ff))
             }
             None => {
                 let err = FeaturesError {

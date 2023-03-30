@@ -40,7 +40,7 @@ pub async fn serve_wrapper(
     let config = Config::new(&config_path).unwrap();
 
     env_logger::init_from_env(env_logger::Env::new().default_filter_or(log_level));
-    println!("Feature server running on http://{}:{}", host, port);
+    println!("Feature server running on http://{host}:{port}");
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(

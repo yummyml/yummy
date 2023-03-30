@@ -93,12 +93,30 @@ impl MLModel for CatboostModel {
             let mut cat: Vec<String> = Vec::new();
             f.iter().try_for_each(|x| -> Result<(), Box<dyn Error>> {
                 match x {
-                    EntityValue::INT32(v) => Ok(num.push(v.to_owned() as f32)),
-                    EntityValue::INT64(v) => Ok(num.push(v.to_owned() as f32)),
-                    EntityValue::FLOAT32(v) => Ok(num.push(v.to_owned() as f32)),
-                    EntityValue::FLOAT64(v) => Ok(num.push(v.to_owned() as f32)),
-                    EntityValue::BOOL(v) => Ok(num.push(v.to_owned() as i32 as f32)),
-                    EntityValue::STRING(v) => Ok(cat.push(v.to_owned())),
+                    EntityValue::INT32(v) => {
+                        num.push(v.to_owned() as f32);
+                        Ok(())
+                    }
+                    EntityValue::INT64(v) => {
+                        num.push(v.to_owned() as f32);
+                        Ok(())
+                    }
+                    EntityValue::FLOAT32(v) => {
+                        num.push(v.to_owned() as f32);
+                        Ok(())
+                    }
+                    EntityValue::FLOAT64(v) => {
+                        num.push(v.to_owned() as f32);
+                        Ok(())
+                    }
+                    EntityValue::BOOL(v) => {
+                        num.push(v.to_owned() as i32 as f32);
+                        Ok(())
+                    }
+                    EntityValue::STRING(v) => {
+                        cat.push(v.to_owned());
+                        Ok(())
+                    }
                     _ => Err(Box::new(CatboostError::ValidationNoFeatures)),
                 }?;
 

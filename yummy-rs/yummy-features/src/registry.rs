@@ -95,16 +95,14 @@ impl Registry {
     }
 
     pub fn get_feature_service(&self, name: String, project: String) -> Vec<String> {
-        let full_feature_names = match (&self.feature_services)
+        match (&self.feature_services)
             .into_iter()
             .filter(|fs| fs.name == name && fs.project == project)
             .last()
         {
             Some(f) => f.full_feature_names.clone(),
             None => Vec::new(),
-        };
-
-        full_feature_names
+        }
     }
 
     pub fn check_features(&self, features: Vec<String>) -> bool {

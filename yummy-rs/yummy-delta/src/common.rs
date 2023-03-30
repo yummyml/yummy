@@ -108,7 +108,7 @@ pub struct ReplaceTokens {}
 impl ReplaceTokens {
     pub fn replace(template: &String) -> Result<String> {
         let mut text = template.clone();
-        let tokens = Self::find_tokens(&template)?;
+        let tokens = Self::find_tokens(template)?;
         for token in tokens {
             let from = format!("${{{}}}", &token);
             let to = match env::var(&token) {

@@ -83,12 +83,14 @@ impl DeltaApply {
         let config = objects
             .clone()
             .into_iter()
-            .filter(|x| match x {
-                DeltaObject::Config {
-                    metadata: _m,
-                    spec: _s,
-                } => true,
-                _ => false,
+            .filter(|x| {
+                matches!(
+                    x,
+                    DeltaObject::Config {
+                        metadata: _m,
+                        spec: _s,
+                    }
+                )
             })
             .last();
 
@@ -123,7 +125,7 @@ impl DeltaApply {
                         Ok(r) => {
                             println!("\x1b[92mSuccess - table created\x1b[0m");
                             println!("\x1b[92m{:#?}\x1b[0m", spec.clone());
-                            println!("\x1b[92m{:#?}\x1b[0m", r);
+                            println!("\x1b[92m{r:#?}\x1b[0m");
                         }
                         Err(e) => {
                             println!("\x1b[93mSkipped - {:#?}\x1b[0m", e.source().unwrap());
@@ -159,7 +161,7 @@ impl DeltaApply {
                                 &table_name
                             );
                             println!("\x1b[92m{:#?}\x1b[0m", spec.clone());
-                            println!("\x1b[92m{:#?}\x1b[0m", r);
+                            println!("\x1b[92m{r:#?}\x1b[0m");
                         }
                         Err(e) => {
                             println!("\x1b[93mSkipped - {:#?}\x1b[0m", e.source().unwrap());
@@ -183,7 +185,7 @@ impl DeltaApply {
                         Ok(r) => {
                             println!("\x1b[92mSuccess - table {:#?} vacuumed\x1b[0m", &table_name);
                             println!("\x1b[92m{:#?}\x1b[0m", spec.clone());
-                            println!("\x1b[92m{:#?}\x1b[0m", r);
+                            println!("\x1b[92m{r:#?}\x1b[0m");
                         }
                         Err(e) => {
                             println!("\x1b[93mSkipped - {:#?}\x1b[0m", e.source().unwrap());
@@ -199,7 +201,7 @@ impl DeltaApply {
                         Ok(r) => {
                             println!("\x1b[92mSuccess - job finished\x1b[0m");
                             //println!("\x1b[92m{:#?}\x1b[0m", spec.clone());
-                            println!("\x1b[92m{:#?}\x1b[0m", r);
+                            println!("\x1b[92m{r:#?}\x1b[0m");
                         }
                         Err(e) => {
                             println!("\x1b[93mSkipped - {:#?}\x1b[0m", e.source().unwrap());
