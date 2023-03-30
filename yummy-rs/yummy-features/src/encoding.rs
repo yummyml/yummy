@@ -83,7 +83,7 @@ pub fn serialize_fields(fields: Vec<String>) -> Vec<Vec<u8>> {
 
 pub fn serialize_entity_keys(
     project_name: String,
-    join_keys: &Vec<String>,
+    join_keys: &[String],
     entities: &HashMap<String, Vec<EntityValue>>,
     serialization_version: i32,
 ) -> Result<Vec<Vec<u8>>, Box<dyn Error>> {
@@ -91,8 +91,7 @@ pub fn serialize_entity_keys(
     let entity_keys: Vec<Vec<u8>> = (0..n_keys)
         .into_iter()
         .map(|i| {
-            let entity_values = join_keys
-                .clone()
+            let entity_values = join_keys.to_owned()
                 .into_iter()
                 .map(|k| {
                     let sf_v = protobuf::SpecialFields::new();
@@ -118,8 +117,8 @@ pub fn serialize_entity_keys(
 
             let sf = protobuf::SpecialFields::new();
             let entity_key = EntityKey::EntityKey {
-                join_keys: join_keys.clone(),
-                entity_values: entity_values,
+                join_keys: join_keys.to_owned(),
+                entity_values,
                 special_fields: sf,
             };
 
