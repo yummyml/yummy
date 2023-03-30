@@ -13,7 +13,7 @@ use std::collections::HashMap;
 use std::error::Error;
 
 #[derive(Debug, Display, Error)]
-#[display(fmt = "request error: {}", name)]
+#[display(fmt = "request error: {name}")]
 pub struct FeaturesError {
     name: &'static str,
     status_code: u16,
@@ -100,7 +100,7 @@ pub async fn get_online_features(
             Some(feature_service) => {
                 let ff =
                     registry.get_feature_service(feature_service.clone(), project_name.clone());
-                (ff.clone(), serialize_fields(ff.clone()))
+                (ff.clone(), serialize_fields(ff))
             }
             None => {
                 let err = FeaturesError {
@@ -160,8 +160,7 @@ pub fn prepare_response(
         })
         .collect();
 
-    for j in 0..result.len() {
-        let r = &result[j];
+    for (j, r) in result.iter().enumerate() {
         for i in 0..n_join_keys.clone() {
             response_results[i].event_timestamps.push(now.to_string());
             response_results[i].statuses.push("PRESENT".to_string());
@@ -171,9 +170,8 @@ pub fn prepare_response(
             response_results[i].values.push(e_value);
         }
 
-        for i in 0..r.len() {
+        for (i, v) in r.iter().enumerate() {
             let z = i + n_join_keys.clone();
-            let v = &r[i];
             let vv: Value::Value = Message::parse_from_bytes(v).unwrap();
             response_results[z].event_timestamps.push(now.to_string());
             response_results[z].statuses.push("PRESENT".to_string());
@@ -182,10 +180,8 @@ pub fn prepare_response(
         }
     }
 
-    let resp = FeaturesResponse {
+    FeaturesResponse {
         metadata: Metadata { feature_names },
         results: response_results,
-    };
-
-    resp
+    }
 }

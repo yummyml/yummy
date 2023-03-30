@@ -1,0 +1,90 @@
+kind: config
+metadata: 
+  name: myconfig
+spec:
+  stores:
+    - name: local
+      path: "/tmp/delta-test-1/"
+    - name: local2
+      path: "/tmp/delta-test-2/"
+    - name: az
+      path: "az://delta-test-1/"
+---
+kind: table
+metadata: 
+  name: mytable
+  store: az
+spec:
+  table: "test_delta_5"
+  schema:
+    - name: f0
+      type: double
+      nullable: true
+    - name: f1
+      type: double
+      nullable: true
+    - name: f2
+      type: double
+      nullable: true
+    - name: f3
+      type: double
+      nullable: true
+    - name: f4
+      type: double
+      nullable: true
+    - name: f5
+      type: double
+      nullable: true
+    - name: f6
+      type: double
+      nullable: true
+    - name: f7
+      type: double
+      nullable: true
+    - name: f8
+      type: double
+      nullable: true
+    - name: f9
+      type: double
+      nullable: true
+    - name: y
+      type: double
+      nullable: true
+    - name: entity_id
+      type: long
+      nullable: true
+    - name: datetime
+      type: timestamp
+      nullable: true
+    - name: created
+      type: timestamp
+      nullable: true
+    - name: month_year
+      type: timestamp
+      nullable: true
+  partitionColumns: ["month_year"]
+  comment: "Hello from delta"
+---
+kind: optimize
+metadata: 
+  name: optimize_test_4
+  table: "test_delta_4"
+  store: az
+spec:
+  targetSize: 2000000
+  filters: 
+    - column: col2
+      operator: "="
+      value: "B"
+---
+kind: vacuum
+metadata: 
+  name: vacuum_test_4
+  table: "test_delta_4"
+  store: az
+spec:
+  retentionPeriodSeconds: 0
+  enforceRetentionDuration: false
+  dryRun: false
+
+

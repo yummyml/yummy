@@ -2,18 +2,15 @@ use crate::delta::{
     read::map_record_batch, DeltaCommands, DeltaInfo, DeltaManager, DeltaRead, DeltaWrite,
 };
 use crate::models::{
-    CreateRequest, DetailsQuery, OptimizeRequest, QueryRequest, ResponseStores, ResponseTables,
-    VacuumRequest, WriteRequest,
+    CreateRequest, DetailsQuery, OptimizeRequest, QueryRequest, ResponseStores, VacuumRequest,
+    WriteRequest,
 };
-use actix_web::http::StatusCode;
-use actix_web::{error, get, post, web, HttpResponse, Responder, Result};
+use actix_web::{web, HttpResponse, Responder, Result};
 use deltalake::action::SaveMode;
-use derive_more::{Display, Error};
-use serde::{Deserialize, Serialize};
 use std::error::Error;
 
 use crate::delta::error::DeltaError;
-use bytes::{BufMut, Bytes, BytesMut};
+use bytes::{Bytes, BytesMut};
 
 use datafusion::physical_plan::SendableRecordBatchStream;
 use futures::stream::StreamExt;
@@ -160,14 +157,14 @@ pub async fn query_stream(
     delta_manager: web::Data<DeltaManager>,
 ) -> Result<impl Responder, Box<dyn Error>> {
     let (store_name, table_name) = path.into_inner();
-    let braces = (&query_request.braces).unwrap_or(true).clone();
+    let braces = (query_request.braces).unwrap_or(true);
 
     let streams: Vec<SendableRecordBatchStream> = delta_manager
         .query_stream_partitioned(
             &store_name,
             &table_name,
             &query_request.query,
-            query_request.table_version.clone(),
+            query_request.table_version,
             query_request.table_date.clone(),
         )
         .await?;

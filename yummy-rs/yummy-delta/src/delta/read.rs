@@ -3,22 +3,18 @@ use crate::delta::error::DeltaError;
 use crate::delta::{DeltaManager, DeltaRead};
 use crate::models::QueryResponse;
 use async_trait::async_trait;
+use datafusion::execution::context::SessionContext;
+use datafusion::physical_plan::SendableRecordBatchStream;
 use deltalake::arrow::record_batch::RecordBatch;
 use deltalake::arrow::{
     array::{
-        ArrayRef, BinaryArray, BooleanArray, Date32Array, Date64Array, Float32Array, Float64Array,
-        Int16Array, Int32Array, Int64Array, Int8Array, StringArray,
+        BinaryArray, BooleanArray, Float32Array, Float64Array, Int16Array, Int32Array, Int64Array,
+        Int8Array, StringArray,
     },
-    datatypes::{DataType, Field, Schema as ArrowSchema},
-    downcast_dictionary_array, downcast_primitive_array,
+    datatypes::DataType,
 };
-use datafusion::execution::context::SessionContext;
-use datafusion::physical_plan::SendableRecordBatchStream;
-use deltalake::operations::collect_sendable_stream;
-use deltalake::DeltaOps;
-use deltalake::{Schema, SchemaField};
 use futures::stream::StreamExt;
-use std::collections::{BTreeMap, HashMap};
+use std::collections::BTreeMap;
 use std::error::Error;
 use std::sync::Arc;
 
@@ -260,7 +256,7 @@ mod test {
             .query(&store_name, &table_name, &query, None, None)
             .await?;
         //assert_eq!(tables.tables.len(), 2);
-        println!("BATCHES: {:?}", batches);
+        println!("BATCHES: {batches:?}");
 
         drop_delta(&table_name).await?;
         Ok(())

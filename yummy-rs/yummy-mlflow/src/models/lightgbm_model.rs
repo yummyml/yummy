@@ -76,12 +76,30 @@ impl MLModel for LightgbmModel {
             let mut cat: Vec<String> = Vec::new();
             f.iter().try_for_each(|x| -> Result<(), Box<dyn Error>> {
                 match x {
-                    EntityValue::INT32(v) => Ok(num.push(v.to_owned() as f64)),
-                    EntityValue::INT64(v) => Ok(num.push(v.to_owned() as f64)),
-                    EntityValue::FLOAT32(v) => Ok(num.push(v.to_owned() as f64)),
-                    EntityValue::FLOAT64(v) => Ok(num.push(v.to_owned() as f64)),
-                    EntityValue::BOOL(v) => Ok(num.push(v.to_owned() as i32 as f64)),
-                    EntityValue::STRING(v) => Ok(cat.push(v.to_owned())),
+                    EntityValue::INT32(v) => {
+                        num.push(v.to_owned() as f64);
+                        Ok(())
+                    }
+                    EntityValue::INT64(v) => {
+                        num.push(v.to_owned() as f64);
+                        Ok(())
+                    }
+                    EntityValue::FLOAT32(v) => {
+                        num.push(v.to_owned() as f64);
+                        Ok(())
+                    }
+                    EntityValue::FLOAT64(v) => {
+                        num.push(v.to_owned() as f64);
+                        Ok(())
+                    }
+                    EntityValue::BOOL(v) => {
+                        num.push(v.to_owned() as i32 as f64);
+                        Ok(())
+                    }
+                    EntityValue::STRING(v) => {
+                        cat.push(v.to_owned());
+                        Ok(())
+                    }
                     _ => Err(Box::new(LightgbmError::TypeConversionError)),
                 }?;
                 Ok(())
@@ -114,12 +132,12 @@ fn test_feature_names() -> Result<(), Box<dyn Error>> {
     let path = "../tests/mlflow/lightgbm_model/lightgbm_wine_model".to_string();
     //let path = "../tests/mlflow/catboost_model/iris_my_model".to_string();
     let config = MLConfig::new(&path)?;
-    println!("{:?}", config);
+    println!("{config:?}");
     let lgb_model = LightgbmModel::new(config)?;
     let features = lgb_model.model.feature_name()?;
     let nfeatures = lgb_model.model.num_feature();
-    println!("{:?}", nfeatures);
-    println!("{:?}", features);
+    println!("{nfeatures:?}");
+    println!("{features:?}");
     Ok(())
 }
 
@@ -128,7 +146,7 @@ fn load_model_and_predict() -> Result<(), Box<dyn Error>> {
     let path = "../tests/mlflow/lightgbm_model/lightgbm_my_model".to_string();
     //let path = "../tests/mlflow/catboost_model/iris_my_model".to_string();
     let config = MLConfig::new(&path)?;
-    println!("{:?}", config);
+    println!("{config:?}");
     let lgb_model = LightgbmModel::new(config)?;
 
     let mut columns = Vec::new();
@@ -144,11 +162,11 @@ fn load_model_and_predict() -> Result<(), Box<dyn Error>> {
     d2.push(EntityValue::INT32(2));
     data.push(d2);
 
-    println!("{:?}", data);
+    println!("{data:?}");
 
     let predictions = lgb_model.predict(columns, data)?;
 
-    println!("{:?}", predictions);
+    println!("{predictions:?}");
     Ok(())
 }
 
@@ -157,7 +175,7 @@ fn load_model_and_predict_multiclass() -> Result<(), Box<dyn Error>> {
     let path = "../tests/mlflow/lightgbm_model/lightgbm_wine_model/".to_string();
     //let path = "../tests/mlflow/catboost_model/iris_my_model".to_string();
     let config = MLConfig::new(&path)?;
-    println!("{:?}", config);
+    println!("{config:?}");
     let lgb_model = LightgbmModel::new(config)?;
 
     let mut columns = Vec::new();
@@ -194,10 +212,10 @@ fn load_model_and_predict_multiclass() -> Result<(), Box<dyn Error>> {
     data.push(d1.clone());
     data.push(d1.clone());
 
-    println!("{:?}", data);
+    println!("{data:?}");
 
     let predictions = lgb_model.predict(columns, data);
 
-    println!("{:?}", predictions);
+    println!("{predictions:?}");
     Ok(())
 }

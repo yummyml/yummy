@@ -62,10 +62,11 @@ impl DeltaInfo for DeltaManager {
             .collect::<Vec<String>>()
             .await;
 
-        let table_names = tbl.iter()
-                .map(|l| l.split("/").collect::<Vec<&str>>()[0].to_string())
-                .unique()
-                .collect();
+        let table_names = tbl
+            .iter()
+            .map(|l| l.split("/").collect::<Vec<&str>>()[0].to_string())
+            .unique()
+            .collect();
 
         Ok(ResponseTables {
             store: store.name.to_string(),
@@ -86,7 +87,7 @@ mod test {
     async fn test_delta_list_stores() -> Result<(), Box<dyn Error>> {
         let stores = create_manager().await?.list_stores()?;
 
-        assert_eq!(stores.len(), 3);
+        assert_eq!(stores.len(), 4);
 
         Ok(())
     }

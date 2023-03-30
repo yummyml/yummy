@@ -95,16 +95,14 @@ impl Registry {
     }
 
     pub fn get_feature_service(&self, name: String, project: String) -> Vec<String> {
-        let full_feature_names = match (&self.feature_services)
+        match (&self.feature_services)
             .into_iter()
             .filter(|fs| fs.name == name && fs.project == project)
             .last()
         {
             Some(f) => f.full_feature_names.clone(),
             None => Vec::new(),
-        };
-
-        full_feature_names
+        }
     }
 
     pub fn check_features(&self, features: Vec<String>) -> bool {
@@ -134,7 +132,7 @@ impl Registry {
 fn read_registry_test() -> Result<(), Box<dyn Error>> {
     let path = "../tests/feature_store.yaml".to_string();
     let config = Config::new(&path)?;
-    println!("{:?}", config);
+    println!("{config:?}");
     let registry = Registry::new(config)?;
     //println!("{:?}", registry);
 
@@ -143,7 +141,7 @@ fn read_registry_test() -> Result<(), Box<dyn Error>> {
         "adjusted_drake".to_string(),
     );
 
-    println!("{:?}", features);
+    println!("{features:?}");
 
     let check = registry.check_features(features);
     assert_eq!(check, true);

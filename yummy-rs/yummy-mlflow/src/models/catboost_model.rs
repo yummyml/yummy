@@ -93,12 +93,30 @@ impl MLModel for CatboostModel {
             let mut cat: Vec<String> = Vec::new();
             f.iter().try_for_each(|x| -> Result<(), Box<dyn Error>> {
                 match x {
-                    EntityValue::INT32(v) => Ok(num.push(v.to_owned() as f32)),
-                    EntityValue::INT64(v) => Ok(num.push(v.to_owned() as f32)),
-                    EntityValue::FLOAT32(v) => Ok(num.push(v.to_owned() as f32)),
-                    EntityValue::FLOAT64(v) => Ok(num.push(v.to_owned() as f32)),
-                    EntityValue::BOOL(v) => Ok(num.push(v.to_owned() as i32 as f32)),
-                    EntityValue::STRING(v) => Ok(cat.push(v.to_owned())),
+                    EntityValue::INT32(v) => {
+                        num.push(v.to_owned() as f32);
+                        Ok(())
+                    }
+                    EntityValue::INT64(v) => {
+                        num.push(v.to_owned() as f32);
+                        Ok(())
+                    }
+                    EntityValue::FLOAT32(v) => {
+                        num.push(v.to_owned() as f32);
+                        Ok(())
+                    }
+                    EntityValue::FLOAT64(v) => {
+                        num.push(v.to_owned() as f32);
+                        Ok(())
+                    }
+                    EntityValue::BOOL(v) => {
+                        num.push(v.to_owned() as i32 as f32);
+                        Ok(())
+                    }
+                    EntityValue::STRING(v) => {
+                        cat.push(v.to_owned());
+                        Ok(())
+                    }
                     _ => Err(Box::new(CatboostError::ValidationNoFeatures)),
                 }?;
 
@@ -127,7 +145,7 @@ fn test_feature_names() -> Result<(), Box<dyn Error>> {
     let path = "../tests/mlflow/catboost_model/my_model".to_string();
     //let path = "../tests/mlflow/catboost_model/iris_my_model".to_string();
     let config = MLConfig::new(&path)?;
-    println!("{:?}", config);
+    println!("{config:?}");
     let _catboost_model = CatboostModel::new(config)?;
     Ok(())
 }
@@ -137,7 +155,7 @@ fn load_model_and_predict() -> Result<(), Box<dyn Error>> {
     let path = "../tests/mlflow/catboost_model/my_model".to_string();
     //let path = "../tests/mlflow/catboost_model/iris_my_model".to_string();
     let config = MLConfig::new(&path)?;
-    println!("{:?}", config);
+    println!("{config:?}");
     let catboost_model = CatboostModel::new(config)?;
 
     let mut columns = Vec::new();
@@ -175,10 +193,10 @@ fn load_model_and_predict() -> Result<(), Box<dyn Error>> {
     d.push(EntityValue::STRING("United-States".to_string()));
 
     data.push(d);
-    println!("{:?}", data);
+    println!("{data:?}");
 
     let predictions = catboost_model.predict(columns, data)?;
 
-    println!("{:?}", predictions);
+    println!("{predictions:?}");
     Ok(())
 }

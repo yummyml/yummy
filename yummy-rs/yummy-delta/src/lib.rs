@@ -1,3 +1,4 @@
+pub mod apply;
 pub mod common;
 pub mod config;
 pub mod delta;
@@ -6,12 +7,24 @@ pub mod server;
 
 use actix_web::middleware::Logger;
 use actix_web::{web, App, HttpServer};
+use apply::DeltaApply;
 use delta::DeltaManager;
 use pyo3::prelude::*;
 use server::{
     append, create_table, details, health, list_stores, list_tables, optimize, overwrite,
     query_stream, vacuum,
 };
+
+#[pyfunction]
+fn run_apply(config_path: String) -> PyResult<String> {
+    tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .unwrap()
+        .block_on(apply_delta(config_path))
+        .unwrap();
+    Ok("Ok".to_string())
+}
 
 #[pyfunction]
 fn run(config_path: String, host: String, port: u16, log_level: String) -> PyResult<String> {
@@ -27,7 +40,18 @@ fn run(config_path: String, host: String, port: u16, log_level: String) -> PyRes
 #[pymodule]
 fn yummy_delta(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(run, m)?)?;
+    m.add_function(wrap_pyfunction!(run_apply, m)?)?;
 
+    Ok(())
+}
+
+pub async fn apply_delta(config_path: String) -> std::io::Result<()> {
+    DeltaApply::new(&config_path)
+        .await
+        .unwrap()
+        .apply()
+        .await
+        .unwrap();
     Ok(())
 }
 
@@ -38,7 +62,7 @@ pub async fn run_delta_server(
     log_level: String,
 ) -> std::io::Result<()> {
     env_logger::init_from_env(env_logger::Env::new().default_filter_or(log_level));
-    println!("Yummy delta server running on http://{}:{}", host, port);
+    println!("Yummy delta server running on http://{host}:{port}");
 
     let _ = HttpServer::new(move || {
         App::new()

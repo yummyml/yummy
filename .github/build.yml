@@ -1,0 +1,50 @@
+name: build
+
+on:
+  push:
+    branches: [main, "rust-v*"]
+  pull_request:
+    branches: [main, "rust-v*"]
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install minimal stable with clippy and rustfmt
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: default
+          toolchain: stable
+          override: true
+      - name: Format
+        working-directory: ./yummy-rs
+        run: cargo fmt -- --check
+
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-11
+          - windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install minimal stable with clippy and rustfmt
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: default
+          toolchain: stable
+          override: true
+      - uses: Swatinem/rust-cache@v2
+      - name: build and lint with clippy
+        working-directory: ./yummy-rs
+        run: cargo clippy --tests
+#      - name: Check docs
+#        run: cargo doc --features azure,datafusion,s3,gcs,glue
+#      - name: Check no default features (except rustls)
+#        run: cargo check --no-default-features --features rustls
+
+

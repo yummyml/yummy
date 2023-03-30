@@ -2,11 +2,13 @@ use crate::config::ColumnSchema;
 use crate::delta::{DeltaCommands, DeltaManager};
 use crate::models::{CreateRequest, CreateResponse, OptimizeRequest, OptimizeResponse};
 use async_trait::async_trait;
-use deltalake::{optimize::Optimize, PartitionFilter};
-use deltalake::{DeltaOps, SchemaDataType, SchemaField};
+use deltalake::delta_config::DeltaConfigKey;
+use deltalake::PartitionFilter;
+use deltalake::{builder::DeltaTableBuilder, DeltaOps, SchemaDataType, SchemaField};
 use std::error::Error;
 use std::fs;
 use std::path::Path;
+use std::str::FromStr;
 
 #[async_trait]
 impl DeltaCommands for DeltaManager {
@@ -16,16 +18,19 @@ impl DeltaCommands for DeltaManager {
         create_request: CreateRequest,
     ) -> Result<CreateResponse, Box<dyn Error>> {
         let table_name = create_request.table;
-        let path = self.path(&store_name, &table_name)?;
+        let store = self.store(&store_name)?;
+        let mut path = (&store.path).clone();
         let schema: Vec<ColumnSchema> = create_request.schema;
         let partition_columns: Option<Vec<String>> = create_request.partition_columns;
         let comment: Option<String> = create_request.comment;
         let configuration = create_request.configuration;
         let metadata = create_request.metadata;
 
-        if (path.starts_with("file://") || path.starts_with("/")) && !Path::exists(Path::new(&path))
-        {
-            fs::create_dir_all(&path)?;
+        if path.starts_with("file://") || path.starts_with("/") {
+            if !Path::exists(Path::new(&path)) {
+                fs::create_dir_all(&path)?;
+            }
+            path = self.path(&store.path, &table_name)?;
         }
 
         let delta_schema: Vec<SchemaField> = schema
@@ -40,7 +45,13 @@ impl DeltaCommands for DeltaManager {
             })
             .collect();
 
-        let ops = DeltaOps::try_from_uri(path).await?;
+        let mut builder = DeltaTableBuilder::from_uri(&path);
+        if let Some(storage_options) = &store.storage_options {
+            builder = builder.with_storage_options(storage_options.clone());
+        }
+
+        let ops: DeltaOps = builder.build()?.into();
+
         let mut table = ops
             .create()
             .with_columns(delta_schema)
@@ -55,7 +66,9 @@ impl DeltaCommands for DeltaManager {
         }
 
         if let Some(config) = configuration {
-            table = table.with_configuration(config);
+            for (k, v) in config.into_iter() {
+                table = table.with_configuration_property(DeltaConfigKey::from_str(&k).unwrap(), v);
+            }
         }
 
         if let Some(meta) = metadata {
@@ -72,7 +85,7 @@ impl DeltaCommands for DeltaManager {
         table_name: &String,
         optimize_requst: OptimizeRequest,
     ) -> Result<OptimizeResponse, Box<dyn Error>> {
-        let mut table = self.table(store_name, table_name, None, None).await?;
+        let table = self.table(store_name, table_name, None, None).await?;
 
         let optimize_filters: Vec<crate::models::PartitionFilter> =
             if let Some(f) = optimize_requst.filters {
@@ -85,7 +98,7 @@ impl DeltaCommands for DeltaManager {
             .iter()
             .map(|f| -> Result<(String, String, String), Box<dyn Error>> {
                 let v: String = (&f.value).try_into()?;
-                Ok((f.column.to_string(), f.operator.to_string(), v.to_string()))
+                Ok((f.column.to_string(), f.operator.to_string(), v))
             })
             .collect::<Result<Vec<(String, String, String)>, Box<dyn Error>>>()?;
 
@@ -100,13 +113,15 @@ impl DeltaCommands for DeltaManager {
             })
             .collect::<Result<Vec<PartitionFilter<&str>>, Box<dyn Error>>>()?;
 
-        let mut optimize = Optimize::default().target_size(optimize_requst.target_size);
+        let mut optimize = DeltaOps(table)
+            .optimize()
+            .with_target_size(optimize_requst.target_size);
 
         if filters.len() > 0 {
-            optimize = optimize.filter(&filters);
+            optimize = optimize.with_filters(&filters);
         }
 
-        let metrics = optimize.execute(&mut table).await?;
+        let (_dt, metrics) = optimize.await?;
 
         //let commit_info = table.history(None).await?;
 
@@ -119,7 +134,7 @@ mod test {
     use crate::common::EntityValue;
     use crate::delta::test_delta_util::{create_delta, create_manager, drop_delta};
     use crate::delta::{DeltaCommands, DeltaWrite, OptimizeRequest, VacuumRequest};
-    use crate::models::{WriteRequest};
+    use crate::models::WriteRequest;
     use deltalake::action::SaveMode;
     use std::collections::HashMap;
     use std::error::Error;
@@ -175,7 +190,7 @@ mod test {
             .optimize(&store_name, &table_name, optimize_request)
             .await?;
 
-        println!("{:?}", optimize_response);
+        println!("{optimize_response:?}");
 
         let vacuum_request = VacuumRequest {
             retention_period_seconds: Some(0),
@@ -188,7 +203,7 @@ mod test {
             .vacuum(&store_name, &table_name, vacuum_request)
             .await?;
 
-        println!("{:?}", vacuum_response);
+        println!("{vacuum_response:?}");
 
         drop_delta(&table_name).await?;
         Ok(())
@@ -236,17 +251,19 @@ mod test {
             .optimize(&store_name, &table_name, optimize_request)
             .await?;
 
-        println!("{:?}", optimize_response);
+        println!("{optimize_response:?}");
 
         let vacuum_request = VacuumRequest {
             retention_period_seconds: Some(0),
             enforce_retention_duration: Some(false),
             dry_run: Some(false),
         };
-        let vacuum_response = create_manager().await?.vacuum(&store_name, &table_name, vacuum_request).await?;
+        let vacuum_response = create_manager()
+            .await?
+            .vacuum(&store_name, &table_name, vacuum_request)
+            .await?;
 
-        println!("{:?}", vacuum_response);
-
+        println!("{vacuum_response:?}");
 
         drop_delta(&table_name).await?;
         Ok(())

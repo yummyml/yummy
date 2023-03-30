@@ -5,3 +5,5 @@ stores:
     path: "/tmp/delta-test-2/"
   - name: az
     path: "az://delta-test-1/"
+  - name: az2
+    path: "az://test/"

@@ -18,6 +18,25 @@ use std::sync::Arc;
 
 #[async_trait]
 impl DeltaWrite for DeltaManager {
+    async fn write_batches(
+        &self,
+        store_name: &String,
+        table_name: &String,
+        record_batches: Vec<RecordBatch>,
+        save_mode: SaveMode,
+    ) -> Result<WriteResponse, Box<dyn Error>> {
+        let table = self.table(store_name, table_name, None, None).await?;
+        let table_new = DeltaOps(table)
+            .write(record_batches)
+            .with_save_mode(save_mode)
+            .await?;
+
+        Ok(WriteResponse {
+            table: table_name.to_string(),
+            version: table_new.version(),
+        })
+    }
+
     async fn write(
         &self,
         store_name: &String,
@@ -67,7 +86,7 @@ impl DeltaWrite for DeltaManager {
                         DeltaError::WriteBatchNoColumnError(field_name.to_string()),
                     ))?;
                     let is_nullable = field.is_nullable();
-                    let data_type = self.clone().map_primitive(field.get_type())?;
+                    let data_type = self.map_primitive(field.get_type())?;
                     convert_values(&data_type, values, &mut batch_data)?;
                     batch_fields.push(Field::new(field_name, data_type, is_nullable));
                     Ok(())
@@ -91,12 +110,12 @@ impl DeltaWrite for DeltaManager {
 
 fn type_mapper<U>(
     values: &Vec<EntityValue>,
-    mapper: impl Fn(&EntityValue) -> Result<U, Box<dyn Error>>,
+    mapper: impl Fn(&EntityValue) -> crate::common::Result<U>,
 ) -> Result<Vec<U>, Box<dyn Error>> {
     let arr = values
         .iter()
-        .map(|x| -> Result<U, Box<dyn Error>> { mapper(x) })
-        .collect::<Result<Vec<U>, Box<dyn Error>>>()?;
+        .map(|x| -> crate::common::Result<U> { mapper(x) })
+        .collect::<crate::common::Result<Vec<U>>>()?;
     Ok(arr)
 }
 

@@ -29,7 +29,7 @@ impl Config {
 fn parse_config() -> Result<(), Box<dyn Error>> {
     let path = "../tests/feature_store.yaml".to_string();
     let config = Config::new(&path)?;
-    println!("{:?}", config);
+    println!("{config:?}");
 
     match config.online_store {
         OnlineStoreConfig {

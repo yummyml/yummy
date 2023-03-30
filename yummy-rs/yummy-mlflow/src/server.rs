@@ -14,7 +14,7 @@ pub struct MLModelRequest {
 }
 
 #[derive(Debug, Display, Error)]
-#[display(fmt = "request error: {}", name)]
+#[display(fmt = "request error: {name}")]
 pub struct FeaturesError {
     name: &'static String,
     status_code: u16,
