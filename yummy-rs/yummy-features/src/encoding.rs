@@ -91,7 +91,8 @@ pub fn serialize_entity_keys(
     let entity_keys: Vec<Vec<u8>> = (0..n_keys)
         .into_iter()
         .map(|i| {
-            let entity_values = join_keys.to_owned()
+            let entity_values = join_keys
+                .to_owned()
                 .into_iter()
                 .map(|k| {
                     let sf_v = protobuf::SpecialFields::new();
