@@ -22,11 +22,12 @@ tokio = "1.20.0"
 env_logger = "0.9.1"
 chrono = "0.4.22"
 derive_more = "0.99.17"
-catboost = { git = "https://github.com/catboost/catboost", optional = true }
+#catboost = { git = "https://github.com/catboost/catboost", optional = true }
 lightgbm = "0.2.3"
 pyo3 = { version = "0.16.5", features = ["extension-module"] }
 thiserror = "1.0"
 #reqwest = "0.11.13"
 
 [features]
-catboost = ["dep:catboost"]
+catboost = []
+#catboost = ["dep:catboost"]
