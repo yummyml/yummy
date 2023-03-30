@@ -157,14 +157,14 @@ pub async fn query_stream(
     delta_manager: web::Data<DeltaManager>,
 ) -> Result<impl Responder, Box<dyn Error>> {
     let (store_name, table_name) = path.into_inner();
-    let braces = (&query_request.braces).unwrap_or(true).clone();
+    let braces = (query_request.braces).unwrap_or(true);
 
     let streams: Vec<SendableRecordBatchStream> = delta_manager
         .query_stream_partitioned(
             &store_name,
             &table_name,
             &query_request.query,
-            query_request.table_version.clone(),
+            query_request.table_version,
             query_request.table_date.clone(),
         )
         .await?;

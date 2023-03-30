@@ -86,7 +86,7 @@ impl DeltaWrite for DeltaManager {
                         DeltaError::WriteBatchNoColumnError(field_name.to_string()),
                     ))?;
                     let is_nullable = field.is_nullable();
-                    let data_type = self.clone().map_primitive(field.get_type())?;
+                    let data_type = self.map_primitive(field.get_type())?;
                     convert_values(&data_type, values, &mut batch_data)?;
                     batch_fields.push(Field::new(field_name, data_type, is_nullable));
                     Ok(())

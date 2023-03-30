@@ -78,8 +78,7 @@ pub fn serialize_key(
 }
 
 pub fn serialize_fields(fields: Vec<String>) -> Vec<Vec<u8>> {
-    let f = fields.into_iter().map(|x| mmh3(format!("{}", x))).collect();
-    f
+    fields.into_iter().map(|x| mmh3(format!("{x}"))).collect()
 }
 
 pub fn serialize_entity_keys(

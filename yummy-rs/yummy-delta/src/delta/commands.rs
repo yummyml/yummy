@@ -98,7 +98,7 @@ impl DeltaCommands for DeltaManager {
             .iter()
             .map(|f| -> Result<(String, String, String), Box<dyn Error>> {
                 let v: String = (&f.value).try_into()?;
-                Ok((f.column.to_string(), f.operator.to_string(), v.to_string()))
+                Ok((f.column.to_string(), f.operator.to_string(), v))
             })
             .collect::<Result<Vec<(String, String, String)>, Box<dyn Error>>>()?;
 

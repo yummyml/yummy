@@ -62,7 +62,7 @@ pub async fn run_delta_server(
     log_level: String,
 ) -> std::io::Result<()> {
     env_logger::init_from_env(env_logger::Env::new().default_filter_or(log_level));
-    println!("Yummy delta server running on http://{}:{}", host, port);
+    println!("Yummy delta server running on http://{host}:{port}");
 
     let _ = HttpServer::new(move || {
         App::new()
