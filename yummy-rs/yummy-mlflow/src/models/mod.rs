@@ -1,7 +1,9 @@
+#[cfg(feature = "catboost")]
 pub mod catboost_model;
 pub mod lightgbm_model;
 use crate::common::EntityValue;
 use crate::config::MLConfig;
+#[cfg(feature = "catboost")]
 use catboost_model::CatboostModel;
 use lightgbm_model::LightgbmModel;
 use std::error::Error;
@@ -24,14 +26,24 @@ pub struct MLModelFactory {}
 
 impl MLModelFactory {
     pub fn new(config: MLConfig) -> Result<Box<dyn MLModel>, Box<dyn Error>> {
-        let ml_model: Box<dyn MLModel> = if let Some(ref _config) = config.flavors.catboost {
-            Box::new(CatboostModel::new(config)?)
-        } else if let Some(ref _config) = config.flavors.lightgbm {
+        let ml_model: Box<dyn MLModel> = if let Some(ref _config) = config.flavors.lightgbm {
             Box::new(LightgbmModel::new(config)?)
+        } else if let Some(ref _config) = config.flavors.catboost {
+            catboost_model(config)?
         } else {
             return Err(Box::new(ModelFactoryError::WrongModelType));
         };
 
         Ok(ml_model)
     }
+}
+
+#[cfg(feature = "catboost")]
+fn catboost_model(config: MLConfig) -> Result<Box<dyn MLModel>, Box<dyn Error>> {
+    Box::new(CatboostModel::new(config)?)
+}
+
+#[cfg(not(feature = "catboost"))]
+fn catboost_model(config: MLConfig) -> Result<Box<dyn MLModel>, Box<dyn Error>> {
+    return Err(Box::new(ModelFactoryError::WrongModelType));
 }
