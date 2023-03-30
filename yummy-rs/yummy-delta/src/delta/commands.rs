@@ -190,7 +190,7 @@ mod test {
             .optimize(&store_name, &table_name, optimize_request)
             .await?;
 
-        println!("{:?}", optimize_response);
+        println!("{optimize_response:?}");
 
         let vacuum_request = VacuumRequest {
             retention_period_seconds: Some(0),
@@ -203,7 +203,7 @@ mod test {
             .vacuum(&store_name, &table_name, vacuum_request)
             .await?;
 
-        println!("{:?}", vacuum_response);
+        println!("{vacuum_response:?}");
 
         drop_delta(&table_name).await?;
         Ok(())
@@ -251,7 +251,7 @@ mod test {
             .optimize(&store_name, &table_name, optimize_request)
             .await?;
 
-        println!("{:?}", optimize_response);
+        println!("{optimize_response:?}");
 
         let vacuum_request = VacuumRequest {
             retention_period_seconds: Some(0),
@@ -263,7 +263,7 @@ mod test {
             .vacuum(&store_name, &table_name, vacuum_request)
             .await?;
 
-        println!("{:?}", vacuum_response);
+        println!("{vacuum_response:?}");
 
         drop_delta(&table_name).await?;
         Ok(())

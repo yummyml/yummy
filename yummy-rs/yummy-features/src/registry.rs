@@ -132,7 +132,7 @@ impl Registry {
 fn read_registry_test() -> Result<(), Box<dyn Error>> {
     let path = "../tests/feature_store.yaml".to_string();
     let config = Config::new(&path)?;
-    println!("{:?}", config);
+    println!("{config:?}");
     let registry = Registry::new(config)?;
     //println!("{:?}", registry);
 
@@ -141,7 +141,7 @@ fn read_registry_test() -> Result<(), Box<dyn Error>> {
         "adjusted_drake".to_string(),
     );
 
-    println!("{:?}", features);
+    println!("{features:?}");
 
     let check = registry.check_features(features);
     assert_eq!(check, true);

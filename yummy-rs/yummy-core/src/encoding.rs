@@ -25,6 +25,6 @@ pub fn mmh3(key: String) -> Vec<u8> {
 fn test_murmur3() {
     let key = "test";
     let hash = murmur3::hash32(key).to_be_bytes();
-    println!("{:?}", hash);
+    println!("{hash:?}");
     assert_eq!(hash, [186, 107, 210, 19]);
 }

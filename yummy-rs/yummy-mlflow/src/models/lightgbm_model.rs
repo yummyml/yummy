@@ -132,12 +132,12 @@ fn test_feature_names() -> Result<(), Box<dyn Error>> {
     let path = "../tests/mlflow/lightgbm_model/lightgbm_wine_model".to_string();
     //let path = "../tests/mlflow/catboost_model/iris_my_model".to_string();
     let config = MLConfig::new(&path)?;
-    println!("{:?}", config);
+    println!("{config:?}");
     let lgb_model = LightgbmModel::new(config)?;
     let features = lgb_model.model.feature_name()?;
     let nfeatures = lgb_model.model.num_feature();
-    println!("{:?}", nfeatures);
-    println!("{:?}", features);
+    println!("{nfeatures:?}");
+    println!("{features:?}");
     Ok(())
 }
 
@@ -146,7 +146,7 @@ fn load_model_and_predict() -> Result<(), Box<dyn Error>> {
     let path = "../tests/mlflow/lightgbm_model/lightgbm_my_model".to_string();
     //let path = "../tests/mlflow/catboost_model/iris_my_model".to_string();
     let config = MLConfig::new(&path)?;
-    println!("{:?}", config);
+    println!("{config:?}");
     let lgb_model = LightgbmModel::new(config)?;
 
     let mut columns = Vec::new();
@@ -162,11 +162,11 @@ fn load_model_and_predict() -> Result<(), Box<dyn Error>> {
     d2.push(EntityValue::INT32(2));
     data.push(d2);
 
-    println!("{:?}", data);
+    println!("{data:?}");
 
     let predictions = lgb_model.predict(columns, data)?;
 
-    println!("{:?}", predictions);
+    println!("{predictions:?}");
     Ok(())
 }
 
@@ -175,7 +175,7 @@ fn load_model_and_predict_multiclass() -> Result<(), Box<dyn Error>> {
     let path = "../tests/mlflow/lightgbm_model/lightgbm_wine_model/".to_string();
     //let path = "../tests/mlflow/catboost_model/iris_my_model".to_string();
     let config = MLConfig::new(&path)?;
-    println!("{:?}", config);
+    println!("{config:?}");
     let lgb_model = LightgbmModel::new(config)?;
 
     let mut columns = Vec::new();
@@ -212,10 +212,10 @@ fn load_model_and_predict_multiclass() -> Result<(), Box<dyn Error>> {
     data.push(d1.clone());
     data.push(d1.clone());
 
-    println!("{:?}", data);
+    println!("{data:?}");
 
     let predictions = lgb_model.predict(columns, data);
 
-    println!("{:?}", predictions);
+    println!("{predictions:?}");
     Ok(())
 }

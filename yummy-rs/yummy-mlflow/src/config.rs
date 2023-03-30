@@ -48,7 +48,7 @@ impl MLConfig {
 fn parse_config() -> Result<(), Box<dyn Error>> {
     let path = "../tests/mlflow/catboost_model/my_model".to_string();
     let config = MLConfig::new(&path)?;
-    println!("{:?}", config);
+    println!("{config:?}");
 
     match config.flavors.catboost {
         Some(CatboostConfig {

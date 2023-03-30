@@ -34,7 +34,7 @@ pub struct ColumnSchema {
 fn test_config() -> Result<()> {
     let path = "../tests/delta/config.yaml".to_string();
     let config = DeltaConfig::new(&path)?;
-    println!("{:?}", config);
+    println!("{config:?}");
 
     assert_eq!(config.stores.len(), 4);
     assert_eq!(config.stores[0].name, "local");

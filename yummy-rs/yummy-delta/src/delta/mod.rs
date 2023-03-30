@@ -314,13 +314,13 @@ pub mod test_delta_util {
         };
 
         let _res_create = delta_manager.create(&store_name, request).await?;
-        Ok(delta_manager
+        delta_manager
             .table(&store_name, &table_name, None, None)
-            .await?)
+            .await
     }
 
     pub async fn drop_delta(table_name: &String) -> Result<(), Box<dyn Error>> {
-        fs::remove_dir_all(format!("/tmp/delta-test-1/{}", table_name))?;
+        fs::remove_dir_all(format!("/tmp/delta-test-1/{table_name}"))?;
         Ok(())
     }
 }

@@ -6,6 +6,10 @@ help: ## This help.
 format: 
 	cargo fmt
 
+clippy: 
+	cargo clippy --tests
+
+
 tt:
 	#cargo test -- --show-output
 	cd ./yummy-delta/ && cargo test -- apply::test_apply_table  --show-output

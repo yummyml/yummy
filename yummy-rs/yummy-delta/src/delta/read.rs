@@ -256,7 +256,7 @@ mod test {
             .query(&store_name, &table_name, &query, None, None)
             .await?;
         //assert_eq!(tables.tables.len(), 2);
-        println!("BATCHES: {:?}", batches);
+        println!("BATCHES: {batches:?}");
 
         drop_delta(&table_name).await?;
         Ok(())

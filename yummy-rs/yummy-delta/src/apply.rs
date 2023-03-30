@@ -219,7 +219,7 @@ impl DeltaApply {
 async fn test_config_local() -> Result<()> {
     let path = "../tests/delta/apply.yaml".to_string();
     let delta_apply = DeltaApply::new(&path).await?;
-    println!("{:?}", delta_apply);
+    println!("{delta_apply:?}");
     Ok(())
 }
 
@@ -227,7 +227,7 @@ async fn test_config_local() -> Result<()> {
 async fn test_config_url() -> Result<()> {
     let path = "https://raw.githubusercontent.com/yummyml/yummy/yummy-rs-delta-0.7.0/yummy-rs/tests/delta/apply.yaml".to_string();
     let delta_apply = DeltaApply::new(&path).await?;
-    println!("{:?}", delta_apply);
+    println!("{delta_apply:?}");
     Ok(())
 }
 
