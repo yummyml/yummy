@@ -124,7 +124,7 @@ impl DeltaApply {
                     match &delta_manager.create(&store_name, spec.clone()).await {
                         Ok(r) => {
                             println!("\x1b[92mSuccess - table created\x1b[0m");
-                            println!("\x1b[92m{:#?}\x1b[0m", spec.clone());
+                            //println!("\x1b[92m{:#?}\x1b[0m", spec.clone());
                             println!("\x1b[92m{r:#?}\x1b[0m");
                         }
                         Err(e) => {
@@ -160,7 +160,7 @@ impl DeltaApply {
                                 "\x1b[92mSuccess - table {:#?} optimized\x1b[0m",
                                 &table_name
                             );
-                            println!("\x1b[92m{:#?}\x1b[0m", spec.clone());
+                            //println!("\x1b[92m{:#?}\x1b[0m", spec.clone());
                             println!("\x1b[92m{r:#?}\x1b[0m");
                         }
                         Err(e) => {
@@ -184,7 +184,7 @@ impl DeltaApply {
                     {
                         Ok(r) => {
                             println!("\x1b[92mSuccess - table {:#?} vacuumed\x1b[0m", &table_name);
-                            println!("\x1b[92m{:#?}\x1b[0m", spec.clone());
+                            //println!("\x1b[92m{:#?}\x1b[0m", spec.clone());
                             println!("\x1b[92m{r:#?}\x1b[0m");
                         }
                         Err(e) => {
