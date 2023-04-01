@@ -5,13 +5,7 @@ version = "0.0.8"
 edition = "2021"
 repository = "https://github.com/yummyml/yummy"
 description = "Delta lake yummy library"
-
-[lib]
-name = "yummy_delta"
-crate-type = ["cdylib"]
-
-[build]
-rustflags = ["-C", "target-cpu=native"]
+license = "Apache-2.0"
 
 [dependencies]
 actix-web = "4"
@@ -20,7 +14,6 @@ serde_yaml = "0.9"
 async-trait = "0.1.57"
 env_logger = "0.9.1"
 derive_more = "0.99.17"
-pyo3 = { version = "0.16.5", features = ["extension-module"] }
 #reqwest = "0.11.13"
 deltalake = { version="0.8.0", features = ["arrow", "parquet", "datafusion", "azure"] }
 #async-std = "1.12.0"

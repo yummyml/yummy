@@ -6,15 +6,7 @@ edition = "2021"
 repository = "https://github.com/yummyml/yummy"
 description = "Feature store server of the yummy-rs library"
 
-[lib]
-name = "yummy_features"
-crate-type = ["cdylib"]
-
-[build]
-rustflags = ["-C", "target-cpu=native"]
-
 [dependencies]
-#yummy-core = { path = "../yummy-core" }
 actix-web = "4"
 redis = { version = "0.21.6", features = ["tokio-comp", "cluster", "r2d2"] }
 serde = { version = "1.0", features = ["derive"] }
@@ -30,4 +22,3 @@ env_logger = "0.9.1"
 chrono = "0.4.22"
 derive_more = "0.99.17"
 thiserror = "1.0"
-pyo3 = { version = "0.16.5", features = ["extension-module"] }
