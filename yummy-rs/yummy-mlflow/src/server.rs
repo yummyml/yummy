@@ -1,4 +1,3 @@
-use crate::common::EntityValue;
 use crate::config::MLConfig;
 use crate::models::MLModel;
 use actix_web::http::StatusCode;
@@ -6,6 +5,7 @@ use actix_web::{error, web, HttpResponse, Responder, Result};
 use derive_more::{Display, Error};
 use serde::{Deserialize, Serialize};
 use std::error::Error;
+use yummy_core::common::EntityValue;
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct MLModelRequest {

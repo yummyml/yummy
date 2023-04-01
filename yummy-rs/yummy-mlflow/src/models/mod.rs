@@ -1,12 +1,12 @@
 #[cfg(feature = "catboost")]
 pub mod catboost_model;
 pub mod lightgbm_model;
-use crate::common::EntityValue;
 use crate::config::MLConfig;
 #[cfg(feature = "catboost")]
 use catboost_model::CatboostModel;
 use lightgbm_model::LightgbmModel;
 use std::error::Error;
+use yummy_core::common::EntityValue;
 
 #[derive(thiserror::Error, Debug)]
 pub enum ModelFactoryError {
