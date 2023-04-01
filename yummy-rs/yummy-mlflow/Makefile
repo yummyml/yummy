@@ -9,20 +9,6 @@ fmt: ## cargo fmt
 clippy: ## cargo clippy --tests
 	cargo clippy --tests
 
-dev: ## Develop maturin
-	maturin develop --release
-
 build: ## Build the wheel
-	rm -rf ../target/wheels
-	maturin build --release
-
-publish-testpypi: ## Publish to testpipy
-	twine upload --repository testpypi ../target/wheels/*
-
-publish-pypi: ## Publish to pipy
-	twine upload --repository pypi ../target/wheels/*
-
-test-mlflow:
-	cargo test -- --show-output
-	#cd ../yummy-mlflow/ && cargo test -- models::lightgbm_model::load_model_and_predict_multiclass  --show-output
+	cargo build --release
 

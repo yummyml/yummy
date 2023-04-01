@@ -1,0 +1,21 @@
+[package]
+name = "yummy-delta-py"
+version = "0.0.8"
+#version.workspace = true
+edition = "2021"
+repository = "https://github.com/yummyml/yummy"
+description = "Delta lake yummy library"
+license = "Apache-2.0"
+
+
+[lib]
+name = "yummy_delta"
+crate-type = ["cdylib"]
+
+[build]
+rustflags = ["-C", "target-cpu=native"]
+
+[dependencies]
+yummy-delta = { path = "../yummy-delta" }
+pyo3 = { version = "0.16.5", features = ["extension-module"] }
+tokio = { version = "1.20.0", features = ["full"] }

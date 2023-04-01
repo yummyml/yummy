@@ -9,27 +9,8 @@ use crate::config::Config;
 use crate::registry::Registry;
 use actix_web::middleware::Logger;
 use actix_web::{web, App, HttpServer};
-use pyo3::prelude::*;
 use server::{get_online_features, health};
 use stores::OnlineStoreFactory;
-
-#[pyfunction]
-fn serve(config_path: String, host: String, port: u16, log_level: String) -> PyResult<String> {
-    tokio::runtime::Builder::new_current_thread()
-        .enable_all()
-        .build()
-        .unwrap()
-        .block_on(serve_wrapper(config_path, host, port, log_level))
-        .unwrap();
-    Ok("Ok".to_string())
-}
-
-#[pymodule]
-fn yummy_features(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(serve, m)?)?;
-
-    Ok(())
-}
 
 pub async fn serve_wrapper(
     config_path: String,

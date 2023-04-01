@@ -2,10 +2,13 @@
 members = [
     "yummy",
     "yummy-core",
+    "yummy-delta",
+    "yummy-delta-py",
     "yummy-features",
+    "yummy-features-py",
     "yummy-mlflow",
-    "yummy-delta"
+    "yummy-mlflow-py",
 ]
 
 [workspace.package]
-version = "0.0.7"
+version = "0.0.8"
