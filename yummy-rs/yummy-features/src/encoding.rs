@@ -4,25 +4,12 @@ use fasthash::murmur3;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::error::Error;
+use yummy_core::common::EntityValue;
 
 #[derive(thiserror::Error, Debug)]
 pub enum EncodingError {
     #[error("Wrong Entity value.")]
     WrongEntityValue,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(untagged)]
-#[derive(Clone)]
-pub enum EntityValue {
-    None,
-    INT64(i64),
-    INT32(i32),
-    FLOAT32(f32),
-    FLOAT64(f64),
-    BOOL(bool),
-    STRING(String),
-    BYTES(Vec<u8>),
 }
 
 pub fn mmh3(key: String) -> Vec<u8> {
@@ -99,6 +86,8 @@ pub fn serialize_entity_keys(
                     let ev = match &entities[&k][i] {
                         EntityValue::INT64(v) => Ok(Value::value::Val::Int64Val(v.clone())),
                         EntityValue::INT32(v) => Ok(Value::value::Val::Int32Val(v.clone())),
+                        EntityValue::INT16(v) => Ok(Value::value::Val::Int32Val(v.clone() as i32)),
+                        EntityValue::INT8(v) => Ok(Value::value::Val::Int32Val(v.clone() as i32)),
                         EntityValue::FLOAT32(v) => Ok(Value::value::Val::FloatVal(v.clone())),
                         EntityValue::FLOAT64(v) => Ok(Value::value::Val::DoubleVal(v.clone())),
                         EntityValue::BOOL(v) => Ok(Value::value::Val::BoolVal(v.clone())),

@@ -1,5 +1,5 @@
 use crate::config::Config;
-use crate::encoding::{parse_value, serialize_entity_keys, serialize_fields, EntityValue};
+use crate::encoding::{parse_value, serialize_entity_keys, serialize_fields};
 use crate::registry::Registry;
 use crate::stores::OnlineStore;
 use crate::types::Value;
@@ -11,6 +11,7 @@ use protobuf::Message;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::error::Error;
+use yummy_core::common::EntityValue;
 
 #[derive(Debug, Display, Error)]
 #[display(fmt = "request error: {name}")]
