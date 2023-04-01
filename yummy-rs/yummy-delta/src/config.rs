@@ -1,7 +1,7 @@
-use crate::common::Result;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
+use yummy_core::common::Result;
 
 #[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
 pub struct DeltaConfig {

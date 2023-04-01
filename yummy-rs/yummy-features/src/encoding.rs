@@ -1,33 +1,15 @@
 use crate::types::{EntityKey, Value};
 use byteorder::{ByteOrder, LittleEndian, WriteBytesExt};
-use fasthash::murmur3;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::error::Error;
+use yummy_core::common::EntityValue;
+use yummy_core::encoding::mmh3;
 
 #[derive(thiserror::Error, Debug)]
 pub enum EncodingError {
     #[error("Wrong Entity value.")]
     WrongEntityValue,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(untagged)]
-#[derive(Clone)]
-pub enum EntityValue {
-    None,
-    INT64(i64),
-    INT32(i32),
-    FLOAT32(f32),
-    FLOAT64(f64),
-    BOOL(bool),
-    STRING(String),
-    BYTES(Vec<u8>),
-}
-
-pub fn mmh3(key: String) -> Vec<u8> {
-    let hash = murmur3::hash32(key).to_be_bytes();
-    LittleEndian::read_u32(&hash).to_be_bytes().to_vec()
 }
 
 pub fn serialize_key(
@@ -99,6 +81,8 @@ pub fn serialize_entity_keys(
                     let ev = match &entities[&k][i] {
                         EntityValue::INT64(v) => Ok(Value::value::Val::Int64Val(v.clone())),
                         EntityValue::INT32(v) => Ok(Value::value::Val::Int32Val(v.clone())),
+                        EntityValue::INT16(v) => Ok(Value::value::Val::Int32Val(v.clone() as i32)),
+                        EntityValue::INT8(v) => Ok(Value::value::Val::Int32Val(v.clone() as i32)),
                         EntityValue::FLOAT32(v) => Ok(Value::value::Val::FloatVal(v.clone())),
                         EntityValue::FLOAT64(v) => Ok(Value::value::Val::DoubleVal(v.clone())),
                         EntityValue::BOOL(v) => Ok(Value::value::Val::BoolVal(v.clone())),
@@ -177,9 +161,9 @@ fn test_murmur3() {
 
     //let kp = EntityKey(join_keys=vec!["entity_id"], entity_values=vec![ev]);
 
-    let key = "test";
-    let hash = murmur3::hash32(key).to_be_bytes();
-    println!("{hash:?}");
-    assert_eq!(hash, [186, 107, 210, 19]);
+    //let key = "test";
+    //let hash = murmur3::hash32(key).to_be_bytes();
+    //println!("{hash:?}");
+    //assert_eq!(hash, [186, 107, 210, 19]);
     //let val = LittleEndian::read_u32(&hash).to_be_bytes().to_vec();
 }

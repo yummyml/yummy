@@ -1,8 +1,8 @@
-use crate::common::EntityValue;
 use crate::config::MLConfig;
 use crate::models::MLModel;
 use catboost;
 use std::error::Error;
+use yummy_core::common::EntityValue;
 
 #[derive(thiserror::Error, Debug)]
 pub enum CatboostError {

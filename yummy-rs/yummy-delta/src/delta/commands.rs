@@ -131,13 +131,13 @@ impl DeltaCommands for DeltaManager {
 
 #[cfg(test)]
 mod test {
-    use crate::common::EntityValue;
     use crate::delta::test_delta_util::{create_delta, create_manager, drop_delta};
     use crate::delta::{DeltaCommands, DeltaWrite, OptimizeRequest, VacuumRequest};
     use crate::models::WriteRequest;
     use deltalake::action::SaveMode;
     use std::collections::HashMap;
     use std::error::Error;
+    use yummy_core::common::EntityValue;
 
     #[tokio::test]
     async fn test_delta_create() -> Result<(), Box<dyn Error>> {

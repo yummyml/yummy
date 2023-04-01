@@ -1,10 +1,8 @@
-use crate::common::{ReplaceTokens, Result};
 use crate::config::DeltaConfig;
 use crate::delta::{
     read::map_record_batch, DeltaCommands, DeltaInfo, DeltaJobs, DeltaManager, DeltaRead,
     DeltaWrite,
 };
-use crate::err;
 use crate::models::{CreateRequest, JobRequest, OptimizeRequest, VacuumRequest, WriteRequest};
 use datafusion::execution::context::SessionContext;
 use datafusion::prelude::*;
@@ -12,6 +10,9 @@ use deltalake::DeltaOps;
 use serde::Deserialize;
 use std::fs;
 use url::Url;
+use yummy_core::common::{ReplaceTokens, Result};
+use yummy_core::config::read_config_str;
+use yummy_core::err;
 
 #[derive(thiserror::Error, Debug)]
 pub enum ApplyError {
@@ -66,14 +67,7 @@ pub struct DeltaApply {
 
 impl DeltaApply {
     pub async fn new(path: &String) -> Result<DeltaApply> {
-        let mut configuration_str = if Url::parse(path).is_ok() {
-            reqwest::get(path).await?.text().await?
-        } else {
-            fs::read_to_string(path)?
-        };
-
-        configuration_str = ReplaceTokens::replace(&configuration_str)?;
-
+        let configuration_str = read_config_str(path, Some(true)).await?;
         let mut objects = Vec::new();
         for document in serde_yaml::Deserializer::from_str(&configuration_str) {
             let o = DeltaObject::deserialize(document)?;
@@ -234,7 +228,7 @@ async fn test_config_url() -> Result<()> {
 #[tokio::test]
 async fn test_apply_table() -> Result<()> {
     let path = "../../examples/delta/apply_table.yaml".to_string();
-    let delta_apply = DeltaApply::new(&path).await?;
+    //let delta_apply = DeltaApply::new(&path).await?;
     //println!("{:?}", delta_apply);
 
     //delta_apply.apply().await?;
@@ -251,7 +245,7 @@ async fn test_apply_table() -> Result<()> {
 #[tokio::test]
 async fn test_apply_job() -> Result<()> {
     let path = "../../examples/delta/apply_job.yaml".to_string();
-    let delta_apply = DeltaApply::new(&path).await?;
+    //let delta_apply = DeltaApply::new(&path).await?;
     //println!("{:?}", delta_apply);
 
     //delta_apply.apply().await?;

@@ -1,4 +1,3 @@
-use crate::common::EntityValue;
 use crate::delta::error::DeltaError;
 use crate::delta::{DeltaManager, DeltaWrite};
 use crate::models::{WriteRequest, WriteResponse};
@@ -15,6 +14,7 @@ use deltalake::{action::SaveMode, DeltaOps};
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::Arc;
+use yummy_core::common::EntityValue;
 
 #[async_trait]
 impl DeltaWrite for DeltaManager {
@@ -110,12 +110,12 @@ impl DeltaWrite for DeltaManager {
 
 fn type_mapper<U>(
     values: &Vec<EntityValue>,
-    mapper: impl Fn(&EntityValue) -> crate::common::Result<U>,
+    mapper: impl Fn(&EntityValue) -> yummy_core::common::Result<U>,
 ) -> Result<Vec<U>, Box<dyn Error>> {
     let arr = values
         .iter()
-        .map(|x| -> crate::common::Result<U> { mapper(x) })
-        .collect::<crate::common::Result<Vec<U>>>()?;
+        .map(|x| -> yummy_core::common::Result<U> { mapper(x) })
+        .collect::<yummy_core::common::Result<Vec<U>>>()?;
     Ok(arr)
 }
 
@@ -126,47 +126,47 @@ fn convert_values(
 ) -> Result<(), Box<dyn Error>> {
     match data_type {
         DataType::Utf8 => {
-            let arr = type_mapper(values, crate::common::map_string)?;
+            let arr = type_mapper(values, yummy_core::common::map_string)?;
             arrays.push(Arc::new(StringArray::from(arr)));
         }
         DataType::Int64 => {
-            let arr = type_mapper(values, crate::common::map_i64)?;
+            let arr = type_mapper(values, yummy_core::common::map_i64)?;
             arrays.push(Arc::new(Int64Array::from(arr)));
         }
         DataType::Int32 => {
-            let arr = type_mapper(values, crate::common::map_i32)?;
+            let arr = type_mapper(values, yummy_core::common::map_i32)?;
             arrays.push(Arc::new(Int32Array::from(arr)));
         }
         DataType::Int16 => {
-            let arr = type_mapper(values, crate::common::map_i16)?;
+            let arr = type_mapper(values, yummy_core::common::map_i16)?;
             arrays.push(Arc::new(Int16Array::from(arr)));
         }
         DataType::Int8 => {
-            let arr = type_mapper(values, crate::common::map_i8)?;
+            let arr = type_mapper(values, yummy_core::common::map_i8)?;
             arrays.push(Arc::new(Int8Array::from(arr)));
         }
         DataType::Float32 => {
-            let arr = type_mapper(values, crate::common::map_f32)?;
+            let arr = type_mapper(values, yummy_core::common::map_f32)?;
             arrays.push(Arc::new(Float32Array::from(arr)));
         }
         DataType::Float64 => {
-            let arr = type_mapper(values, crate::common::map_f64)?;
+            let arr = type_mapper(values, yummy_core::common::map_f64)?;
             arrays.push(Arc::new(Float64Array::from(arr)));
         }
         DataType::Boolean => {
-            let arr = type_mapper(values, crate::common::map_bool)?;
+            let arr = type_mapper(values, yummy_core::common::map_bool)?;
             arrays.push(Arc::new(BooleanArray::from(arr)));
         }
         DataType::Binary => {
-            let arr = type_mapper(values, crate::common::map_binary)?;
+            let arr = type_mapper(values, yummy_core::common::map_binary)?;
             arrays.push(Arc::new(BinaryArray::from_iter_values(arr)));
         }
         DataType::Date32 => {
-            let arr = type_mapper(values, crate::common::map_i32)?;
+            let arr = type_mapper(values, yummy_core::common::map_i32)?;
             arrays.push(Arc::new(Date32Array::from_iter_values(arr)));
         }
         DataType::Date64 => {
-            let arr = type_mapper(values, crate::common::map_i64)?;
+            let arr = type_mapper(values, yummy_core::common::map_i64)?;
             arrays.push(Arc::new(Date64Array::from_iter_values(arr)));
         }
         _ => return Err(Box::new(DeltaError::TypeConversionError)),
@@ -176,13 +176,13 @@ fn convert_values(
 
 #[cfg(test)]
 mod test {
-    use crate::common::EntityValue;
     use crate::delta::test_delta_util::{create_delta, create_manager, drop_delta};
     use crate::delta::DeltaWrite;
     use crate::models::WriteRequest;
     use deltalake::action::SaveMode;
     use std::collections::HashMap;
     use std::error::Error;
+    use yummy_core::common::EntityValue;
 
     #[tokio::test]
     async fn test_delta_write_dict() -> Result<(), Box<dyn Error>> {

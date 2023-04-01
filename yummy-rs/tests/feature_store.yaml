@@ -1,5 +1,5 @@
 project: adjusted_drake
-registry: /home/jovyan/feast-yummy/yummy-rs/tests/registry.db
+registry: ../tests/registry.db
 provider: local
 online_store:
   type: redis

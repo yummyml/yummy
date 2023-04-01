@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::fs;
+use yummy_core::config::read_config_str;
 
 #[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
 pub struct Config {
@@ -18,17 +19,17 @@ pub struct OnlineStoreConfig {
 }
 
 impl Config {
-    pub fn new(path: &String) -> Result<Config, Box<dyn Error>> {
-        let s = fs::read_to_string(path)?;
+    pub async fn new(path: &String) -> Result<Config, Box<dyn Error>> {
+        let s = read_config_str(path, Some(true)).await?;
         let config: Config = serde_yaml::from_str(&s)?;
         Ok(config)
     }
 }
 
-#[test]
-fn parse_config() -> Result<(), Box<dyn Error>> {
+#[tokio::test]
+async fn parse_config() -> Result<(), Box<dyn Error>> {
     let path = "../tests/feature_store.yaml".to_string();
-    let config = Config::new(&path)?;
+    let config = Config::new(&path).await?;
     println!("{config:?}");
 
     match config.online_store {

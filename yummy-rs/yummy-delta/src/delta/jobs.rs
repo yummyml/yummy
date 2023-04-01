@@ -1,4 +1,3 @@
-use crate::common::Result;
 use crate::delta::{DeltaJobs, DeltaManager, DeltaWrite};
 use crate::models::{JobRequest, JobResponse, JobTable};
 use async_trait::async_trait;
@@ -14,6 +13,7 @@ use std::fs;
 use std::path::Path;
 use std::str::FromStr;
 use url::Url;
+use yummy_core::common::Result;
 
 #[async_trait]
 impl DeltaJobs for DeltaManager {
@@ -77,13 +77,13 @@ impl DeltaJobs for DeltaManager {
 
 #[cfg(test)]
 mod test {
-    use crate::common::Result;
     use crate::delta::test_delta_util::{create_delta, create_manager, drop_delta};
     use crate::delta::DeltaJobs;
     use crate::models::{JobRequest, JobResponse, JobSink, JobSource, JobTable};
     use deltalake::action::SaveMode;
     use std::error::Error;
     use std::fs;
+    use yummy_core::common::Result;
     /*
         #[tokio::test]
         async fn test_delta_job_run() -> Result<()> {

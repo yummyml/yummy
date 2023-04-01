@@ -1,4 +1,3 @@
-use crate::common::EntityValue;
 use crate::delta::error::DeltaError;
 use crate::delta::{DeltaManager, DeltaRead};
 use crate::models::QueryResponse;
@@ -17,6 +16,7 @@ use futures::stream::StreamExt;
 use std::collections::BTreeMap;
 use std::error::Error;
 use std::sync::Arc;
+use yummy_core::common::EntityValue;
 
 #[async_trait]
 impl DeltaRead for DeltaManager {
@@ -195,13 +195,13 @@ pub fn map_record_batch(
 
 #[cfg(test)]
 mod test {
-    use crate::common::EntityValue;
     use crate::delta::test_delta_util::{create_delta, create_manager, drop_delta};
     use crate::delta::{DeltaRead, DeltaWrite};
     use crate::models::WriteRequest;
     use deltalake::action::SaveMode;
     use std::collections::HashMap;
     use std::error::Error;
+    use yummy_core::common::EntityValue;
 
     #[tokio::test]
     async fn test_delta_query() -> Result<(), Box<dyn Error>> {
