@@ -1,18 +1,18 @@
 [package]
-name = "yummy-rs"
+name = "yummy"
 version = "0.0.7"
 edition = "2021"
 repository = "https://github.com/yummyml/yummy"
 description = "The yummy-rs library"
 
-[lib]
-name = "yummy_rs"
-crate-type = ["cdylib"]
+[[bin]]
+name = "yummy"
+path = "src/main.rs"
 
 [build]
 rustflags = ["-C", "target-cpu=native"]
 
 [dependencies]
-yummy-features = { path = "../yummy-features" }
-pyo3 = { version = "0.16.5", features = ["extension-module"] }
+clap = "4.2.1"
+yummy-delta = { path = "../yummy-delta" }
 tokio = "1.20.0"
