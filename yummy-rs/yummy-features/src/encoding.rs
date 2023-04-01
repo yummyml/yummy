@@ -1,20 +1,15 @@
 use crate::types::{EntityKey, Value};
 use byteorder::{ByteOrder, LittleEndian, WriteBytesExt};
-use fasthash::murmur3;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::error::Error;
 use yummy_core::common::EntityValue;
+use yummy_core::encoding::mmh3;
 
 #[derive(thiserror::Error, Debug)]
 pub enum EncodingError {
     #[error("Wrong Entity value.")]
     WrongEntityValue,
-}
-
-pub fn mmh3(key: String) -> Vec<u8> {
-    let hash = murmur3::hash32(key).to_be_bytes();
-    LittleEndian::read_u32(&hash).to_be_bytes().to_vec()
 }
 
 pub fn serialize_key(
