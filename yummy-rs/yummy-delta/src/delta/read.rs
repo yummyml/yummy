@@ -195,13 +195,13 @@ pub fn map_record_batch(
 
 #[cfg(test)]
 mod test {
-    use crate::common::EntityValue;
     use crate::delta::test_delta_util::{create_delta, create_manager, drop_delta};
     use crate::delta::{DeltaRead, DeltaWrite};
     use crate::models::WriteRequest;
     use deltalake::action::SaveMode;
     use std::collections::HashMap;
     use std::error::Error;
+    use yummy_core::common::EntityValue;
 
     #[tokio::test]
     async fn test_delta_query() -> Result<(), Box<dyn Error>> {

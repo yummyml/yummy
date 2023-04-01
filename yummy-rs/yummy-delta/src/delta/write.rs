@@ -176,13 +176,13 @@ fn convert_values(
 
 #[cfg(test)]
 mod test {
-    use crate::common::EntityValue;
     use crate::delta::test_delta_util::{create_delta, create_manager, drop_delta};
     use crate::delta::DeltaWrite;
     use crate::models::WriteRequest;
     use deltalake::action::SaveMode;
     use std::collections::HashMap;
     use std::error::Error;
+    use yummy_core::common::EntityValue;
 
     #[tokio::test]
     async fn test_delta_write_dict() -> Result<(), Box<dyn Error>> {

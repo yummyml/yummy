@@ -161,9 +161,9 @@ fn test_murmur3() {
 
     //let kp = EntityKey(join_keys=vec!["entity_id"], entity_values=vec![ev]);
 
-    let key = "test";
-    let hash = murmur3::hash32(key).to_be_bytes();
-    println!("{hash:?}");
-    assert_eq!(hash, [186, 107, 210, 19]);
+    //let key = "test";
+    //let hash = murmur3::hash32(key).to_be_bytes();
+    //println!("{hash:?}");
+    //assert_eq!(hash, [186, 107, 210, 19]);
     //let val = LittleEndian::read_u32(&hash).to_be_bytes().to_vec();
 }

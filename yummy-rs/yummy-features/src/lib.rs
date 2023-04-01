@@ -18,7 +18,8 @@ pub async fn serve_wrapper(
     port: u16,
     log_level: String,
 ) -> std::io::Result<()> {
-    let config = Config::new(&config_path).unwrap();
+    let config = Config::new(&config_path).await.unwrap();
+    let registry = Registry::new(config.clone()).await.unwrap();
 
     env_logger::init_from_env(env_logger::Env::new().default_filter_or(log_level));
     println!("Feature server running on http://{host}:{port}");
@@ -28,7 +29,7 @@ pub async fn serve_wrapper(
                 OnlineStoreFactory::new(config.clone()).unwrap(),
             ))
             .app_data(web::Data::new(config.clone()))
-            .app_data(web::Data::new(Registry::new(config.clone()).unwrap()))
+            .app_data(web::Data::new(registry.clone()))
             .wrap(Logger::default())
             .route("/health", web::post().to(health))
             .route("/get-online-features", web::post().to(get_online_features))

@@ -3,15 +3,16 @@ use crate::types::Registry as RegistryProto;
 use protobuf::Message;
 use std::error::Error;
 use std::fs;
+use yummy_core::config::read_config_bytes;
 //use tokio::prelude::Future;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Registry {
     pub feature_views: Vec<FeatureView>,
     pub feature_services: Vec<FeatureService>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FeatureView {
     pub project: String,
     pub name: String,
@@ -19,7 +20,7 @@ pub struct FeatureView {
     pub full_feature_names: Vec<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FeatureService {
     pub name: String,
     pub project: String,
@@ -27,8 +28,8 @@ pub struct FeatureService {
 }
 
 impl Registry {
-    pub fn new(config: Config) -> Result<Self, Box<dyn Error>> {
-        let data = fs::read(config.registry)?;
+    pub async fn new(config: Config) -> Result<Self, Box<dyn Error>> {
+        let data = read_config_bytes(&config.registry).await?;
         let registry_proto: RegistryProto::Registry = Message::parse_from_bytes(&data)?;
         let feature_views = Registry::read_feature_views(&registry_proto);
         let feature_services = Registry::read_read_feature_services(&registry_proto);
@@ -128,12 +129,12 @@ impl Registry {
     }
 }
 
-#[test]
-fn read_registry_test() -> Result<(), Box<dyn Error>> {
+#[tokio::test]
+async fn read_registry_test() -> Result<(), Box<dyn Error>> {
     let path = "../tests/feature_store.yaml".to_string();
-    let config = Config::new(&path)?;
+    let config = Config::new(&path).await?;
     println!("{config:?}");
-    let registry = Registry::new(config)?;
+    let registry = Registry::new(config).await?;
     //println!("{:?}", registry);
 
     let features = registry.get_feature_service(
