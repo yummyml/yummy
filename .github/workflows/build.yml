@@ -45,6 +45,7 @@ jobs:
 #      - name: Check docs
 #        run: cargo doc --features azure,datafusion,s3,gcs,glue
       - name: Check no default features
+        working-directory: ./yummy-rs
         run: cargo check --no-default-features
 
   test:
