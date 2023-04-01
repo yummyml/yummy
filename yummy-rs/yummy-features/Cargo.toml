@@ -1,10 +1,10 @@
 [package]
 name = "yummy-features"
-version = "0.0.8"
-#version.workspace = true
+version.workspace = true
 edition = "2021"
 repository = "https://github.com/yummyml/yummy"
 description = "Feature store server of the yummy-rs library"
+license = "Apache-2.0"
 
 [dependencies]
 actix-web = "4"

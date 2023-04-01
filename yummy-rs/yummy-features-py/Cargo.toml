@@ -5,6 +5,7 @@ version = "0.0.8"
 edition = "2021"
 repository = "https://github.com/yummyml/yummy"
 description = "Feature store server of the yummy-rs library"
+license = "Apache-2.0"
 
 [lib]
 name = "yummy_features"

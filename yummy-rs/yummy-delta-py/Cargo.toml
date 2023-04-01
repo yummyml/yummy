@@ -7,7 +7,6 @@ repository = "https://github.com/yummyml/yummy"
 description = "Delta lake yummy library"
 license = "Apache-2.0"
 
-
 [lib]
 name = "yummy_delta"
 crate-type = ["cdylib"]
