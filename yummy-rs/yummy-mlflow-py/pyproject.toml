@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "yummy-mlflow"
-version = "0.0.8"
+version = "0.0.9"
 requires-python = ">=3.7"
 description = "Yummy mlflow rust model server"
 readme = "README.md"

@@ -1,7 +1,6 @@
 [package]
 name = "yummy-mlflow-py"
-version = "0.0.8"
-#version.workspace = true
+version.workspace = true
 edition = "2021"
 repository = "https://github.com/yummyml/yummy"
 description = "MLflow serve of the yummy-rs library"
