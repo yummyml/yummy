@@ -3,7 +3,8 @@ name = "yummy"
 version = "0.0.8"
 edition = "2021"
 repository = "https://github.com/yummyml/yummy"
-description = "The yummy-rs library"
+description = "The yummy library"
+license = "Apache-2.0"
 
 [[bin]]
 name = "yummy"
