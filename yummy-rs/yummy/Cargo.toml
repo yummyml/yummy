@@ -14,7 +14,7 @@ rustflags = ["-C", "target-cpu=native"]
 
 [dependencies]
 clap = "4.2.1"
-yummy-delta = { path = "../yummy-delta", optional = true }
+yummy-delta = { version = "0.0.8",  path = "../yummy-delta", optional = true }
 tokio = { version = "1.20.0", features = ["full"] }
 
 [features]
