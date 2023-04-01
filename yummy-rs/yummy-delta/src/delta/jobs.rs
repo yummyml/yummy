@@ -1,4 +1,3 @@
-use crate::common::Result;
 use crate::delta::{DeltaJobs, DeltaManager, DeltaWrite};
 use crate::models::{JobRequest, JobResponse, JobTable};
 use async_trait::async_trait;
@@ -14,6 +13,7 @@ use std::fs;
 use std::path::Path;
 use std::str::FromStr;
 use url::Url;
+use yummy_core::common::Result;
 
 #[async_trait]
 impl DeltaJobs for DeltaManager {

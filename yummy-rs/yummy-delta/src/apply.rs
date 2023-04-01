@@ -1,10 +1,8 @@
-use crate::common::{ReplaceTokens, Result};
 use crate::config::DeltaConfig;
 use crate::delta::{
     read::map_record_batch, DeltaCommands, DeltaInfo, DeltaJobs, DeltaManager, DeltaRead,
     DeltaWrite,
 };
-use crate::err;
 use crate::models::{CreateRequest, JobRequest, OptimizeRequest, VacuumRequest, WriteRequest};
 use datafusion::execution::context::SessionContext;
 use datafusion::prelude::*;
@@ -12,6 +10,8 @@ use deltalake::DeltaOps;
 use serde::Deserialize;
 use std::fs;
 use url::Url;
+use yummy_core::common::{ReplaceTokens, Result};
+use yummy_core::err;
 
 #[derive(thiserror::Error, Debug)]
 pub enum ApplyError {

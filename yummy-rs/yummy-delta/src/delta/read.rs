@@ -1,4 +1,3 @@
-use crate::common::EntityValue;
 use crate::delta::error::DeltaError;
 use crate::delta::{DeltaManager, DeltaRead};
 use crate::models::QueryResponse;
@@ -17,6 +16,7 @@ use futures::stream::StreamExt;
 use std::collections::BTreeMap;
 use std::error::Error;
 use std::sync::Arc;
+use yummy_core::common::EntityValue;
 
 #[async_trait]
 impl DeltaRead for DeltaManager {

@@ -1,9 +1,9 @@
-use crate::common::EntityValue;
 use crate::config::ColumnSchema;
 use deltalake::Schema;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 use std::collections::{BTreeMap, HashMap};
+use yummy_core::common::EntityValue;
 
 #[derive(Serialize)]
 pub struct ResponseStores {
