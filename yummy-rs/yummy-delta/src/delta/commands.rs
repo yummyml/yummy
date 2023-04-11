@@ -30,8 +30,9 @@ impl DeltaCommands for DeltaManager {
             if !Path::exists(Path::new(&path)) {
                 fs::create_dir_all(&path)?;
             }
-            path = self.path(&store.path, &table_name)?;
         }
+
+        path = self.path(&store.path, &table_name)?;
 
         let delta_schema: Vec<SchemaField> = schema
             .iter()

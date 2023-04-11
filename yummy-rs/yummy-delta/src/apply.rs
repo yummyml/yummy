@@ -227,11 +227,11 @@ async fn test_config_url() -> Result<()> {
 
 #[tokio::test]
 async fn test_apply_table() -> Result<()> {
-    let path = "../../examples/delta/apply_table.yaml".to_string();
-    //let delta_apply = DeltaApply::new(&path).await?;
-    //println!("{:?}", delta_apply);
+    let path = "../../examples/delta/gameplay_tables.yaml".to_string();
+    let delta_apply = DeltaApply::new(&path).await?;
+    println!("{:?}", delta_apply);
 
-    //delta_apply.apply().await?;
+    delta_apply.apply().await?;
 
     //https://github.com/mackwic/colored/blob/master/src/color.rs
     //
