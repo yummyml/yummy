@@ -41,8 +41,11 @@ impl DeltaJobs for DeltaManager {
         for table in job_request.source.tables {
             match table {
                 JobTable::Parquet { name, path } => {
+                    println!("{name:#?} {path:#?}");
                     ctx.register_parquet(&name, &path, ParquetReadOptions::default())
                         .await?;
+
+                    println!("{name:#?} {path:#?}");
                 }
                 JobTable::Csv { name, path } => {}
                 JobTable::Json { name, path } => {}
@@ -57,8 +60,9 @@ impl DeltaJobs for DeltaManager {
             false
         };
 
+        self.print_schema(&df);
+
         if dry_run {
-            println!("{:#?}", &df.schema());
             df.show_limit(10).await?;
         } else {
             let rb = df.collect().await?;
@@ -74,6 +78,7 @@ impl DeltaJobs for DeltaManager {
         Ok(JobResponse { success: true })
     }
 }
+
 
 #[cfg(test)]
 mod test {

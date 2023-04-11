@@ -13,12 +13,14 @@ use crate::models::{
 };
 use async_trait::async_trait;
 use chrono::Duration;
+use datafusion::arrow::datatypes::DataType as ArrowDataType;
 use datafusion::physical_plan::SendableRecordBatchStream;
 use deltalake::arrow::{datatypes::DataType, record_batch::RecordBatch};
 use deltalake::operations::vacuum::VacuumBuilder;
 use deltalake::{
     action::SaveMode, builder::DeltaTableBuilder, DeltaOps, DeltaTable, Schema, SchemaDataType,
 };
+use prettytable::{row, Cell, Row, Table};
 use std::error::Error;
 
 #[async_trait]
@@ -264,6 +266,34 @@ impl DeltaManager {
             dry_run: result.dry_run,
             files_deleted: result.files_deleted,
         })
+    }
+
+    fn print_schema(&self, df: &datafusion::dataframe::DataFrame) {
+        //println!("{:#?}", &df.schema());
+        let mut tbl = Table::new();
+
+        tbl.add_row(row!["column_name", "arrow_type", "delta_type"]);
+        for field in df.schema().fields() {
+            let f = field.field();
+            let delta_type = match &f.data_type() {
+                ArrowDataType::Utf8 => "string",
+                ArrowDataType::Int64 => "long",
+                ArrowDataType::Int32 => "integer",
+                ArrowDataType::Int16 => "short",
+                ArrowDataType::Int8 => "byte",
+                ArrowDataType::Float32 => "float",
+                ArrowDataType::Float64 => "double",
+                ArrowDataType::Boolean => "boolean",
+                ArrowDataType::Binary => "binary",
+                ArrowDataType::Decimal128(_x, _p) => "decimal",
+                ArrowDataType::Date32 => "date",
+                ArrowDataType::Timestamp(_x, _u) => "timestamp",
+                _ => "unknown",
+            };
+            tbl.add_row(row![&f.name(), &f.data_type(), delta_type]);
+        }
+
+        tbl.printstd();
     }
 }
 
