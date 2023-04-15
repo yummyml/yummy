@@ -41,11 +41,8 @@ impl DeltaJobs for DeltaManager {
         for table in job_request.source.tables {
             match table {
                 JobTable::Parquet { name, path } => {
-                    println!("{name:#?} {path:#?}");
                     ctx.register_parquet(&name, &path, ParquetReadOptions::default())
                         .await?;
-
-                    println!("{name:#?} {path:#?}");
                 }
                 JobTable::Csv { name, path } => {}
                 JobTable::Json { name, path } => {}

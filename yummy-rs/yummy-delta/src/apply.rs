@@ -190,11 +190,11 @@ impl DeltaApply {
                     metadata: _,
                     spec: _,
                 } => {}
-                DeltaObject::Job { metadata: _, spec } => {
+                DeltaObject::Job { metadata, spec } => {
                     match &delta_manager.job(spec.clone()).await {
                         Ok(r) => {
                             println!("\x1b[92mSuccess - job finished\x1b[0m");
-                            //println!("\x1b[92m{:#?}\x1b[0m", spec.clone());
+                            println!("\x1b[92m{:#?}\x1b[0m", metadata.name.clone());
                             println!("\x1b[92m{r:#?}\x1b[0m");
                         }
                         Err(e) => {
