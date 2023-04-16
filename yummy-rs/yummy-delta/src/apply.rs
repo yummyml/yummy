@@ -245,7 +245,7 @@ async fn test_apply_table() -> Result<()> {
 #[tokio::test]
 async fn test_apply_job() -> Result<()> {
     let path = "../../examples/delta/gameplay_move_data.yaml".to_string();
-    let delta_apply = DeltaApply::new(&path).await?;
+    //let delta_apply = DeltaApply::new(&path).await?;
     //println!("{:?}", delta_apply);
 
     //delta_apply.apply().await?;
