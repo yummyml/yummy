@@ -13,12 +13,14 @@ use crate::models::{
 };
 use async_trait::async_trait;
 use chrono::Duration;
+use datafusion::arrow::datatypes::DataType as ArrowDataType;
 use datafusion::physical_plan::SendableRecordBatchStream;
 use deltalake::arrow::{datatypes::DataType, record_batch::RecordBatch};
 use deltalake::operations::vacuum::VacuumBuilder;
 use deltalake::{
     action::SaveMode, builder::DeltaTableBuilder, DeltaOps, DeltaTable, Schema, SchemaDataType,
 };
+use prettytable::{row, Cell, Row, Table};
 use std::error::Error;
 
 #[async_trait]
@@ -106,13 +108,14 @@ pub trait DeltaWrite {
     ) -> Result<WriteResponse, Box<dyn Error>>;
 }
 
+#[derive(Debug, Clone)]
 pub struct DeltaManager {
     pub config: DeltaConfig,
 }
 
 impl DeltaManager {
-    pub fn new(config_path: String) -> Result<Self, Box<dyn Error>> {
-        let config = DeltaConfig::new(&config_path)?;
+    pub async fn new(config_path: String) -> Result<Self, Box<dyn Error>> {
+        let config = DeltaConfig::new(&config_path).await?;
         Ok(DeltaManager { config })
     }
 
@@ -265,6 +268,39 @@ impl DeltaManager {
             files_deleted: result.files_deleted,
         })
     }
+
+    fn print_schema(&self, df: &datafusion::dataframe::DataFrame) {
+        //println!("{:#?}", &df.schema());
+        let mut tbl = Table::new();
+
+        tbl.add_row(row!["column_name", "arrow_type", "delta_type", "nullable"]);
+        for field in df.schema().fields() {
+            let f = field.field();
+            let delta_type = match &f.data_type() {
+                ArrowDataType::Utf8 => "string",
+                ArrowDataType::Int64 => "long",
+                ArrowDataType::Int32 => "integer",
+                ArrowDataType::Int16 => "short",
+                ArrowDataType::Int8 => "byte",
+                ArrowDataType::Float32 => "float",
+                ArrowDataType::Float64 => "double",
+                ArrowDataType::Boolean => "boolean",
+                ArrowDataType::Binary => "binary",
+                ArrowDataType::Decimal128(_x, _p) => "decimal",
+                ArrowDataType::Date32 => "date",
+                ArrowDataType::Timestamp(_x, _u) => "timestamp",
+                _ => "unknown",
+            };
+            tbl.add_row(row![
+                &f.name(),
+                &f.data_type(),
+                delta_type,
+                &f.is_nullable()
+            ]);
+        }
+
+        tbl.printstd();
+    }
 }
 
 #[cfg(test)]
@@ -277,7 +313,7 @@ pub mod test_delta_util {
 
     pub async fn create_manager() -> Result<DeltaManager, Box<dyn Error>> {
         let path = "../tests/delta/config.yaml".to_string();
-        Ok(DeltaManager::new(path)?)
+        Ok(DeltaManager::new(path).await?)
     }
 
     pub async fn create_delta(
@@ -285,7 +321,7 @@ pub mod test_delta_util {
         table_name: &String,
     ) -> Result<deltalake::DeltaTable, Box<dyn Error>> {
         let path = "../tests/delta/config.yaml".to_string();
-        let delta_manager = DeltaManager::new(path)?;
+        let delta_manager = DeltaManager::new(path).await?;
 
         //let store_name = String::from("az");
         let mut schema: Vec<ColumnSchema> = Vec::new();

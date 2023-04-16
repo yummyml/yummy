@@ -12,6 +12,7 @@ use std::error::Error;
 use std::fs;
 use std::path::Path;
 use std::str::FromStr;
+use std::sync::Arc;
 use url::Url;
 use yummy_core::common::Result;
 
@@ -32,11 +33,8 @@ impl DeltaJobs for DeltaManager {
 
         let ctx = SessionContext::new();
 
-        ctx.runtime_env().register_object_store(
-            url.scheme(),
-            url.host_str().unwrap_or_default(),
-            os.storage_backend(),
-        );
+        ctx.runtime_env()
+            .register_object_store(&url, os.storage_backend());
 
         for table in job_request.source.tables {
             match table {
@@ -44,9 +42,20 @@ impl DeltaJobs for DeltaManager {
                     ctx.register_parquet(&name, &path, ParquetReadOptions::default())
                         .await?;
                 }
-                JobTable::Csv { name, path } => {}
-                JobTable::Json { name, path } => {}
-                JobTable::Delta { name, table } => {}
+                JobTable::Csv { name, path } => {
+                    ctx.register_csv(&name, &path, CsvReadOptions::default())
+                        .await?;
+                }
+                JobTable::Json { name, path } => {
+                    ctx.register_json(&name, &path, NdJsonReadOptions::default())
+                        .await?;
+                }
+                JobTable::Delta { name, table } => {
+                    let delta_table = self
+                        .table(&job_request.source.store, &table, None, None)
+                        .await?;
+                    ctx.register_table(name.as_str(), Arc::new(delta_table))?;
+                }
             }
         }
 
@@ -57,8 +66,9 @@ impl DeltaJobs for DeltaManager {
             false
         };
 
+        self.print_schema(&df);
+
         if dry_run {
-            println!("{:#?}", &df.schema());
             df.show_limit(10).await?;
         } else {
             let rb = df.collect().await?;

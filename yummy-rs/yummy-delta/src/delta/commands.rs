@@ -26,12 +26,12 @@ impl DeltaCommands for DeltaManager {
         let configuration = create_request.configuration;
         let metadata = create_request.metadata;
 
-        if path.starts_with("file://") || path.starts_with("/") {
-            if !Path::exists(Path::new(&path)) {
-                fs::create_dir_all(&path)?;
-            }
-            path = self.path(&store.path, &table_name)?;
+        if (path.starts_with("file://") || path.starts_with("/")) && !Path::exists(Path::new(&path))
+        {
+            fs::create_dir_all(&path)?;
         }
+
+        path = self.path(&store.path, &table_name)?;
 
         let delta_schema: Vec<SchemaField> = schema
             .iter()

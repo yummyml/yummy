@@ -31,12 +31,11 @@ pub async fn run_delta_server(
 ) -> std::io::Result<()> {
     env_logger::init_from_env(env_logger::Env::new().default_filter_or(log_level));
     println!("Yummy delta server running on http://{host}:{port}");
+    let delta_manager = DeltaManager::new(config_path.clone()).await.unwrap();
 
     let _ = HttpServer::new(move || {
         App::new()
-            .app_data(web::Data::new(
-                DeltaManager::new(config_path.clone()).unwrap(),
-            ))
+            .app_data(web::Data::new(delta_manager.clone()))
             .route("/health", web::get().to(health))
             .service(
                 web::scope("/api").service(
