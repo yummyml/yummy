@@ -72,7 +72,6 @@ impl DeltaJobs for DeltaManager {
             df.show_limit(10).await?;
         } else {
             let rb = df.collect().await?;
-            println!("DF: {rb:#?}");
             self.write_batches(
                 &job_request.sink.store,
                 &job_request.sink.table,
