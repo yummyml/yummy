@@ -49,10 +49,13 @@ impl DeltaInfo for DeltaManager {
     async fn list_tables(&self, store_name: &String) -> Result<ResponseTables, Box<dyn Error>> {
         let store = &self.store(store_name)?;
         let uri = &store.path.to_string();
-        let st = DeltaTableBuilder::from_uri(uri)
-            .with_allow_http(true)
-            .build_storage()?
-            .storage_backend();
+        let mut builder = DeltaTableBuilder::from_uri(uri).with_allow_http(true);
+
+        if let Some(storage_options) = &store.storage_options {
+            builder = builder.with_storage_options(storage_options.clone());
+        }
+
+        let st = builder.build_storage()?.storage_backend();
 
         let list_stream = st.list(None).await?;
 

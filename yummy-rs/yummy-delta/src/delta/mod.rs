@@ -108,13 +108,14 @@ pub trait DeltaWrite {
     ) -> Result<WriteResponse, Box<dyn Error>>;
 }
 
+#[derive(Debug, Clone)]
 pub struct DeltaManager {
     pub config: DeltaConfig,
 }
 
 impl DeltaManager {
-    pub fn new(config_path: String) -> Result<Self, Box<dyn Error>> {
-        let config = DeltaConfig::new(&config_path)?;
+    pub async fn new(config_path: String) -> Result<Self, Box<dyn Error>> {
+        let config = DeltaConfig::new(&config_path).await?;
         Ok(DeltaManager { config })
     }
 
@@ -307,7 +308,7 @@ pub mod test_delta_util {
 
     pub async fn create_manager() -> Result<DeltaManager, Box<dyn Error>> {
         let path = "../tests/delta/config.yaml".to_string();
-        Ok(DeltaManager::new(path)?)
+        Ok(DeltaManager::new(path).await?)
     }
 
     pub async fn create_delta(
@@ -315,7 +316,7 @@ pub mod test_delta_util {
         table_name: &String,
     ) -> Result<deltalake::DeltaTable, Box<dyn Error>> {
         let path = "../tests/delta/config.yaml".to_string();
-        let delta_manager = DeltaManager::new(path)?;
+        let delta_manager = DeltaManager::new(path).await?;
 
         //let store_name = String::from("az");
         let mut schema: Vec<ColumnSchema> = Vec::new();

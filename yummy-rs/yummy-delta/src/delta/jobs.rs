@@ -34,8 +34,7 @@ impl DeltaJobs for DeltaManager {
         let ctx = SessionContext::new();
 
         ctx.runtime_env().register_object_store(
-            url.scheme(),
-            url.host_str().unwrap_or_default(),
+            &url,
             os.storage_backend(),
         );
 
@@ -55,9 +54,8 @@ impl DeltaJobs for DeltaManager {
                 }
                 JobTable::Delta { name, table } => {
                     let delta_table = self
-                        .table(&job_request.source.store, &name, None, None)
+                        .table(&job_request.source.store, &table, None, None)
                         .await?;
-
                     ctx.register_table(name.as_str(), Arc::new(delta_table))?;
                 }
             }
@@ -76,6 +74,7 @@ impl DeltaJobs for DeltaManager {
             df.show_limit(10).await?;
         } else {
             let rb = df.collect().await?;
+            println!("DF: {rb:#?}");
             self.write_batches(
                 &job_request.sink.store,
                 &job_request.sink.table,
