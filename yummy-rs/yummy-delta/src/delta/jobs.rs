@@ -12,6 +12,7 @@ use std::error::Error;
 use std::fs;
 use std::path::Path;
 use std::str::FromStr;
+use std::sync::Arc;
 use url::Url;
 use yummy_core::common::Result;
 
@@ -44,9 +45,21 @@ impl DeltaJobs for DeltaManager {
                     ctx.register_parquet(&name, &path, ParquetReadOptions::default())
                         .await?;
                 }
-                JobTable::Csv { name, path } => {}
-                JobTable::Json { name, path } => {}
-                JobTable::Delta { name, table } => {}
+                JobTable::Csv { name, path } => {
+                    ctx.register_csv(&name, &path, CsvReadOptions::default())
+                        .await?;
+                }
+                JobTable::Json { name, path } => {
+                    ctx.register_json(&name, &path, NdJsonReadOptions::default())
+                        .await?;
+                }
+                JobTable::Delta { name, table } => {
+                    let delta_table = self
+                        .table(&job_request.source.store, &name, None, None)
+                        .await?;
+
+                    ctx.register_table(name.as_str(), Arc::new(delta_table))?;
+                }
             }
         }
 
@@ -75,7 +88,6 @@ impl DeltaJobs for DeltaManager {
         Ok(JobResponse { success: true })
     }
 }
-
 
 #[cfg(test)]
 mod test {

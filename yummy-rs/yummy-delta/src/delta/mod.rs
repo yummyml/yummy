@@ -272,7 +272,7 @@ impl DeltaManager {
         //println!("{:#?}", &df.schema());
         let mut tbl = Table::new();
 
-        tbl.add_row(row!["column_name", "arrow_type", "delta_type"]);
+        tbl.add_row(row!["column_name", "arrow_type", "delta_type", "nullable"]);
         for field in df.schema().fields() {
             let f = field.field();
             let delta_type = match &f.data_type() {
@@ -290,7 +290,7 @@ impl DeltaManager {
                 ArrowDataType::Timestamp(_x, _u) => "timestamp",
                 _ => "unknown",
             };
-            tbl.add_row(row![&f.name(), &f.data_type(), delta_type]);
+            tbl.add_row(row![&f.name(), &f.data_type(), delta_type, &f.is_nullable()]);
         }
 
         tbl.printstd();
