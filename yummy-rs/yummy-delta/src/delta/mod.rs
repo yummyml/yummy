@@ -291,7 +291,12 @@ impl DeltaManager {
                 ArrowDataType::Timestamp(_x, _u) => "timestamp",
                 _ => "unknown",
             };
-            tbl.add_row(row![&f.name(), &f.data_type(), delta_type, &f.is_nullable()]);
+            tbl.add_row(row![
+                &f.name(),
+                &f.data_type(),
+                delta_type,
+                &f.is_nullable()
+            ]);
         }
 
         tbl.printstd();

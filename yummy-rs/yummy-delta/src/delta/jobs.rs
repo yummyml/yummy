@@ -33,10 +33,8 @@ impl DeltaJobs for DeltaManager {
 
         let ctx = SessionContext::new();
 
-        ctx.runtime_env().register_object_store(
-            &url,
-            os.storage_backend(),
-        );
+        ctx.runtime_env()
+            .register_object_store(&url, os.storage_backend());
 
         for table in job_request.source.tables {
             match table {

@@ -26,10 +26,9 @@ impl DeltaCommands for DeltaManager {
         let configuration = create_request.configuration;
         let metadata = create_request.metadata;
 
-        if path.starts_with("file://") || path.starts_with("/") {
-            if !Path::exists(Path::new(&path)) {
-                fs::create_dir_all(&path)?;
-            }
+        if (path.starts_with("file://") || path.starts_with("/")) && !Path::exists(Path::new(&path))
+        {
+            fs::create_dir_all(&path)?;
         }
 
         path = self.path(&store.path, &table_name)?;

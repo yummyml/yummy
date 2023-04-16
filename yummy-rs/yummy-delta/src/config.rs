@@ -31,7 +31,6 @@ pub struct ColumnSchema {
     pub nullable: bool,
 }
 
-
 #[tokio::test]
 async fn test_config() -> Result<()> {
     let path = "../tests/delta/config.yaml".to_string();

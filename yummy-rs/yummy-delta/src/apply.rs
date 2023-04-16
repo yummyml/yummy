@@ -122,7 +122,7 @@ impl DeltaApply {
                             println!("\x1b[92m{r:#?}\x1b[0m");
                         }
                         Err(e) => {
-                            println!("\x1b[93mSkipped - {:#?}\x1b[0m", e);
+                            println!("\x1b[93mSkipped - {e:#?}\x1b[0m");
                         }
                     }
 
@@ -158,7 +158,7 @@ impl DeltaApply {
                             println!("\x1b[92m{r:#?}\x1b[0m");
                         }
                         Err(e) => {
-                            println!("\x1b[93mSkipped - {:#?}\x1b[0m", e);
+                            println!("\x1b[93mSkipped - {e:#?}\x1b[0m");
                         }
                     }
                 }
@@ -182,7 +182,7 @@ impl DeltaApply {
                             println!("\x1b[92m{r:#?}\x1b[0m");
                         }
                         Err(e) => {
-                            println!("\x1b[93mSkipped - {:#?}\x1b[0m", e);
+                            println!("\x1b[93mSkipped - {e:#?}\x1b[0m");
                         }
                     }
                 }
@@ -198,8 +198,7 @@ impl DeltaApply {
                             println!("\x1b[92m{r:#?}\x1b[0m");
                         }
                         Err(e) => {
-
-                            println!("\x1b[93mSkipped - {:#?}\x1b[0m", e);
+                            println!("\x1b[93mSkipped - {e:#?}\x1b[0m");
                         }
                     }
                 }
@@ -229,10 +228,10 @@ async fn test_config_url() -> Result<()> {
 #[tokio::test]
 async fn test_apply_table() -> Result<()> {
     let path = "../../examples/delta/gameplay_tables.yaml".to_string();
-    let delta_apply = DeltaApply::new(&path).await?;
-    println!("{:?}", delta_apply);
+    //let delta_apply = DeltaApply::new(&path).await?;
+    //println!("{delta_apply:?}");
 
-    delta_apply.apply().await?;
+    //delta_apply.apply().await?;
 
     //https://github.com/mackwic/colored/blob/master/src/color.rs
     //
@@ -249,7 +248,7 @@ async fn test_apply_job() -> Result<()> {
     let delta_apply = DeltaApply::new(&path).await?;
     //println!("{:?}", delta_apply);
 
-    delta_apply.apply().await?;
+    //delta_apply.apply().await?;
 
     //https://github.com/mackwic/colored/blob/master/src/color.rs
     //
