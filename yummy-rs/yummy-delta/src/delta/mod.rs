@@ -273,7 +273,7 @@ impl DeltaManager {
         //println!("{:#?}", &df.schema());
         let mut tbl = Table::new();
 
-        tbl.add_row(row!["column_name", "arrow_type", "delta_type", "nullable"]);
+        tbl.set_titles(row!["column_name", "arrow_type", "delta_type", "nullable"]);
         for field in df.schema().fields() {
             let f = field.field();
             let delta_type = match &f.data_type() {

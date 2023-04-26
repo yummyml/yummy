@@ -2,16 +2,51 @@ pub mod apply;
 pub mod config;
 pub mod delta;
 pub mod models;
+pub mod output;
 pub mod server;
 
+use crate::delta::{
+    read::map_record_batch, DeltaCommands, DeltaInfo, DeltaManager, DeltaRead, DeltaWrite,
+};
+use crate::output::PrettyOutput;
 use actix_web::middleware::Logger;
 use actix_web::{web, App, HttpServer};
 use apply::DeltaApply;
-use delta::DeltaManager;
 use server::{
     append, create_table, details, health, list_stores, list_tables, optimize, overwrite,
     query_stream, vacuum,
 };
+
+pub async fn pprint_stores(config_path: String) -> std::io::Result<()> {
+    let manager = DeltaManager::new(config_path).await.unwrap();
+    let stores = manager.list_stores().unwrap();
+    let p = stores.to_prettytable().unwrap();
+    println!("{p}");
+    Ok(())
+}
+
+pub async fn pprint_table(
+    config_path: String,
+    store_name: String,
+    table_name: String,
+) -> std::io::Result<()> {
+    let manager = DeltaManager::new(config_path).await.unwrap();
+    let table = manager
+        .details(&store_name, &table_name, None, None)
+        .await
+        .unwrap();
+    let t = table.to_prettytable().unwrap();
+    println!("{t}");
+    Ok(())
+}
+
+pub async fn pprint_tables(config_path: String, store_name: String) -> std::io::Result<()> {
+    let manager = DeltaManager::new(config_path).await.unwrap();
+    let tables = manager.list_tables(&store_name).await.unwrap();
+    let t = tables.to_prettytable().unwrap();
+    println!("{t}");
+    Ok(())
+}
 
 pub async fn apply_delta(config_path: String) -> std::io::Result<()> {
     DeltaApply::new(&config_path)
