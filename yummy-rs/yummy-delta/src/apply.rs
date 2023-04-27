@@ -98,13 +98,17 @@ impl DeltaApply {
         }
     }
 
-    pub async fn apply(&self) -> Result<()> {
+    pub fn delta_manager(&self) -> Result<DeltaManager> {
         let conf = if let DeltaObject::Config { metadata: _, spec } = &self.config {
             spec.clone()
         } else {
             return Err(err!(ApplyError::NoConfig));
         };
-        let delta_manager = DeltaManager { config: conf };
+        Ok(DeltaManager { config: conf })
+    }
+
+    pub async fn apply(&self) -> Result<()> {
+        let delta_manager = self.delta_manager()?;
 
         for o in &self.delta_objects {
             match o {
