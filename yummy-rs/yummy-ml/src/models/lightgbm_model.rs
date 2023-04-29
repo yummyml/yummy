@@ -127,11 +127,11 @@ impl MLModel for LightgbmModel {
     }
 }
 
-#[test]
-fn test_feature_names() -> Result<(), Box<dyn Error>> {
+#[tokio::test]
+async fn test_feature_names() -> Result<(), Box<dyn Error>> {
     let path = "../tests/mlflow/lightgbm_model/lightgbm_wine_model".to_string();
     //let path = "../tests/mlflow/catboost_model/iris_my_model".to_string();
-    let config = MLConfig::new(&path)?;
+    let config = MLConfig::new(&path).await?;
     println!("{config:?}");
     let lgb_model = LightgbmModel::new(config)?;
     let features = lgb_model.model.feature_name()?;
@@ -141,11 +141,11 @@ fn test_feature_names() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-#[test]
-fn load_model_and_predict() -> Result<(), Box<dyn Error>> {
+#[tokio::test]
+async fn load_model_and_predict() -> Result<(), Box<dyn Error>> {
     let path = "../tests/mlflow/lightgbm_model/lightgbm_my_model".to_string();
     //let path = "../tests/mlflow/catboost_model/iris_my_model".to_string();
-    let config = MLConfig::new(&path)?;
+    let config = MLConfig::new(&path).await?;
     println!("{config:?}");
     let lgb_model = LightgbmModel::new(config)?;
 
@@ -170,11 +170,11 @@ fn load_model_and_predict() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-#[test]
-fn load_model_and_predict_multiclass() -> Result<(), Box<dyn Error>> {
+#[tokio::test]
+async fn load_model_and_predict_multiclass() -> Result<(), Box<dyn Error>> {
     let path = "../tests/mlflow/lightgbm_model/lightgbm_wine_model/".to_string();
     //let path = "../tests/mlflow/catboost_model/iris_my_model".to_string();
-    let config = MLConfig::new(&path)?;
+    let config = MLConfig::new(&path).await?;
     println!("{config:?}");
     let lgb_model = LightgbmModel::new(config)?;
 

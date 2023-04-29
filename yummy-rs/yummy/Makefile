@@ -14,9 +14,9 @@ publish-pypi: ## Publish to pipy
 	twine upload --repository pypi ../target/wheels/*
 
 
-test-mlflow:
-	cd ../yummy-mlflow/ && cargo test -- --show-output
-	#cd ../yummy-mlflow/ && cargo test -- models::lightgbm_model::load_model_and_predict_multiclass  --show-output
+test-ml:
+	cd ../yummy-ml/ && cargo test -- --show-output
+	#cd ../yummy-ml/ && cargo test -- models::lightgbm_model::load_model_and_predict_multiclass  --show-output
 
 test-core:
 	cd ../yummy-core/ && cargo test -- --show-output

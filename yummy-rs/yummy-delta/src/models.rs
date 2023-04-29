@@ -158,3 +158,13 @@ pub struct JobRequest {
 pub struct JobResponse {
     pub success: bool,
 }
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct MLModelRequest {
+    pub source: JobSource,
+    pub sql: String,
+    pub sink: JobSink,
+    pub dry_run: Option<bool>,
+}
+

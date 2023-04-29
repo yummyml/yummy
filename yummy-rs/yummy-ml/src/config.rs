@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::fs;
+use std::path::PathBuf;
+use yummy_core::config::read_config_str;
 
 #[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
 pub struct MLConfig {
@@ -35,19 +37,29 @@ pub struct LightgbmConfig {
 }
 
 impl MLConfig {
-    pub fn new(path: &String) -> Result<MLConfig, Box<dyn Error>> {
-        let config_path = format!("{path}/MLmodel");
-        let s = fs::read_to_string(config_path)?;
-        let mut config: MLConfig = serde_yaml::from_str(&s)?;
-        config.base_path = Some(path.to_string());
+    pub async fn new(path: &String) -> Result<MLConfig, Box<dyn Error>> {
+        let config = if PathBuf::from(path).is_dir() {
+            let config_path = format!("{path}/MLmodel");
+            let s = fs::read_to_string(config_path)?;
+            let mut config: MLConfig = serde_yaml::from_str(&s)?;
+            config.base_path = Some(path.to_string());
+            config
+        } else {
+            let s = read_config_str(path, Some(true)).await?;
+            let mut config: MLConfig = serde_yaml::from_str(&s)?;
+            let path_vec = path.split("/").collect::<Vec<&str>>();
+            config.base_path = Some(path_vec[..path_vec.len() - 1].join("/"));
+            config
+        };
+
         Ok(config)
     }
 }
 
-#[test]
-fn parse_config() -> Result<(), Box<dyn Error>> {
+#[tokio::test]
+async fn parse_config() -> Result<(), Box<dyn Error>> {
     let path = "../tests/mlflow/catboost_model/my_model".to_string();
-    let config = MLConfig::new(&path)?;
+    let config = MLConfig::new(&path).await?;
     println!("{config:?}");
 
     match config.flavors.catboost {

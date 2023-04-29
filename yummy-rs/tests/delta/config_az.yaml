@@ -1,0 +1,13 @@
+stores:
+  - name: gameplay_bronze
+    path: "az://gameplay-example/bronze/"
+    storage_options:
+      azure_storage_account_name: "${az2_account}"
+      azure_storage_access_key: "${az2_key}"
+      azure_storage_use_emulator: "0"
+  - name: gameplay_silver
+    path: "az://gameplay-example/silver/"
+    storage_options:
+      azure_storage_account_name: "${az2_account}"
+      azure_storage_access_key: "${az2_key}"
+      azure_storage_use_emulator: "0"

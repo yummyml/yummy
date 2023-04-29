@@ -1,5 +1,5 @@
 [package]
-name = "yummy-mlflow"
+name = "yummy-ml"
 version.workspace = true
 edition = "2021"
 repository = "https://github.com/yummyml/yummy"

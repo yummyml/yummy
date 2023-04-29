@@ -3,7 +3,9 @@ use crate::delta::{
     read::map_record_batch, DeltaCommands, DeltaInfo, DeltaJobs, DeltaManager, DeltaRead,
     DeltaWrite,
 };
-use crate::models::{CreateRequest, JobRequest, OptimizeRequest, VacuumRequest, WriteRequest};
+use crate::models::{
+    CreateRequest, JobRequest, MLModelRequest, OptimizeRequest, VacuumRequest, WriteRequest,
+};
 use datafusion::execution::context::SessionContext;
 use datafusion::prelude::*;
 use deltalake::DeltaOps;
@@ -11,7 +13,7 @@ use serde::Deserialize;
 use std::fs;
 use url::Url;
 use yummy_core::common::{ReplaceTokens, Result};
-use yummy_core::config::read_config_str;
+use yummy_core::config::{read_config_str, Metadata};
 use yummy_core::err;
 
 #[derive(thiserror::Error, Debug)]
@@ -24,14 +26,6 @@ pub enum ApplyError {
     WrongOptimizeMetadata,
     #[error("Delta vacuum kind must contain store and table in metadata")]
     WrongVacuumMetadata,
-}
-
-#[derive(Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct Metadata {
-    pub name: String,
-    pub store: Option<String>,
-    pub table: Option<String>,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -56,6 +50,10 @@ pub enum DeltaObject {
     Job {
         metadata: Metadata,
         spec: JobRequest,
+    },
+    MLModel {
+        metadata: Metadata,
+        spec: MLModelRequest,
     },
 }
 
@@ -191,6 +189,10 @@ impl DeltaApply {
                     }
                 }
                 DeltaObject::Config {
+                    metadata: _,
+                    spec: _,
+                } => {}
+                DeltaObject::MLModel {
                     metadata: _,
                     spec: _,
                 } => {}

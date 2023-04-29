@@ -140,21 +140,21 @@ impl MLModel for CatboostModel {
     }
 }
 
-#[test]
-fn test_feature_names() -> Result<(), Box<dyn Error>> {
+#[tokio::test]
+async fn test_feature_names() -> Result<(), Box<dyn Error>> {
     let path = "../tests/mlflow/catboost_model/my_model".to_string();
     //let path = "../tests/mlflow/catboost_model/iris_my_model".to_string();
-    let config = MLConfig::new(&path)?;
+    let config = MLConfig::new(&path).await?;
     println!("{config:?}");
     let _catboost_model = CatboostModel::new(config)?;
     Ok(())
 }
 
-#[test]
-fn load_model_and_predict() -> Result<(), Box<dyn Error>> {
+#[tokio::test]
+async fn load_model_and_predict() -> Result<(), Box<dyn Error>> {
     let path = "../tests/mlflow/catboost_model/my_model".to_string();
     //let path = "../tests/mlflow/catboost_model/iris_my_model".to_string();
-    let config = MLConfig::new(&path)?;
+    let config = MLConfig::new(&path).await?;
     println!("{config:?}");
     let catboost_model = CatboostModel::new(config)?;
 
