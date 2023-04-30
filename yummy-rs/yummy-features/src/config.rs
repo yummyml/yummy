@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 use std::error::Error;
-use std::fs;
 use yummy_core::config::read_config_str;
 
 #[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]

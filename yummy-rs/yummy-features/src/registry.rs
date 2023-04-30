@@ -2,7 +2,6 @@ use crate::config::Config;
 use crate::types::Registry as RegistryProto;
 use protobuf::Message;
 use std::error::Error;
-use std::fs;
 use yummy_core::config::read_config_bytes;
 //use tokio::prelude::Future;
 
@@ -81,7 +80,7 @@ impl Registry {
 
             let features: Vec<String> = ft.into_iter().map(|f| f.name.clone()).collect();
             let full_feature_names: Vec<String> = ft
-                .into_iter()
+                .iter()
                 .map(|f| format!("{}:{}", name.clone(), f.name.clone()))
                 .collect();
             feature_views.push(FeatureView {
@@ -97,7 +96,7 @@ impl Registry {
 
     pub fn get_feature_service(&self, name: String, project: String) -> Vec<String> {
         match (&self.feature_services)
-            .into_iter()
+            .iter()
             .filter(|fs| fs.name == name && fs.project == project)
             .last()
         {
@@ -117,7 +116,7 @@ impl Registry {
                 .filter(|fv| fv.name == feature_view_name)
                 .last()
             {
-                if !(&f.features).into_iter().any(|n| n == &feature_name) {
+                if !(&f.features).into_iter().any(|n| n == feature_name) {
                     return false;
                 }
             } else {

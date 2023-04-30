@@ -23,7 +23,7 @@ impl RedisOnlineStore {
         };
         let redis_client = redis::Client::open(connection_string)?;
         let pool = r2d2::Pool::new(redis_client)?;
-        Ok(RedisOnlineStore { pool: pool })
+        Ok(RedisOnlineStore { pool })
     }
 }
 
