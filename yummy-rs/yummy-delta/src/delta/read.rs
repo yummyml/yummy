@@ -12,7 +12,6 @@ use deltalake::arrow::{
     },
     datatypes::DataType,
 };
-use futures::stream::StreamExt;
 use std::collections::BTreeMap;
 use std::error::Error;
 use std::sync::Arc;

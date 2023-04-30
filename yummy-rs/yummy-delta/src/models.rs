@@ -1,5 +1,4 @@
 use crate::config::ColumnSchema;
-use datafusion::arrow::datatypes::DataType as ArrowDataType;
 use datafusion_expr::Volatility as ArrowVolatility;
 use deltalake::arrow::datatypes::DataType;
 use deltalake::Schema;
@@ -188,7 +187,6 @@ impl TryFrom<Volatility> for ArrowVolatility {
             Volatility::Immutable => Ok(ArrowVolatility::Immutable),
             Volatility::Stable => Ok(ArrowVolatility::Stable),
             Volatility::Volatile => Ok(ArrowVolatility::Volatile),
-            _ => Err(Box::new(crate::delta::error::DeltaError::UnknownTypeError)),
         }
     }
 }
@@ -225,7 +223,6 @@ impl TryFrom<SchemaPrimitiveType> for DataType {
             SchemaPrimitiveType::Binary => Ok(DataType::Binary),
             SchemaPrimitiveType::Date => Ok(DataType::Date32),
             SchemaPrimitiveType::Timestamp => Ok(DataType::Date64),
-            _ => Err(Box::new(crate::delta::error::DeltaError::UnknownTypeError)),
         }
     }
 }

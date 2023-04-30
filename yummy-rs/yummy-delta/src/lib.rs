@@ -6,9 +6,7 @@ pub mod output;
 pub mod server;
 pub mod udf;
 
-use crate::delta::{
-    read::map_record_batch, DeltaCommands, DeltaInfo, DeltaManager, DeltaRead, DeltaWrite,
-};
+use crate::delta::DeltaInfo;
 use crate::output::PrettyOutput;
 use actix_web::middleware::Logger;
 use actix_web::{web, App, HttpServer};
@@ -19,7 +17,11 @@ use server::{
 };
 
 pub async fn pprint_stores(config_path: String) -> std::io::Result<()> {
-    let manager = DeltaApply::new(&config_path).await.unwrap().delta_manager().unwrap();
+    let manager = DeltaApply::new(&config_path)
+        .await
+        .unwrap()
+        .delta_manager()
+        .unwrap();
     let stores = manager.list_stores().unwrap();
     let p = stores.to_prettytable().unwrap();
     println!("{p}");
@@ -31,7 +33,11 @@ pub async fn pprint_table(
     store_name: String,
     table_name: String,
 ) -> std::io::Result<()> {
-    let manager = DeltaApply::new(&config_path).await.unwrap().delta_manager().unwrap();
+    let manager = DeltaApply::new(&config_path)
+        .await
+        .unwrap()
+        .delta_manager()
+        .unwrap();
     let table = manager
         .details(&store_name, &table_name, None, None)
         .await
@@ -42,7 +48,11 @@ pub async fn pprint_table(
 }
 
 pub async fn pprint_tables(config_path: String, store_name: String) -> std::io::Result<()> {
-    let manager = DeltaApply::new(&config_path).await.unwrap().delta_manager().unwrap();
+    let manager = DeltaApply::new(&config_path)
+        .await
+        .unwrap()
+        .delta_manager()
+        .unwrap();
     let tables = manager.list_tables(&store_name).await.unwrap();
     let t = tables.to_prettytable().unwrap();
     println!("{t}");
@@ -67,7 +77,11 @@ pub async fn run_delta_server(
 ) -> std::io::Result<()> {
     env_logger::init_from_env(env_logger::Env::new().default_filter_or(log_level));
     println!("Yummy delta server running on http://{host}:{port}");
-    let delta_manager = DeltaApply::new(&config_path.clone()).await.unwrap().delta_manager().unwrap();
+    let delta_manager = DeltaApply::new(&config_path.clone())
+        .await
+        .unwrap()
+        .delta_manager()
+        .unwrap();
 
     let _ = HttpServer::new(move || {
         App::new()

@@ -1,11 +1,11 @@
-use crate::models::{MLModelConfig, Volatility};
+use crate::models::MLModelConfig;
 use async_trait::async_trait;
 use datafusion::arrow::{
-    array::{ArrayRef, Float32Array, Float64Array},
+    array::{ArrayRef, Float64Array},
     datatypes::DataType,
 };
 use datafusion::physical_plan::{functions::make_scalar_function, udf::ScalarUDF};
-use datafusion_expr::{create_udf, Volatility as ArrowVolatility};
+use datafusion_expr::create_udf;
 use std::sync::Arc;
 use yummy_core::common::Result;
 
@@ -17,7 +17,7 @@ pub trait UdfBuilder {
 #[async_trait]
 impl UdfBuilder for MLModelConfig {
     async fn build(&self) -> Result<ScalarUDF> {
-        let pow = |args: &[ArrayRef]| {
+        let pow = |_args: &[ArrayRef]| {
             let array: Float64Array = Float64Array::from(vec![1.0]);
             Ok(Arc::new(array) as ArrayRef)
         };
@@ -25,7 +25,8 @@ impl UdfBuilder for MLModelConfig {
         let pow = make_scalar_function(pow);
 
         let input_types: Vec<DataType> = self
-            .input_types.clone()
+            .input_types
+            .clone()
             .into_iter()
             .map(|x| -> Result<DataType> { x.try_into() })
             .collect::<Result<Vec<DataType>>>()?;

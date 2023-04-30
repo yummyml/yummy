@@ -18,8 +18,8 @@ impl DeltaCommands for DeltaManager {
         create_request: CreateRequest,
     ) -> Result<CreateResponse, Box<dyn Error>> {
         let table_name = create_request.table;
-        let store = self.store(&store_name)?;
-        let mut path = (&store.path).clone();
+        let store = self.store(store_name)?;
+        let mut path = store.path.clone();
         let schema: Vec<ColumnSchema> = create_request.schema;
         let partition_columns: Option<Vec<String>> = create_request.partition_columns;
         let comment: Option<String> = create_request.comment;

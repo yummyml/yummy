@@ -1,18 +1,8 @@
 use crate::config::DeltaConfig;
-use crate::delta::{
-    read::map_record_batch, DeltaCommands, DeltaInfo, DeltaJobs, DeltaManager, DeltaRead,
-    DeltaWrite,
-};
-use crate::models::{
-    CreateRequest, JobRequest, MLModelConfig, OptimizeRequest, VacuumRequest, WriteRequest,
-};
-use datafusion::execution::context::SessionContext;
-use datafusion::prelude::*;
-use deltalake::DeltaOps;
+use crate::delta::{DeltaCommands, DeltaJobs, DeltaManager};
+use crate::models::{CreateRequest, JobRequest, MLModelConfig, OptimizeRequest, VacuumRequest};
 use serde::Deserialize;
-use std::fs;
-use url::Url;
-use yummy_core::common::{ReplaceTokens, Result};
+use yummy_core::common::Result;
 use yummy_core::config::{read_config_str, Metadata};
 use yummy_core::err;
 
@@ -92,7 +82,7 @@ impl DeltaApply {
                 config: c,
             })
         } else {
-            return Err(err!(ApplyError::NoConfig));
+            Err(err!(ApplyError::NoConfig))
         }
     }
 

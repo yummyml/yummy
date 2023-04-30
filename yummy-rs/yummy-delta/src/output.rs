@@ -1,9 +1,7 @@
 use crate::models::{ResponseStore, ResponseTable, ResponseTables};
 use async_trait::async_trait;
-use deltalake::schema::{Schema, SchemaDataType};
-use prettytable::{row, Cell, Row, Table};
-use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use deltalake::schema::SchemaDataType;
+use prettytable::{row, Table};
 use yummy_core::common::Result;
 
 #[async_trait]

@@ -3,15 +3,7 @@ use crate::models::{JobRequest, JobResponse, JobTable};
 use async_trait::async_trait;
 use datafusion::execution::context::SessionContext;
 use datafusion::prelude::*;
-use deltalake::delta_config::DeltaConfigKey;
-use deltalake::PartitionFilter;
-use deltalake::{
-    action::SaveMode, builder::DeltaTableBuilder, DeltaOps, SchemaDataType, SchemaField,
-};
-use std::error::Error;
-use std::fs;
-use std::path::Path;
-use std::str::FromStr;
+use deltalake::{builder::DeltaTableBuilder, DeltaOps};
 use std::sync::Arc;
 use url::Url;
 use yummy_core::common::Result;
@@ -61,7 +53,7 @@ impl DeltaJobs for DeltaManager {
 
         let df = ctx.sql(&job_request.sql).await?;
         let dry_run = if let Some(dry) = &job_request.dry_run {
-            dry.clone()
+            *dry
         } else {
             false
         };

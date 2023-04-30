@@ -8,8 +8,8 @@ use crate::config::{DeltaConfig, DeltaStoreConfig};
 use crate::delta::error::DeltaError;
 use crate::models::{
     CreateRequest, CreateResponse, JobRequest, JobResponse, OptimizeRequest, OptimizeResponse,
-    QueryResponse, ResponseStore, ResponseTable, ResponseTables, SchemaPrimitiveType,
-    VacuumRequest, VacuumResponse, WriteRequest, WriteResponse,
+    QueryResponse, ResponseStore, ResponseTable, ResponseTables, VacuumRequest, VacuumResponse,
+    WriteRequest, WriteResponse,
 };
 use async_trait::async_trait;
 use chrono::Duration;
@@ -19,7 +19,7 @@ use deltalake::operations::vacuum::VacuumBuilder;
 use deltalake::{
     action::SaveMode, builder::DeltaTableBuilder, DeltaOps, DeltaTable, Schema, SchemaDataType,
 };
-use prettytable::{row, Cell, Row, Table};
+use prettytable::{row, Table};
 use std::error::Error;
 
 #[async_trait]

@@ -109,7 +109,7 @@ impl DeltaWrite for DeltaManager {
 }
 
 fn type_mapper<U>(
-    values: &Vec<EntityValue>,
+    values: &[EntityValue],
     mapper: impl Fn(&EntityValue) -> yummy_core::common::Result<U>,
 ) -> Result<Vec<U>, Box<dyn Error>> {
     let arr = values
