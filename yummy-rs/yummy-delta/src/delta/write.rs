@@ -121,7 +121,7 @@ fn type_mapper<U>(
 
 fn convert_values(
     data_type: &DataType,
-    values: &Vec<EntityValue>,
+    values: &[EntityValue],
     arrays: &mut Vec<ArrayRef>,
 ) -> Result<(), Box<dyn Error>> {
     match data_type {
