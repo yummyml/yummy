@@ -46,14 +46,14 @@ pub trait DeltaInfo {
 pub trait DeltaCommands {
     async fn create(
         &self,
-        store_name: &String,
+        store_name: &str,
         create_request: CreateRequest,
     ) -> Result<CreateResponse, Box<dyn Error>>;
 
     async fn optimize(
         &self,
-        store_name: &String,
-        table_name: &String,
+        store_name: &str,
+        table_name: &str,
         optimize_requst: OptimizeRequest,
     ) -> Result<OptimizeResponse, Box<dyn Error>>;
 }
@@ -62,27 +62,27 @@ pub trait DeltaCommands {
 pub trait DeltaRead {
     async fn query_stream(
         &self,
-        store_name: &String,
-        table_name: &String,
-        query: &String,
+        store_name: &str,
+        table_name: &str,
+        query: &str,
         table_version: Option<i64>,
         table_date: Option<String>,
     ) -> Result<SendableRecordBatchStream, Box<dyn Error>>;
 
     async fn query_stream_partitioned(
         &self,
-        store_name: &String,
-        table_name: &String,
-        query: &String,
+        store_name: &str,
+        table_name: &str,
+        query: &str,
         table_version: Option<i64>,
         table_date: Option<String>,
     ) -> Result<Vec<SendableRecordBatchStream>, Box<dyn Error>>;
 
     async fn query(
         &self,
-        store_name: &String,
-        table_name: &String,
-        query: &String,
+        store_name: &str,
+        table_name: &str,
+        query: &str,
         table_version: Option<i64>,
         table_date: Option<String>,
     ) -> Result<QueryResponse, Box<dyn Error>>;
@@ -92,16 +92,16 @@ pub trait DeltaRead {
 pub trait DeltaWrite {
     async fn write_batches(
         &self,
-        store_name: &String,
-        table_name: &String,
+        store_name: &str,
+        table_name: &str,
         record_batches: Vec<RecordBatch>,
         save_mode: SaveMode,
     ) -> Result<WriteResponse, Box<dyn Error>>;
 
     async fn write(
         &self,
-        store_name: &String,
-        table_name: &String,
+        store_name: &str,
+        table_name: &str,
         write_request: WriteRequest,
         save_mode: SaveMode,
     ) -> Result<WriteResponse, Box<dyn Error>>;
@@ -123,7 +123,7 @@ impl DeltaManager {
             .config
             .stores
             .iter()
-            .filter(|s| &s.name == store_name)
+            .filter(|s| s.name == store_name)
             .last()
             .ok_or(Box::new(DeltaError::StoreNotExists))?;
 
@@ -182,8 +182,8 @@ impl DeltaManager {
     #[allow(dead_code)]
     async fn schema(
         &self,
-        store_name: &String,
-        table_name: &String,
+        store_name: &str,
+        table_name: &str,
         table_version: Option<i64>,
         table_date: Option<String>,
     ) -> Result<Schema, Box<dyn Error>> {
@@ -220,8 +220,8 @@ impl DeltaManager {
 
     pub async fn update(
         &self,
-        store_name: &String,
-        table_name: &String,
+        store_name: &str,
+        table_name: &str,
         batch: RecordBatch,
         predicate: impl Into<String>,
     ) -> Result<(), Box<dyn Error>> {
@@ -239,8 +239,8 @@ impl DeltaManager {
 
     pub async fn vacuum(
         &self,
-        store_name: &String,
-        table_name: &String,
+        store_name: &str,
+        table_name: &str,
         vacuum_request: VacuumRequest,
     ) -> Result<VacuumResponse, Box<dyn Error>> {
         let table = self.table(store_name, table_name, None, None).await?;

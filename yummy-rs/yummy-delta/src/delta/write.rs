@@ -20,8 +20,8 @@ use yummy_core::common::EntityValue;
 impl DeltaWrite for DeltaManager {
     async fn write_batches(
         &self,
-        store_name: &String,
-        table_name: &String,
+        store_name: &str,
+        table_name: &str,
         record_batches: Vec<RecordBatch>,
         save_mode: SaveMode,
     ) -> Result<WriteResponse, Box<dyn Error>> {
@@ -39,8 +39,8 @@ impl DeltaWrite for DeltaManager {
 
     async fn write(
         &self,
-        store_name: &String,
-        table_name: &String,
+        store_name: &str,
+        table_name: &str,
         write_request: WriteRequest,
         save_mode: SaveMode,
     ) -> Result<WriteResponse, Box<dyn Error>> {

@@ -14,7 +14,7 @@ use std::str::FromStr;
 impl DeltaCommands for DeltaManager {
     async fn create(
         &self,
-        store_name: &String,
+        store_name: &str,
         create_request: CreateRequest,
     ) -> Result<CreateResponse, Box<dyn Error>> {
         let table_name = create_request.table;
@@ -81,8 +81,8 @@ impl DeltaCommands for DeltaManager {
 
     async fn optimize(
         &self,
-        store_name: &String,
-        table_name: &String,
+        store_name: &str,
+        table_name: &str,
         optimize_requst: OptimizeRequest,
     ) -> Result<OptimizeResponse, Box<dyn Error>> {
         let table = self.table(store_name, table_name, None, None).await?;

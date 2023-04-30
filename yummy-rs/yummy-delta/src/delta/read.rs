@@ -21,9 +21,9 @@ use yummy_core::common::EntityValue;
 impl DeltaRead for DeltaManager {
     async fn query_stream(
         &self,
-        store_name: &String,
-        table_name: &String,
-        query: &String,
+        store_name: &str,
+        table_name: &str,
+        query: &str,
         table_version: Option<i64>,
         table_date: Option<String>,
     ) -> Result<SendableRecordBatchStream, Box<dyn Error>> {
@@ -32,16 +32,16 @@ impl DeltaRead for DeltaManager {
             .await?;
         let ctx = SessionContext::new();
 
-        ctx.register_table(table_name.as_str(), Arc::new(table))?;
-        let batches = ctx.sql(query.as_str()).await?;
+        ctx.register_table(table_name, Arc::new(table))?;
+        let batches = ctx.sql(query).await?;
         Ok(batches.execute_stream().await?)
     }
 
     async fn query_stream_partitioned(
         &self,
-        store_name: &String,
-        table_name: &String,
-        query: &String,
+        store_name: &str,
+        table_name: &str,
+        query: &str,
         table_version: Option<i64>,
         table_date: Option<String>,
     ) -> Result<Vec<SendableRecordBatchStream>, Box<dyn Error>> {
@@ -50,16 +50,16 @@ impl DeltaRead for DeltaManager {
             .await?;
         let ctx = SessionContext::new();
 
-        ctx.register_table(table_name.as_str(), Arc::new(table))?;
-        let batches = ctx.sql(query.as_str()).await?;
+        ctx.register_table(table_name, Arc::new(table))?;
+        let batches = ctx.sql(query).await?;
         Ok(batches.execute_stream_partitioned().await?)
     }
 
     async fn query(
         &self,
-        store_name: &String,
-        table_name: &String,
-        query: &String,
+        store_name: &str,
+        table_name: &str,
+        query: &str,
         table_version: Option<i64>,
         table_date: Option<String>,
     ) -> Result<QueryResponse, Box<dyn Error>> {
@@ -69,8 +69,8 @@ impl DeltaRead for DeltaManager {
         let ctx = SessionContext::new();
         //let schema = &table.schema().unwrap();
 
-        ctx.register_table(table_name.as_str(), Arc::new(table))?;
-        let batches = ctx.sql(query.as_str()).await?.collect().await?;
+        ctx.register_table(table_name, Arc::new(table))?;
+        let batches = ctx.sql(query).await?.collect().await?;
 
         let query_batches: Vec<BTreeMap<String, Vec<EntityValue>>> = batches
             .iter()
