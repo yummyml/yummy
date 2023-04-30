@@ -33,13 +33,13 @@ pub trait DeltaInfo {
 
     async fn details(
         &self,
-        store_name: &String,
-        table_name: &String,
+        store_name: &str,
+        table_name: &str,
         table_version: Option<i64>,
         table_date: Option<String>,
     ) -> Result<ResponseTable, Box<dyn Error>>;
 
-    async fn list_tables(&self, store_name: &String) -> Result<ResponseTables, Box<dyn Error>>;
+    async fn list_tables(&self, store_name: &str) -> Result<ResponseTables, Box<dyn Error>>;
 }
 
 #[async_trait]
@@ -118,7 +118,7 @@ impl DeltaManager {
         Ok(DeltaManager { config })
     }
 
-    fn store(&self, store_name: &String) -> Result<&DeltaStoreConfig, Box<dyn Error>> {
+    fn store(&self, store_name: &str) -> Result<&DeltaStoreConfig, Box<dyn Error>> {
         let store = self
             .config
             .stores
@@ -130,7 +130,7 @@ impl DeltaManager {
         Ok(store)
     }
 
-    fn path(&self, store_path: &String, table_name: &String) -> Result<String, Box<dyn Error>> {
+    fn path(&self, store_path: &str, table_name: &str) -> Result<String, Box<dyn Error>> {
         let path = if store_path.ends_with('/') {
             format!("{}{}", &store_path, table_name)
         } else {
@@ -141,8 +141,8 @@ impl DeltaManager {
 
     pub async fn table(
         &self,
-        store_name: &String,
-        table_name: &String,
+        store_name: &str,
+        table_name: &str,
         table_version: Option<i64>,
         table_date: Option<String>,
     ) -> Result<DeltaTable, Box<dyn Error>> {
@@ -156,7 +156,7 @@ impl DeltaManager {
     async fn table_from_store(
         &self,
         store: &DeltaStoreConfig,
-        table_name: &String,
+        table_name: &str,
         table_version: Option<i64>,
         table_date: Option<String>,
     ) -> Result<DeltaTable, Box<dyn Error>> {

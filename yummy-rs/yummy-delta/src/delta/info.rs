@@ -26,8 +26,8 @@ impl DeltaInfo for DeltaManager {
 
     async fn details(
         &self,
-        store_name: &String,
-        table_name: &String,
+        store_name: &str,
+        table_name: &str,
         table_version: Option<i64>,
         table_date: Option<String>,
     ) -> Result<ResponseTable, Box<dyn Error>> {
@@ -46,7 +46,7 @@ impl DeltaInfo for DeltaManager {
         })
     }
 
-    async fn list_tables(&self, store_name: &String) -> Result<ResponseTables, Box<dyn Error>> {
+    async fn list_tables(&self, store_name: &str) -> Result<ResponseTables, Box<dyn Error>> {
         let store = &self.store(store_name)?;
         let uri = &store.path.to_string();
         let mut builder = DeltaTableBuilder::from_uri(uri).with_allow_http(true);

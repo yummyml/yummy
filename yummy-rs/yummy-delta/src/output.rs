@@ -65,7 +65,7 @@ impl PrettyOutput for ResponseTable {
 
 #[tokio::test]
 async fn test_prettytable_table() -> Result<()> {
-    let schema: Schema = serde_json::from_value(json!({
+    let schema: deltalake::Schema = serde_json::from_value(serde_json::json!({
             "type": "struct",
             "fields": [{
                 "name": "a_map",
