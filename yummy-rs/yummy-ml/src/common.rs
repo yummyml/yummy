@@ -1,4 +1,3 @@
-use serde::{Deserialize, Serialize};
 use std::error::Error;
 
 #[derive(thiserror::Error, Debug)]
@@ -10,13 +9,13 @@ pub enum SwapError {
     ValidationWrongFeatureNames(Vec<String>),
 }
 
-fn find_swap(feature_names: &Vec<String>, columns: &Vec<String>) -> Option<(usize, usize)> {
+fn find_swap(feature_names: &[String], columns: &[String]) -> Option<(usize, usize)> {
     let num = columns.len();
     for i in 0..num {
         let col = &columns[i];
         if col != &feature_names[i] {
-            for j in i..num {
-                if col == &feature_names[j] {
+            for (j, fcol) in feature_names.iter().enumerate().take(num).skip(i) {
+                if col == fcol {
                     return Some((i, j));
                 }
             }
@@ -49,7 +48,7 @@ pub fn find_swaps(
         )));
     }
 
-    while let Some(swap) = find_swap(&feature_names, &columns) {
+    while let Some(swap) = find_swap(feature_names, &columns) {
         columns.swap(swap.0, swap.1);
         swaps.push(swap);
     }
@@ -63,10 +62,10 @@ pub fn reorder(
     mut numeric_features: Vec<Vec<f64>>,
 ) -> Result<Vec<Vec<f64>>, Box<dyn Error>> {
     let num_rows = numeric_features.len();
-    let swaps = find_swaps(&feature_names, columns)?;
-    for n in 0..num_rows {
+    let swaps = find_swaps(feature_names, columns)?;
+    for numeric_feature in numeric_features.iter_mut().take(num_rows) {
         for swap in &swaps {
-            numeric_features[n].swap(swap.0, swap.1);
+            numeric_feature.swap(swap.0, swap.1);
         }
     }
 

@@ -47,7 +47,7 @@ impl LightgbmModel {
     }
 
     fn validate(&self, numeric_features: &Vec<Vec<f64>>) -> Result<(), Box<dyn Error>> {
-        if numeric_features.len() == 0 {
+        if numeric_features.is_empty() {
             return Err(Box::new(LightgbmError::ValidationNoFeatures));
         }
 
@@ -70,7 +70,7 @@ impl MLModel for LightgbmModel {
         let mut numeric_features: Vec<Vec<f64>> = Vec::new();
         let mut categorical_features: Vec<Vec<String>> = Vec::new();
 
-        let num = (&data).len();
+        let num = data.len();
         for f in data {
             let mut num: Vec<f64> = Vec::new();
             let mut cat: Vec<String> = Vec::new();
@@ -89,7 +89,7 @@ impl MLModel for LightgbmModel {
                         Ok(())
                     }
                     EntityValue::FLOAT64(v) => {
-                        num.push(v.to_owned() as f64);
+                        num.push(v.to_owned());
                         Ok(())
                     }
                     EntityValue::BOOL(v) => {
@@ -115,7 +115,7 @@ impl MLModel for LightgbmModel {
 
         let predictions = self.model.predict(numeric_features)?;
 
-        let num_pred = (&predictions[0]).len();
+        let num_pred = (predictions[0]).len();
         if num_pred == num {
             Ok(predictions[0].iter().map(|x| vec![x.to_owned()]).collect())
         } else {

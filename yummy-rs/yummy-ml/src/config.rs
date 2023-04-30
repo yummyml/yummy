@@ -47,7 +47,7 @@ impl MLConfig {
         } else {
             let s = read_config_str(path, Some(true)).await?;
             let mut config: MLConfig = serde_yaml::from_str(&s)?;
-            let path_vec = path.split("/").collect::<Vec<&str>>();
+            let path_vec = path.split('/').collect::<Vec<&str>>();
             config.base_path = Some(path_vec[..path_vec.len() - 1].join("/"));
             config
         };
