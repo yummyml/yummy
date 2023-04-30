@@ -188,7 +188,7 @@ pub fn map_record_batch(
 
     let filtered_batches: Vec<(String, Vec<EntityValue>)> = mapped_batches
         .into_iter()
-        .filter(|x| x.1.len() > 0)
+        .filter(|x| !x.1.is_empty())
         .collect();
     Ok(BTreeMap::from_iter(filtered_batches))
 }

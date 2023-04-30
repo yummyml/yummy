@@ -67,7 +67,7 @@ impl DeltaInfo for DeltaManager {
 
         let table_names = tbl
             .iter()
-            .map(|l| l.split("/").collect::<Vec<&str>>()[0].to_string())
+            .map(|l| l.split('/').collect::<Vec<&str>>()[0].to_string())
             .unique()
             .collect();
 

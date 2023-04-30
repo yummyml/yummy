@@ -131,7 +131,7 @@ impl DeltaManager {
     }
 
     fn path(&self, store_path: &String, table_name: &String) -> Result<String, Box<dyn Error>> {
-        let path = if store_path.ends_with("/") {
+        let path = if store_path.ends_with('/') {
             format!("{}{}", &store_path, table_name)
         } else {
             format!("{}/{}", &store_path, table_name)
@@ -160,7 +160,7 @@ impl DeltaManager {
         table_version: Option<i64>,
         table_date: Option<String>,
     ) -> Result<DeltaTable, Box<dyn Error>> {
-        let table_uri = self.path(&store.path, &table_name)?;
+        let table_uri = self.path(&store.path, table_name)?;
 
         let mut builder = DeltaTableBuilder::from_uri(table_uri);
 

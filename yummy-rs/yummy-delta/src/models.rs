@@ -1,5 +1,6 @@
 use crate::config::ColumnSchema;
 use datafusion::arrow::datatypes::DataType as ArrowDataType;
+use datafusion_expr::Volatility as ArrowVolatility;
 use deltalake::arrow::datatypes::DataType;
 use deltalake::Schema;
 use serde::{Deserialize, Serialize};
@@ -168,10 +169,31 @@ pub struct MLModelConfig {
     pub name: String,
     pub input_types: Vec<SchemaPrimitiveType>,
     pub return_type: SchemaPrimitiveType,
-    //pub volatility: Volatility,
+    pub volatility: Volatility,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+#[serde(tag = "type", rename_all = "camelCase")]
+pub enum Volatility {
+    Immutable,
+    Stable,
+    Volatile,
+}
+
+impl TryFrom<Volatility> for ArrowVolatility {
+    type Error = Box<dyn Error>;
+
+    fn try_from(volatility: Volatility) -> Result<Self, Box<dyn Error>> {
+        match volatility {
+            Volatility::Immutable => Ok(ArrowVolatility::Immutable),
+            Volatility::Stable => Ok(ArrowVolatility::Stable),
+            Volatility::Volatile => Ok(ArrowVolatility::Volatile),
+            _ => Err(Box::new(crate::delta::error::DeltaError::UnknownTypeError)),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum SchemaPrimitiveType {
     String,

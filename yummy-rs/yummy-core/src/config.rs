@@ -1,6 +1,6 @@
 use crate::common::{ReplaceTokens, Result};
 use serde::de::DeserializeOwned;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::fs;
 use url::Url;
 

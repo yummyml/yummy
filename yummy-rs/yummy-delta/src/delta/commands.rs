@@ -26,7 +26,7 @@ impl DeltaCommands for DeltaManager {
         let configuration = create_request.configuration;
         let metadata = create_request.metadata;
 
-        if (path.starts_with("file://") || path.starts_with("/")) && !Path::exists(Path::new(&path))
+        if (path.starts_with("file://") || path.starts_with('/')) && !Path::exists(Path::new(&path))
         {
             fs::create_dir_all(&path)?;
         }
@@ -117,7 +117,7 @@ impl DeltaCommands for DeltaManager {
             .optimize()
             .with_target_size(optimize_requst.target_size);
 
-        if filters.len() > 0 {
+        if !filters.is_empty() {
             optimize = optimize.with_filters(&filters);
         }
 

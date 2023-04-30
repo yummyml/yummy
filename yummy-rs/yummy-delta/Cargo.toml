@@ -22,6 +22,7 @@ arrow = { version = "28" }
 chrono = "0.4.22"
 datafusion = { version = "22" }
 datafusion-expr = { version = "22" }
+datafusion-common = { version = "22" }
 thiserror = "1.0"
 futures = "0.3.25"
 itertools = "0.10.5"
