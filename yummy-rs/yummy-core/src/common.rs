@@ -47,6 +47,8 @@ pub enum EntityValue {
     BOOL(bool),
     STRING(String),
     BYTES(Vec<u8>),
+    FLOAT32ARRAY(Vec<f32>),
+    FLOAT64ARRAY(Vec<f64>),
 }
 
 impl TryFrom<&EntityValue> for String {

@@ -13,6 +13,7 @@ use crate::models::{
 };
 use async_trait::async_trait;
 use chrono::Duration;
+use datafusion::physical_plan::udf::ScalarUDF;
 use datafusion::physical_plan::SendableRecordBatchStream;
 use deltalake::arrow::{datatypes::DataType, record_batch::RecordBatch};
 use deltalake::operations::vacuum::VacuumBuilder;
@@ -110,12 +111,16 @@ pub trait DeltaWrite {
 #[derive(Debug, Clone)]
 pub struct DeltaManager {
     pub config: DeltaConfig,
+    pub udfs: Option<Vec<ScalarUDF>>,
 }
 
 impl DeltaManager {
-    pub async fn new(config_path: String) -> Result<Self, Box<dyn Error>> {
+    pub async fn new(
+        config_path: String,
+        udfs: Option<Vec<ScalarUDF>>,
+    ) -> Result<Self, Box<dyn Error>> {
         let config = DeltaConfig::new(&config_path).await?;
-        Ok(DeltaManager { config })
+        Ok(DeltaManager { config, udfs })
     }
 
     fn store(&self, store_name: &str) -> Result<&DeltaStoreConfig, Box<dyn Error>> {
@@ -321,7 +326,7 @@ pub mod test_delta_util {
 
     pub async fn create_manager() -> Result<DeltaManager, Box<dyn Error>> {
         let path = "../tests/delta/config.yaml".to_string();
-        Ok(DeltaManager::new(path).await?)
+        Ok(DeltaManager::new(path, None).await?)
     }
 
     pub async fn create_delta(
@@ -329,7 +334,7 @@ pub mod test_delta_util {
         table_name: &String,
     ) -> Result<deltalake::DeltaTable, Box<dyn Error>> {
         let path = "../tests/delta/config.yaml".to_string();
-        let delta_manager = DeltaManager::new(path).await?;
+        let delta_manager = DeltaManager::new(path, None).await?;
 
         //let store_name = String::from("az");
         let mut schema: Vec<ColumnSchema> = Vec::new();

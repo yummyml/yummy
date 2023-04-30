@@ -1,6 +1,8 @@
 use crate::config::DeltaConfig;
 use crate::delta::{DeltaCommands, DeltaJobs, DeltaManager};
 use crate::models::{CreateRequest, JobRequest, MLModelConfig, OptimizeRequest, VacuumRequest};
+use crate::udf::UdfBuilder;
+use datafusion::physical_plan::udf::ScalarUDF;
 use serde::Deserialize;
 use yummy_core::common::Result;
 use yummy_core::config::{read_config_str, Metadata};
@@ -86,13 +88,45 @@ impl DeltaApply {
         }
     }
 
+    fn build_udfs(&self) -> Result<Vec<ScalarUDF>> {
+        let mut udfs = Vec::new();
+        let mlmodels: Vec<DeltaObject> = self
+            .delta_objects
+            .clone()
+            .into_iter()
+            .filter(|x| {
+                matches!(
+                    x,
+                    DeltaObject::MLModel {
+                        metadata: _m,
+                        spec: _s,
+                    }
+                )
+            })
+            .collect();
+
+        for mlmodel in mlmodels {
+            if let DeltaObject::MLModel { metadata: _, spec } = mlmodel {
+                udfs.push(spec.build()?);
+            }
+        }
+
+        Ok(udfs)
+    }
+
     pub fn delta_manager(&self) -> Result<DeltaManager> {
         let conf = if let DeltaObject::Config { metadata: _, spec } = &self.config {
             spec.clone()
         } else {
             return Err(err!(ApplyError::NoConfig));
         };
-        Ok(DeltaManager { config: conf })
+
+        let udfs = self.build_udfs()?;
+
+        Ok(DeltaManager {
+            config: conf,
+            udfs: if !udfs.is_empty() { Some(udfs) } else { None },
+        })
     }
 
     pub async fn apply(&self) -> Result<()> {

@@ -11,12 +11,12 @@ use yummy_core::common::Result;
 
 #[async_trait]
 pub trait UdfBuilder {
-    async fn build(&self) -> Result<ScalarUDF>;
+    fn build(&self) -> Result<ScalarUDF>;
 }
 
 #[async_trait]
 impl UdfBuilder for MLModelConfig {
-    async fn build(&self) -> Result<ScalarUDF> {
+    fn build(&self) -> Result<ScalarUDF> {
         let pow = |_args: &[ArrayRef]| {
             let array: Float64Array = Float64Array::from(vec![1.0]);
             Ok(Arc::new(array) as ArrayRef)
@@ -40,3 +40,4 @@ impl UdfBuilder for MLModelConfig {
         ))
     }
 }
+

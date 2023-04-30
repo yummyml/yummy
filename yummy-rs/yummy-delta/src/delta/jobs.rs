@@ -28,6 +28,12 @@ impl DeltaJobs for DeltaManager {
         ctx.runtime_env()
             .register_object_store(&url, os.storage_backend());
 
+        if let Some(udfs) = &self.udfs {
+            for udf in udfs {
+                ctx.register_udf(udf.clone());
+            }
+        }
+
         for table in job_request.source.tables {
             match table {
                 JobTable::Parquet { name, path } => {
