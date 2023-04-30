@@ -74,7 +74,7 @@ pub fn serialize_entity_keys(
         .map(|i| {
             let entity_values = join_keys
                 .to_owned()
-                .into_iter()
+                .iter().cloned()
                 .map(|k| {
                     let sf_v = protobuf::SpecialFields::new();
                     let ev = match &entities[&k][i] {
