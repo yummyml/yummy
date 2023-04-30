@@ -17,8 +17,14 @@ pub trait UdfBuilder {
 #[async_trait]
 impl UdfBuilder for MLModelConfig {
     fn build(&self) -> Result<ScalarUDF> {
-        let pow = |_args: &[ArrayRef]| {
+        let mlconfig = self.clone();
+        let pow = |args: &[ArrayRef]| {
             let array: Float64Array = Float64Array::from(vec![1.0]);
+            for arg in args {
+                //TODO: map into EntityValue and call api
+                let dt = arg.data_type();
+            }
+
             Ok(Arc::new(array) as ArrayRef)
         };
 
@@ -40,4 +46,3 @@ impl UdfBuilder for MLModelConfig {
         ))
     }
 }
-

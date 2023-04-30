@@ -111,7 +111,9 @@ impl MLModel for LightgbmModel {
 
         self.validate(&numeric_features)?;
 
-        numeric_features = reorder(&self.feature_names, columns, numeric_features)?;
+        if !columns.is_empty() {
+            numeric_features = reorder(&self.feature_names, columns, numeric_features)?;
+        }
 
         let predictions = self.model.predict(numeric_features)?;
 
