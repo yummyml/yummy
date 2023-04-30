@@ -8,12 +8,11 @@ use crate::config::{DeltaConfig, DeltaStoreConfig};
 use crate::delta::error::DeltaError;
 use crate::models::{
     CreateRequest, CreateResponse, JobRequest, JobResponse, OptimizeRequest, OptimizeResponse,
-    QueryResponse, ResponseStore, ResponseTable, ResponseTables, VacuumRequest, VacuumResponse,
-    WriteRequest, WriteResponse,
+    QueryResponse, ResponseStore, ResponseTable, ResponseTables, SchemaPrimitiveType,
+    VacuumRequest, VacuumResponse, WriteRequest, WriteResponse,
 };
 use async_trait::async_trait;
 use chrono::Duration;
-use datafusion::arrow::datatypes::DataType as ArrowDataType;
 use datafusion::physical_plan::SendableRecordBatchStream;
 use deltalake::arrow::{datatypes::DataType, record_batch::RecordBatch};
 use deltalake::operations::vacuum::VacuumBuilder;
@@ -277,18 +276,18 @@ impl DeltaManager {
         for field in df.schema().fields() {
             let f = field.field();
             let delta_type = match &f.data_type() {
-                ArrowDataType::Utf8 => "string",
-                ArrowDataType::Int64 => "long",
-                ArrowDataType::Int32 => "integer",
-                ArrowDataType::Int16 => "short",
-                ArrowDataType::Int8 => "byte",
-                ArrowDataType::Float32 => "float",
-                ArrowDataType::Float64 => "double",
-                ArrowDataType::Boolean => "boolean",
-                ArrowDataType::Binary => "binary",
-                ArrowDataType::Decimal128(_x, _p) => "decimal",
-                ArrowDataType::Date32 => "date",
-                ArrowDataType::Timestamp(_x, _u) => "timestamp",
+                DataType::Utf8 => "string",
+                DataType::Int64 => "long",
+                DataType::Int32 => "integer",
+                DataType::Int16 => "short",
+                DataType::Int8 => "byte",
+                DataType::Float32 => "float",
+                DataType::Float64 => "double",
+                DataType::Boolean => "boolean",
+                DataType::Binary => "binary",
+                DataType::Decimal128(_x, _p) => "decimal",
+                DataType::Date32 => "date",
+                DataType::Timestamp(_x, _u) => "timestamp",
                 _ => "unknown",
             };
             tbl.add_row(row![
@@ -307,9 +306,18 @@ impl DeltaManager {
 pub mod test_delta_util {
     use crate::config::ColumnSchema;
     use crate::delta::{DeltaCommands, DeltaManager};
-    use crate::models::CreateRequest;
+    use crate::models::{CreateRequest, SchemaPrimitiveType};
+    use deltalake::arrow::datatypes::DataType;
     use std::error::Error;
     use std::fs;
+
+    #[tokio::test]
+    async fn test_map_data_type() -> Result<(), Box<dyn Error>> {
+        let data_type: DataType = SchemaPrimitiveType::String.try_into()?;
+
+        assert_eq!(data_type, DataType::Utf8);
+        Ok(())
+    }
 
     pub async fn create_manager() -> Result<DeltaManager, Box<dyn Error>> {
         let path = "../tests/delta/config.yaml".to_string();

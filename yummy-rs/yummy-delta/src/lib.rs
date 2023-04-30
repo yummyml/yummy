@@ -4,6 +4,7 @@ pub mod delta;
 pub mod models;
 pub mod output;
 pub mod server;
+pub mod udf;
 
 use crate::delta::{
     read::map_record_batch, DeltaCommands, DeltaInfo, DeltaManager, DeltaRead, DeltaWrite,

@@ -4,7 +4,7 @@ use crate::delta::{
     DeltaWrite,
 };
 use crate::models::{
-    CreateRequest, JobRequest, MLModelRequest, OptimizeRequest, VacuumRequest, WriteRequest,
+    CreateRequest, JobRequest, MLModelConfig, OptimizeRequest, VacuumRequest, WriteRequest,
 };
 use datafusion::execution::context::SessionContext;
 use datafusion::prelude::*;
@@ -53,7 +53,7 @@ pub enum DeltaObject {
     },
     MLModel {
         metadata: Metadata,
-        spec: MLModelRequest,
+        spec: MLModelConfig,
     },
 }
 

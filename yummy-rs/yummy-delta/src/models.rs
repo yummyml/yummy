@@ -1,8 +1,11 @@
 use crate::config::ColumnSchema;
+use datafusion::arrow::datatypes::DataType as ArrowDataType;
+use deltalake::arrow::datatypes::DataType;
 use deltalake::Schema;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 use std::collections::{BTreeMap, HashMap};
+use std::error::Error;
 use yummy_core::common::EntityValue;
 
 #[derive(Serialize)]
@@ -161,10 +164,46 @@ pub struct JobResponse {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct MLModelRequest {
-    pub source: JobSource,
-    pub sql: String,
-    pub sink: JobSink,
-    pub dry_run: Option<bool>,
+pub struct MLModelConfig {
+    pub name: String,
+    pub input_types: Vec<SchemaPrimitiveType>,
+    pub return_type: SchemaPrimitiveType,
+    //pub volatility: Volatility,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(tag = "type", rename_all = "camelCase")]
+pub enum SchemaPrimitiveType {
+    String,
+    Long,
+    Integer,
+    Short,
+    Byte,
+    Float,
+    Double,
+    Boolean,
+    Binary,
+    Date,
+    Timestamp,
+}
+
+impl TryFrom<SchemaPrimitiveType> for DataType {
+    type Error = Box<dyn Error>;
+
+    fn try_from(primitive_type: SchemaPrimitiveType) -> Result<Self, Box<dyn Error>> {
+        match primitive_type {
+            SchemaPrimitiveType::String => Ok(DataType::Utf8),
+            SchemaPrimitiveType::Long => Ok(DataType::Int64),
+            SchemaPrimitiveType::Integer => Ok(DataType::Int32),
+            SchemaPrimitiveType::Short => Ok(DataType::Int16),
+            SchemaPrimitiveType::Byte => Ok(DataType::Int8),
+            SchemaPrimitiveType::Float => Ok(DataType::Float32),
+            SchemaPrimitiveType::Double => Ok(DataType::Float64),
+            SchemaPrimitiveType::Boolean => Ok(DataType::Boolean),
+            SchemaPrimitiveType::Binary => Ok(DataType::Binary),
+            SchemaPrimitiveType::Date => Ok(DataType::Date32),
+            SchemaPrimitiveType::Timestamp => Ok(DataType::Date64),
+            _ => Err(Box::new(crate::delta::error::DeltaError::UnknownTypeError)),
+        }
+    }
+}
