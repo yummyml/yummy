@@ -1,9 +1,10 @@
 use crate::config::DeltaConfig;
 use crate::delta::{DeltaCommands, DeltaJobs, DeltaManager};
-use crate::models::{CreateRequest, JobRequest, MLModelConfig, OptimizeRequest, VacuumRequest};
+use crate::models::{CreateRequest, JobRequest, OptimizeRequest, UdfConfig, VacuumRequest};
 use crate::udf::UdfBuilder;
 use datafusion::physical_plan::udf::ScalarUDF;
 use serde::Deserialize;
+use std::collections::HashMap;
 use yummy_core::common::Result;
 use yummy_core::config::{read_config_str, Metadata};
 use yummy_core::err;
@@ -43,9 +44,9 @@ pub enum DeltaObject {
         metadata: Metadata,
         spec: JobRequest,
     },
-    MLModel {
+    Udf {
         metadata: Metadata,
-        spec: MLModelConfig,
+        spec: UdfConfig,
     },
 }
 
@@ -90,14 +91,15 @@ impl DeltaApply {
 
     fn build_udfs(&self) -> Result<Vec<ScalarUDF>> {
         let mut udfs = Vec::new();
-        let mlmodels: Vec<DeltaObject> = self
+        let mut udf_configs = HashMap::new();
+        let udf_objects: Vec<DeltaObject> = self
             .delta_objects
             .clone()
             .into_iter()
             .filter(|x| {
                 matches!(
                     x,
-                    DeltaObject::MLModel {
+                    DeltaObject::Udf {
                         metadata: _m,
                         spec: _s,
                     }
@@ -105,11 +107,14 @@ impl DeltaApply {
             })
             .collect();
 
-        for mlmodel in mlmodels {
-            if let DeltaObject::MLModel { metadata: _, spec } = mlmodel {
-                udfs.push(spec.build()?);
+        for u in udf_objects {
+            if let DeltaObject::Udf { metadata: _, spec } = u {
+                udf_configs.insert(spec.name.to_string(), spec);
+                //udfs.push(spec.build()?);
             }
         }
+
+        UdfBuilder::init(udf_configs);
 
         Ok(udfs)
     }
@@ -216,7 +221,7 @@ impl DeltaApply {
                     metadata: _,
                     spec: _,
                 } => {}
-                DeltaObject::MLModel {
+                DeltaObject::Udf {
                     metadata: _,
                     spec: _,
                 } => {}

@@ -1,4 +1,4 @@
-use crate::models::MLModelConfig;
+use crate::models::UdfConfig;
 use async_trait::async_trait;
 use datafusion::arrow::{
     array::{ArrayRef, Float64Array},
@@ -6,43 +6,65 @@ use datafusion::arrow::{
 };
 use datafusion::physical_plan::{functions::make_scalar_function, udf::ScalarUDF};
 use datafusion_expr::create_udf;
+use once_cell::sync::OnceCell;
+use std::collections::HashMap;
 use std::sync::Arc;
 use yummy_core::common::Result;
 
-#[async_trait]
-pub trait UdfBuilder {
-    fn build(&self) -> Result<ScalarUDF>;
-}
+static UDF_CONFIGS: OnceCell<HashMap<String, UdfConfig>> = OnceCell::new();
 
-#[async_trait]
-impl UdfBuilder for MLModelConfig {
-    fn build(&self) -> Result<ScalarUDF> {
-        let mlconfig = self.clone();
-        let pow = |args: &[ArrayRef]| {
-            let array: Float64Array = Float64Array::from(vec![1.0]);
-            for arg in args {
-                //TODO: map into EntityValue and call api
-                let dt = arg.data_type();
-            }
+#[derive(Debug)]
+pub struct UdfBuilder {}
 
-            Ok(Arc::new(array) as ArrayRef)
-        };
+impl UdfBuilder {
+    pub fn init(udf_configs: HashMap<String, UdfConfig>) {
+        UDF_CONFIGS.set(udf_configs).unwrap();
+    }
 
-        let pow = make_scalar_function(pow);
+    pub fn get_udf_config(name: &str) -> Result<&'static UdfConfig> {
+        Ok(&UDF_CONFIGS.get().unwrap()[name])
+    }
 
-        let input_types: Vec<DataType> = self
+    pub fn build(&self, udf_name: &str) -> Result<ScalarUDF> {
+        let udf_config: &'static UdfConfig = Self::get_udf_config(udf_name)?;
+
+        let pow = make_scalar_function(self.b_udf(udf_config));
+
+        let input_types: Vec<DataType> = udf_config
             .input_types
             .clone()
             .into_iter()
             .map(|x| -> Result<DataType> { x.try_into() })
             .collect::<Result<Vec<DataType>>>()?;
-        let return_type: DataType = self.return_type.try_into()?;
+        let return_type: DataType = udf_config.return_type.try_into()?;
         Ok(create_udf(
-            self.name.as_str(),
+            udf_config.name.as_str(),
             input_types,
             Arc::new(return_type),
-            self.volatility.try_into()?,
+            udf_config.volatility.try_into()?,
             pow,
         ))
+    }
+
+    fn b_udf(
+        &self,
+        mlconfig: &'static UdfConfig,
+    ) -> impl Fn(&[ArrayRef]) -> std::result::Result<ArrayRef, datafusion::error::DataFusionError>
+    {
+        let pow = |args: &[ArrayRef]| {
+            let array: Float64Array = Float64Array::from(vec![1.0]);
+            let host = mlconfig.host.to_string();
+
+            /*
+            for arg in args {
+                //TODO: map into EntityValue and call api
+                let dt = arg.data_type();
+            }
+            */
+
+            Ok(Arc::new(array) as ArrayRef)
+        };
+
+        pow
     }
 }

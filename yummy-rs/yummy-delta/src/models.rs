@@ -164,8 +164,9 @@ pub struct JobResponse {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct MLModelConfig {
+pub struct UdfConfig {
     pub name: String,
+    pub host: String,
     pub input_types: Vec<SchemaPrimitiveType>,
     pub return_type: SchemaPrimitiveType,
     pub volatility: Volatility,
