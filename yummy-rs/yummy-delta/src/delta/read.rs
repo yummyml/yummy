@@ -7,8 +7,8 @@ use datafusion::physical_plan::SendableRecordBatchStream;
 use deltalake::arrow::record_batch::RecordBatch;
 use deltalake::arrow::{
     array::{
-        BinaryArray, BooleanArray, Float32Array, Float64Array, Int16Array, Int32Array, Int64Array,
-        Int8Array, StringArray,
+        ArrayRef, BinaryArray, BooleanArray, Float32Array, Float64Array, Int16Array, Int32Array,
+        Int64Array, Int8Array, StringArray,
     },
     datatypes::DataType,
 };
@@ -86,6 +86,92 @@ impl DeltaRead for DeltaManager {
     }
 }
 
+pub fn map_array(arr: &ArrayRef) -> Result<Vec<EntityValue>, Box<dyn Error>> {
+    let col = arr.as_any();
+    let batch_columns: Result<Vec<EntityValue>, Box<dyn Error>> = match arr.data_type() {
+        DataType::Utf8 => Ok(col
+            .downcast_ref::<StringArray>()
+            .unwrap()
+            .iter()
+            .map(|ar| EntityValue::STRING(ar.unwrap().to_string()))
+            .collect()),
+
+        DataType::Int64 => Ok(col
+            .downcast_ref::<Int64Array>()
+            .unwrap()
+            .iter()
+            .map(|ar| EntityValue::INT64(ar.unwrap()))
+            .collect()),
+
+        DataType::Int32 => Ok(col
+            .downcast_ref::<Int32Array>()
+            .unwrap()
+            .iter()
+            .map(|ar| EntityValue::INT32(ar.unwrap()))
+            .collect()),
+
+        DataType::Int16 => Ok(col
+            .downcast_ref::<Int16Array>()
+            .unwrap()
+            .iter()
+            .map(|ar| EntityValue::INT16(ar.unwrap()))
+            .collect()),
+
+        DataType::Int8 => Ok(col
+            .downcast_ref::<Int8Array>()
+            .unwrap()
+            .iter()
+            .map(|ar| EntityValue::INT8(ar.unwrap()))
+            .collect()),
+
+        DataType::Float32 => Ok(col
+            .downcast_ref::<Float32Array>()
+            .unwrap()
+            .iter()
+            .map(|ar| EntityValue::FLOAT32(ar.unwrap()))
+            .collect()),
+
+        DataType::Float64 => Ok(col
+            .downcast_ref::<Float64Array>()
+            .unwrap()
+            .iter()
+            .map(|ar| EntityValue::FLOAT64(ar.unwrap()))
+            .collect()),
+
+        DataType::Boolean => Ok(col
+            .downcast_ref::<BooleanArray>()
+            .unwrap()
+            .iter()
+            .map(|ar| EntityValue::BOOL(ar.unwrap()))
+            .collect()),
+
+        DataType::Binary => Ok(col
+            .downcast_ref::<BinaryArray>()
+            .unwrap()
+            .iter()
+            .map(|ar| EntityValue::BYTES(ar.unwrap().to_vec()))
+            .collect()),
+
+        DataType::Date32 => Ok(col
+            .downcast_ref::<Int32Array>()
+            .unwrap()
+            .iter()
+            .map(|ar| EntityValue::INT32(ar.unwrap()))
+            .collect()),
+
+        DataType::Date64 => Ok(col
+            .downcast_ref::<Int64Array>()
+            .unwrap()
+            .iter()
+            .map(|ar| EntityValue::INT64(ar.unwrap()))
+            .collect()),
+
+        _ => return Err(Box::new(DeltaError::ReadTypeConversionError)),
+    };
+
+    batch_columns
+}
+
 pub fn map_record_batch(
     batch: &RecordBatch,
 ) -> Result<BTreeMap<String, Vec<EntityValue>>, Box<dyn Error>> {
@@ -96,90 +182,7 @@ pub fn map_record_batch(
         .enumerate()
         .map(
             |(ix, field)| -> Result<(String, Vec<EntityValue>), Box<dyn Error>> {
-                let col = batch.column(ix).as_any();
-                let batch_columns: Result<Vec<EntityValue>, Box<dyn Error>> =
-                    match field.data_type() {
-                        DataType::Utf8 => Ok(col
-                            .downcast_ref::<StringArray>()
-                            .unwrap()
-                            .iter()
-                            .map(|ar| EntityValue::STRING(ar.unwrap().to_string()))
-                            .collect()),
-
-                        DataType::Int64 => Ok(col
-                            .downcast_ref::<Int64Array>()
-                            .unwrap()
-                            .iter()
-                            .map(|ar| EntityValue::INT64(ar.unwrap()))
-                            .collect()),
-
-                        DataType::Int32 => Ok(col
-                            .downcast_ref::<Int32Array>()
-                            .unwrap()
-                            .iter()
-                            .map(|ar| EntityValue::INT32(ar.unwrap()))
-                            .collect()),
-
-                        DataType::Int16 => Ok(col
-                            .downcast_ref::<Int16Array>()
-                            .unwrap()
-                            .iter()
-                            .map(|ar| EntityValue::INT16(ar.unwrap()))
-                            .collect()),
-
-                        DataType::Int8 => Ok(col
-                            .downcast_ref::<Int8Array>()
-                            .unwrap()
-                            .iter()
-                            .map(|ar| EntityValue::INT8(ar.unwrap()))
-                            .collect()),
-
-                        DataType::Float32 => Ok(col
-                            .downcast_ref::<Float32Array>()
-                            .unwrap()
-                            .iter()
-                            .map(|ar| EntityValue::FLOAT32(ar.unwrap()))
-                            .collect()),
-
-                        DataType::Float64 => Ok(col
-                            .downcast_ref::<Float64Array>()
-                            .unwrap()
-                            .iter()
-                            .map(|ar| EntityValue::FLOAT64(ar.unwrap()))
-                            .collect()),
-
-                        DataType::Boolean => Ok(col
-                            .downcast_ref::<BooleanArray>()
-                            .unwrap()
-                            .iter()
-                            .map(|ar| EntityValue::BOOL(ar.unwrap()))
-                            .collect()),
-
-                        DataType::Binary => Ok(col
-                            .downcast_ref::<BinaryArray>()
-                            .unwrap()
-                            .iter()
-                            .map(|ar| EntityValue::BYTES(ar.unwrap().to_vec()))
-                            .collect()),
-
-                        DataType::Date32 => Ok(col
-                            .downcast_ref::<Int32Array>()
-                            .unwrap()
-                            .iter()
-                            .map(|ar| EntityValue::INT32(ar.unwrap()))
-                            .collect()),
-
-                        DataType::Date64 => Ok(col
-                            .downcast_ref::<Int64Array>()
-                            .unwrap()
-                            .iter()
-                            .map(|ar| EntityValue::INT64(ar.unwrap()))
-                            .collect()),
-
-                        _ => return Err(Box::new(DeltaError::ReadTypeConversionError)),
-                    };
-
-                let bc = batch_columns?;
+                let bc = map_array(batch.column(ix))?;
                 Ok((field.name().to_string(), bc))
             },
         )

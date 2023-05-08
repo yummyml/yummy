@@ -1,3 +1,4 @@
+use crate::delta::read::map_array;
 use crate::models::UdfConfig;
 use async_trait::async_trait;
 use datafusion::arrow::{
@@ -28,7 +29,7 @@ impl UdfBuilder {
     pub fn build(&self, udf_name: &str) -> Result<ScalarUDF> {
         let udf_config: &'static UdfConfig = Self::get_udf_config(udf_name)?;
 
-        let pow = make_scalar_function(self.b_udf(udf_config));
+        let pow = make_scalar_function(self.build_function(udf_config));
 
         let input_types: Vec<DataType> = udf_config
             .input_types
@@ -46,25 +47,21 @@ impl UdfBuilder {
         ))
     }
 
-    fn b_udf(
+    fn build_function(
         &self,
         mlconfig: &'static UdfConfig,
     ) -> impl Fn(&[ArrayRef]) -> std::result::Result<ArrayRef, datafusion::error::DataFusionError>
     {
-        let pow = |args: &[ArrayRef]| {
+        |args: &[ArrayRef]| {
             let array: Float64Array = Float64Array::from(vec![1.0]);
             let host = mlconfig.host.to_string();
 
-            /*
             for arg in args {
                 //TODO: map into EntityValue and call api
-                let dt = arg.data_type();
+                let ev = map_array(arg).unwrap();
             }
-            */
 
             Ok(Arc::new(array) as ArrayRef)
-        };
-
-        pow
+        }
     }
 }

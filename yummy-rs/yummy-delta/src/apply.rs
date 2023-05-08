@@ -90,7 +90,7 @@ impl DeltaApply {
     }
 
     fn build_udfs(&self) -> Result<Vec<ScalarUDF>> {
-        let mut udfs = Vec::new();
+        let udfs = Vec::new();
         let mut udf_configs = HashMap::new();
         let udf_objects: Vec<DeltaObject> = self
             .delta_objects
