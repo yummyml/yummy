@@ -244,52 +244,57 @@ impl DeltaApply {
     }
 }
 
-#[tokio::test]
-async fn test_config_local() -> Result<()> {
-    let path = "../tests/delta/apply.yaml".to_string();
-    let delta_apply = DeltaApply::new(&path).await?;
-    println!("{delta_apply:?}");
-    Ok(())
-}
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-#[tokio::test]
-async fn test_config_url() -> Result<()> {
-    let path = "https://raw.githubusercontent.com/yummyml/yummy/yummy-rs-delta-0.7.0/yummy-rs/tests/delta/apply.yaml".to_string();
-    let delta_apply = DeltaApply::new(&path).await?;
-    println!("{delta_apply:?}");
-    Ok(())
-}
+    #[tokio::test]
+    async fn test_config_local() -> Result<()> {
+        let path = "../tests/delta/apply.yaml".to_string();
+        let delta_apply = DeltaApply::new(&path).await?;
+        println!("{delta_apply:?}");
+        Ok(())
+    }
 
-#[tokio::test]
-async fn test_apply_table() -> Result<()> {
-    let path = "../../examples/delta/gameplay_tables.yaml".to_string();
-    //let delta_apply = DeltaApply::new(&path).await?;
-    //println!("{delta_apply:?}");
+    #[tokio::test]
+    async fn test_config_url() -> Result<()> {
+        let path = "https://raw.githubusercontent.com/yummyml/yummy/yummy-rs-delta-0.7.0/yummy-rs/tests/delta/apply.yaml".to_string();
+        let delta_apply = DeltaApply::new(&path).await?;
+        println!("{delta_apply:?}");
+        Ok(())
+    }
 
-    //delta_apply.apply().await?;
+    #[tokio::test]
+    async fn test_apply_table() -> Result<()> {
+        let path = "../../examples/delta/gameplay_tables.yaml".to_string();
+        //let delta_apply = DeltaApply::new(&path).await?;
+        //println!("{delta_apply:?}");
 
-    //https://github.com/mackwic/colored/blob/master/src/color.rs
-    //
-    //println!("\x1b[91mError\x1b[0m");
-    //println!("\x1b[92mSuccess\x1b[0m");
-    //println!("\x1b[93mWarning\x1b[0m");
-    //assert_eq!(delta_apply.delta_objects.len(), 4);
-    Ok(())
-}
+        //delta_apply.apply().await?;
 
-#[tokio::test]
-async fn test_apply_job() -> Result<()> {
-    let path = "../../examples/delta/gameplay_move_data.yaml".to_string();
-    //let delta_apply = DeltaApply::new(&path).await?;
-    //println!("{:?}", delta_apply);
+        //https://github.com/mackwic/colored/blob/master/src/color.rs
+        //
+        //println!("\x1b[91mError\x1b[0m");
+        //println!("\x1b[92mSuccess\x1b[0m");
+        //println!("\x1b[93mWarning\x1b[0m");
+        //assert_eq!(delta_apply.delta_objects.len(), 4);
+        Ok(())
+    }
 
-    //delta_apply.apply().await?;
+    #[tokio::test]
+    async fn test_apply_job() -> Result<()> {
+        let path = "../../examples/delta/gameplay_move_data.yaml".to_string();
+        //let delta_apply = DeltaApply::new(&path).await?;
+        //println!("{:?}", delta_apply);
 
-    //https://github.com/mackwic/colored/blob/master/src/color.rs
-    //
-    //println!("\x1b[91mError\x1b[0m");
-    //println!("\x1b[92mSuccess\x1b[0m");
-    //println!("\x1b[93mWarning\x1b[0m");
-    //assert_eq!(delta_apply.delta_objects.len(), 4);
-    Ok(())
+        //delta_apply.apply().await?;
+
+        //https://github.com/mackwic/colored/blob/master/src/color.rs
+        //
+        //println!("\x1b[91mError\x1b[0m");
+        //println!("\x1b[92mSuccess\x1b[0m");
+        //println!("\x1b[93mWarning\x1b[0m");
+        //assert_eq!(delta_apply.delta_objects.len(), 4);
+        Ok(())
+    }
 }

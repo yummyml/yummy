@@ -63,9 +63,12 @@ impl PrettyOutput for ResponseTable {
     }
 }
 
-#[tokio::test]
-async fn test_prettytable_table() -> Result<()> {
-    let schema: deltalake::Schema = serde_json::from_value(serde_json::json!({
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[tokio::test]
+    async fn test_prettytable_table() -> Result<()> {
+        let schema: deltalake::Schema = serde_json::from_value(serde_json::json!({
             "type": "struct",
             "fields": [{
                 "name": "a_map",
@@ -94,50 +97,51 @@ async fn test_prettytable_table() -> Result<()> {
             }]
         })).unwrap();
 
-    let table = ResponseTable {
-        path: "path".to_string(),
-        store: "store".to_string(),
-        table: "table".to_string(),
-        version: 1,
-        schema,
-    };
+        let table = ResponseTable {
+            path: "path".to_string(),
+            store: "store".to_string(),
+            table: "table".to_string(),
+            version: 1,
+            schema,
+        };
 
-    let output = table.to_prettytable()?;
-    println!("{output}");
+        let output = table.to_prettytable()?;
+        println!("{output}");
 
-    Ok(())
-}
+        Ok(())
+    }
 
-#[tokio::test]
-async fn test_prettytable_stores() -> Result<()> {
-    let stores: Vec<ResponseStore> = vec![
-        ResponseStore {
-            store: "name1".to_string(),
-            path: "path1".to_string(),
-        },
-        ResponseStore {
-            store: "name2".to_string(),
-            path: "path2".to_string(),
-        },
-    ];
+    #[tokio::test]
+    async fn test_prettytable_stores() -> Result<()> {
+        let stores: Vec<ResponseStore> = vec![
+            ResponseStore {
+                store: "name1".to_string(),
+                path: "path1".to_string(),
+            },
+            ResponseStore {
+                store: "name2".to_string(),
+                path: "path2".to_string(),
+            },
+        ];
 
-    let output = stores.to_prettytable()?;
-    println!("{output}");
+        let output = stores.to_prettytable()?;
+        println!("{output}");
 
-    Ok(())
-}
+        Ok(())
+    }
 
-#[tokio::test]
-async fn test_prettytable_tables() -> Result<()> {
-    let tables = ResponseTables {
-        path: "path".to_string(),
-        store: "store".to_string(),
-        tables: vec!["table1".to_string(), "table2".to_string()],
-    };
+    #[tokio::test]
+    async fn test_prettytable_tables() -> Result<()> {
+        let tables = ResponseTables {
+            path: "path".to_string(),
+            store: "store".to_string(),
+            tables: vec!["table1".to_string(), "table2".to_string()],
+        };
 
-    let output = tables.to_prettytable()?;
+        let output = tables.to_prettytable()?;
 
-    println!("{output}");
+        println!("{output}");
 
-    Ok(())
+        Ok(())
+    }
 }

@@ -30,13 +30,18 @@ pub struct ColumnSchema {
     pub nullable: bool,
 }
 
-#[tokio::test]
-async fn test_config() -> Result<()> {
-    let path = "../tests/delta/config.yaml".to_string();
-    let config = DeltaConfig::new(&path).await?;
-    println!("{config:?}");
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-    assert_eq!(config.stores.len(), 4);
-    assert_eq!(config.stores[0].name, "local");
-    Ok(())
+    #[tokio::test]
+    async fn test_config() -> Result<()> {
+        let path = "../tests/delta/config.yaml".to_string();
+        let config = DeltaConfig::new(&path).await?;
+        println!("{config:?}");
+
+        assert_eq!(config.stores.len(), 4);
+        assert_eq!(config.stores[0].name, "local");
+        Ok(())
+    }
 }
