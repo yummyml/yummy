@@ -65,3 +65,25 @@ impl UdfBuilder {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_init_and_get() -> Result<()> {
+        let udf_config = UdfConfig {
+            host: "https://localhost".to_string(),
+            input_types: vec![crate::models::SchemaPrimitiveType::Float],
+            name: "test".to_string(),
+            return_type: crate::models::SchemaPrimitiveType::Float,
+            volatility: crate::models::Volatility::Immutable
+        };
+
+        let builder = UdfBuilder::init(std::collections::HashMap::from([("test".to_string(), udf_config)]));
+        let udf = UdfBuilder::get_udf_config(&"test".to_string())?;
+
+        assert_eq!(udf.name, "test".to_string());
+        Ok(())
+    }
+}

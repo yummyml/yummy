@@ -263,38 +263,4 @@ mod tests {
         println!("{delta_apply:?}");
         Ok(())
     }
-
-    #[tokio::test]
-    async fn test_apply_table() -> Result<()> {
-        let path = "../../examples/delta/gameplay_tables.yaml".to_string();
-        //let delta_apply = DeltaApply::new(&path).await?;
-        //println!("{delta_apply:?}");
-
-        //delta_apply.apply().await?;
-
-        //https://github.com/mackwic/colored/blob/master/src/color.rs
-        //
-        //println!("\x1b[91mError\x1b[0m");
-        //println!("\x1b[92mSuccess\x1b[0m");
-        //println!("\x1b[93mWarning\x1b[0m");
-        //assert_eq!(delta_apply.delta_objects.len(), 4);
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_apply_job() -> Result<()> {
-        let path = "../../examples/delta/gameplay_move_data.yaml".to_string();
-        //let delta_apply = DeltaApply::new(&path).await?;
-        //println!("{:?}", delta_apply);
-
-        //delta_apply.apply().await?;
-
-        //https://github.com/mackwic/colored/blob/master/src/color.rs
-        //
-        //println!("\x1b[91mError\x1b[0m");
-        //println!("\x1b[92mSuccess\x1b[0m");
-        //println!("\x1b[93mWarning\x1b[0m");
-        //assert_eq!(delta_apply.delta_objects.len(), 4);
-        Ok(())
-    }
 }
