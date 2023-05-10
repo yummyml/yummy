@@ -77,11 +77,18 @@ mod tests {
             input_types: vec![crate::models::SchemaPrimitiveType::Float],
             name: "test".to_string(),
             return_type: crate::models::SchemaPrimitiveType::Float,
-            volatility: crate::models::Volatility::Immutable
+            volatility: crate::models::Volatility::Immutable,
         };
 
-        let builder = UdfBuilder::init(std::collections::HashMap::from([("test".to_string(), udf_config)]));
+        UdfBuilder::init(std::collections::HashMap::from([(
+            "test".to_string(),
+            udf_config,
+        )]));
         let udf = UdfBuilder::get_udf_config(&"test".to_string())?;
+
+        let builder = UdfBuilder {};
+
+        let scalar_udf = builder.build(&"test".to_string())?;
 
         assert_eq!(udf.name, "test".to_string());
         Ok(())
