@@ -42,29 +42,27 @@ impl Registry {
     fn read_read_feature_services(registry_proto: &RegistryProto::Registry) -> Vec<FeatureService> {
         let mut feature_services: Vec<FeatureService> = Vec::new();
 
-        registry_proto.feature_services
-            .iter()
-            .for_each(|fs| {
-                let spec = &fs.spec;
-                let name = spec.name.clone();
-                let project = spec.project.clone();
+        registry_proto.feature_services.iter().for_each(|fs| {
+            let spec = &fs.spec;
+            let name = spec.name.clone();
+            let project = spec.project.clone();
 
-                let mut full_feature_names: Vec<String> = Vec::new();
+            let mut full_feature_names: Vec<String> = Vec::new();
 
-                let features = &spec.features;
+            let features = &spec.features;
 
-                for f in features {
-                    for c in &f.feature_columns {
-                        full_feature_names.push(format!("{}:{}", f.feature_view_name, c.name));
-                    }
+            for f in features {
+                for c in &f.feature_columns {
+                    full_feature_names.push(format!("{}:{}", f.feature_view_name, c.name));
                 }
+            }
 
-                feature_services.push(FeatureService {
-                    name,
-                    project,
-                    full_feature_names,
-                });
+            feature_services.push(FeatureService {
+                name,
+                project,
+                full_feature_names,
             });
+        });
 
         feature_services
     }
@@ -95,7 +93,8 @@ impl Registry {
     }
 
     pub fn get_feature_service(&self, name: String, project: String) -> Vec<String> {
-        match self.feature_services
+        match self
+            .feature_services
             .iter()
             .filter(|fs| fs.name == name && fs.project == project)
             .last()
@@ -111,7 +110,8 @@ impl Registry {
             let feature_view_name = split[0];
             let feature_name = split[1];
 
-            if let Some(f) = self.feature_views
+            if let Some(f) = self
+                .feature_views
                 .iter()
                 .filter(|fv| fv.name == feature_view_name)
                 .last()
@@ -128,24 +128,29 @@ impl Registry {
     }
 }
 
-#[tokio::test]
-async fn read_registry_test() -> Result<(), Box<dyn Error>> {
-    let path = "../tests/feature_store.yaml".to_string();
-    let config = Config::new(&path).await?;
-    println!("{config:?}");
-    let registry = Registry::new(config).await?;
-    //println!("{:?}", registry);
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-    let features = registry.get_feature_service(
-        "driver_activity_basic".to_string(),
-        "adjusted_drake".to_string(),
-    );
+    #[tokio::test]
+    async fn read_registry_test() -> Result<(), Box<dyn Error>> {
+        let path = "../tests/feature_store.yaml".to_string();
+        let config = Config::new(&path).await?;
+        println!("{config:?}");
+        let registry = Registry::new(config).await?;
+        //println!("{:?}", registry);
 
-    println!("{features:?}");
+        let features = registry.get_feature_service(
+            "driver_activity_basic".to_string(),
+            "adjusted_drake".to_string(),
+        );
 
-    let check = registry.check_features(features);
-    assert_eq!(check, true);
+        println!("{features:?}");
 
-    //read_feature_service_spec("./tests/registry.db".to_string(), "test".to_string());
-    Ok(())
+        let check = registry.check_features(features);
+        assert_eq!(check, true);
+
+        //read_feature_service_spec("./tests/registry.db".to_string(), "test".to_string());
+        Ok(())
+    }
 }

@@ -56,27 +56,32 @@ impl MLConfig {
     }
 }
 
-#[tokio::test]
-async fn parse_config() -> Result<(), Box<dyn Error>> {
-    let path = "../tests/mlflow/catboost_model/my_model".to_string();
-    let config = MLConfig::new(&path).await?;
-    println!("{config:?}");
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-    match config.flavors.catboost {
-        Some(CatboostConfig {
-            catboost_version,
-            data,
-            model_type,
-            save_format,
-        }) => {
-            assert_eq!(catboost_version, "1.1");
-            assert_eq!(data, "model.cb");
-            assert_eq!(model_type, "CatBoostClassifier");
-            assert_eq!(save_format, "cbm");
+    #[tokio::test]
+    async fn parse_config() -> Result<(), Box<dyn Error>> {
+        let path = "../tests/mlflow/catboost_model/my_model".to_string();
+        let config = MLConfig::new(&path).await?;
+        println!("{config:?}");
+
+        match config.flavors.catboost {
+            Some(CatboostConfig {
+                catboost_version,
+                data,
+                model_type,
+                save_format,
+            }) => {
+                assert_eq!(catboost_version, "1.1");
+                assert_eq!(data, "model.cb");
+                assert_eq!(model_type, "CatBoostClassifier");
+                assert_eq!(save_format, "cbm");
+            }
+            _ => panic!("wrong job destination"),
         }
-        _ => panic!("wrong job destination"),
+        assert_eq!(config.base_path.unwrap(), path);
+        assert_eq!(config.artifact_path, "my_model");
+        Ok(())
     }
-    assert_eq!(config.base_path.unwrap(), path);
-    assert_eq!(config.artifact_path, "my_model");
-    Ok(())
 }

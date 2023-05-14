@@ -74,7 +74,8 @@ pub fn serialize_entity_keys(
         .map(|i| {
             let entity_values = join_keys
                 .to_owned()
-                .iter().cloned()
+                .iter()
+                .cloned()
                 .map(|k| {
                     let sf_v = protobuf::SpecialFields::new();
                     let ev = match &entities[&k][i] {
@@ -135,34 +136,39 @@ pub fn parse_value(v: Value::Value) -> EntityValue {
     EntityValue::None
 }
 
-#[test]
-fn test_murmur3() {
-    //let sf = protobuf::SpecialFields::new();
-    //let ev = Value::value::Val::Int32Val(186);
-    //let val = Value::Value {
-    //    val: Some(ev),
-    //    special_fields: sf.clone(),
-    //};
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-    //let val = ValueProto(int32_val=186);
-    //let kp = EntityKey::EntityKey {
-    //    join_keys: vec!["entity_id".to_string()],
-    //    entity_values: vec![val],
-    //    special_fields: sf.clone(),
-    //};
+    #[test]
+    fn test_murmur3() {
+        //let sf = protobuf::SpecialFields::new();
+        //let ev = Value::value::Val::Int32Val(186);
+        //let val = Value::Value {
+        //    val: Some(ev),
+        //    special_fields: sf.clone(),
+        //};
 
-    //let bb = Value::value_type::Enum::STRING.to_string().as_bytes();
-    //let bb = "2".as_bytes();
-    //let kpp = LittleEndian::read_u32(&bb).to_be_bytes();
-    //println!("{:?}", &kpp);
-    //assert_eq!(&kpp, b"\x02\x00\x00\x00");
-    //assert_eq!(kpp, b"\x02\x00\x00\x00entity_id\x03\x00\x00\x00\x04\x00\x00\x00\xba\x00\x00\x00");
+        //let val = ValueProto(int32_val=186);
+        //let kp = EntityKey::EntityKey {
+        //    join_keys: vec!["entity_id".to_string()],
+        //    entity_values: vec![val],
+        //    special_fields: sf.clone(),
+        //};
 
-    //let kp = EntityKey(join_keys=vec!["entity_id"], entity_values=vec![ev]);
+        //let bb = Value::value_type::Enum::STRING.to_string().as_bytes();
+        //let bb = "2".as_bytes();
+        //let kpp = LittleEndian::read_u32(&bb).to_be_bytes();
+        //println!("{:?}", &kpp);
+        //assert_eq!(&kpp, b"\x02\x00\x00\x00");
+        //assert_eq!(kpp, b"\x02\x00\x00\x00entity_id\x03\x00\x00\x00\x04\x00\x00\x00\xba\x00\x00\x00");
 
-    //let key = "test";
-    //let hash = murmur3::hash32(key).to_be_bytes();
-    //println!("{hash:?}");
-    //assert_eq!(hash, [186, 107, 210, 19]);
-    //let val = LittleEndian::read_u32(&hash).to_be_bytes().to_vec();
+        //let kp = EntityKey(join_keys=vec!["entity_id"], entity_values=vec![ev]);
+
+        //let key = "test";
+        //let hash = murmur3::hash32(key).to_be_bytes();
+        //println!("{hash:?}");
+        //assert_eq!(hash, [186, 107, 210, 19]);
+        //let val = LittleEndian::read_u32(&hash).to_be_bytes().to_vec();
+    }
 }

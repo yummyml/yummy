@@ -72,125 +72,130 @@ pub fn reorder(
     Ok(numeric_features)
 }
 
-#[test]
-fn test_matching() {
-    let mut a = ["1", "2", "3", "4", "5"];
-    let mut b = ["1", "3", "2", "4", "5"];
-    a.sort();
-    b.sort();
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-    let matching = a.iter().zip(&b).filter(|&(a, b)| a == b).count();
-    assert_eq!(matching, a.len());
-}
+    #[test]
+    fn test_matching() {
+        let mut a = ["1", "2", "3", "4", "5"];
+        let mut b = ["1", "3", "2", "4", "5"];
+        a.sort();
+        b.sort();
 
-#[test]
-fn test_reorder() -> Result<(), Box<dyn Error>> {
-    let mut columns = Vec::new();
-    columns.push("3".to_string());
-    columns.push("1".to_string());
-    columns.push("2".to_string());
-    columns.push("0".to_string());
+        let matching = a.iter().zip(&b).filter(|&(a, b)| a == b).count();
+        assert_eq!(matching, a.len());
+    }
 
-    let mut feature_names = Vec::new();
-    feature_names.push("0".to_string());
-    feature_names.push("1".to_string());
-    feature_names.push("2".to_string());
-    feature_names.push("3".to_string());
+    #[test]
+    fn test_reorder() -> Result<(), Box<dyn Error>> {
+        let mut columns = Vec::new();
+        columns.push("3".to_string());
+        columns.push("1".to_string());
+        columns.push("2".to_string());
+        columns.push("0".to_string());
 
-    let mut data = Vec::new();
-    let mut numeric_features = Vec::new();
-    numeric_features.push(3.0);
-    numeric_features.push(1.0);
-    numeric_features.push(2.0);
-    numeric_features.push(0.0);
-    data.push(numeric_features.clone());
-    data.push(numeric_features.clone());
+        let mut feature_names = Vec::new();
+        feature_names.push("0".to_string());
+        feature_names.push("1".to_string());
+        feature_names.push("2".to_string());
+        feature_names.push("3".to_string());
 
-    data = reorder(&feature_names, columns, data)?;
+        let mut data = Vec::new();
+        let mut numeric_features = Vec::new();
+        numeric_features.push(3.0);
+        numeric_features.push(1.0);
+        numeric_features.push(2.0);
+        numeric_features.push(0.0);
+        data.push(numeric_features.clone());
+        data.push(numeric_features.clone());
 
-    assert_eq!(data[0][0], 0.0);
-    assert_eq!(data[0][1], 1.0);
-    assert_eq!(data[0][2], 2.0);
-    assert_eq!(data[0][3], 3.0);
+        data = reorder(&feature_names, columns, data)?;
 
-    assert_eq!(data[1][0], 0.0);
-    assert_eq!(data[1][1], 1.0);
-    assert_eq!(data[1][2], 2.0);
-    assert_eq!(data[1][3], 3.0);
+        assert_eq!(data[0][0], 0.0);
+        assert_eq!(data[0][1], 1.0);
+        assert_eq!(data[0][2], 2.0);
+        assert_eq!(data[0][3], 3.0);
 
-    Ok(())
-}
+        assert_eq!(data[1][0], 0.0);
+        assert_eq!(data[1][1], 1.0);
+        assert_eq!(data[1][2], 2.0);
+        assert_eq!(data[1][3], 3.0);
 
-#[test]
-fn test_find_swaps() -> Result<(), Box<dyn Error>> {
-    let mut columns = Vec::new();
-    columns.push("12".to_string());
-    columns.push("1".to_string());
-    columns.push("2".to_string());
-    columns.push("3".to_string());
-    columns.push("4".to_string());
-    columns.push("6".to_string());
-    columns.push("5".to_string());
-    columns.push("7".to_string());
-    columns.push("8".to_string());
-    columns.push("9".to_string());
-    columns.push("10".to_string());
-    columns.push("11".to_string());
-    columns.push("0".to_string());
+        Ok(())
+    }
 
-    let mut feature_names = Vec::new();
-    feature_names.push("0".to_string());
-    feature_names.push("1".to_string());
-    feature_names.push("2".to_string());
-    feature_names.push("3".to_string());
-    feature_names.push("4".to_string());
-    feature_names.push("5".to_string());
-    feature_names.push("6".to_string());
-    feature_names.push("7".to_string());
-    feature_names.push("8".to_string());
-    feature_names.push("9".to_string());
-    feature_names.push("10".to_string());
-    feature_names.push("11".to_string());
-    feature_names.push("12".to_string());
+    #[test]
+    fn test_find_swaps() -> Result<(), Box<dyn Error>> {
+        let mut columns = Vec::new();
+        columns.push("12".to_string());
+        columns.push("1".to_string());
+        columns.push("2".to_string());
+        columns.push("3".to_string());
+        columns.push("4".to_string());
+        columns.push("6".to_string());
+        columns.push("5".to_string());
+        columns.push("7".to_string());
+        columns.push("8".to_string());
+        columns.push("9".to_string());
+        columns.push("10".to_string());
+        columns.push("11".to_string());
+        columns.push("0".to_string());
 
-    let swaps = find_swaps(&feature_names, columns)?;
+        let mut feature_names = Vec::new();
+        feature_names.push("0".to_string());
+        feature_names.push("1".to_string());
+        feature_names.push("2".to_string());
+        feature_names.push("3".to_string());
+        feature_names.push("4".to_string());
+        feature_names.push("5".to_string());
+        feature_names.push("6".to_string());
+        feature_names.push("7".to_string());
+        feature_names.push("8".to_string());
+        feature_names.push("9".to_string());
+        feature_names.push("10".to_string());
+        feature_names.push("11".to_string());
+        feature_names.push("12".to_string());
 
-    assert_eq!(swaps.len(), 2);
-    assert_eq!(swaps[0], (0, 12));
-    assert_eq!(swaps[1], (5, 6));
+        let swaps = find_swaps(&feature_names, columns)?;
 
-    Ok(())
-}
+        assert_eq!(swaps.len(), 2);
+        assert_eq!(swaps[0], (0, 12));
+        assert_eq!(swaps[1], (5, 6));
 
-#[test]
-#[should_panic]
-fn test_find_swaps_panic() {
-    let mut columns = Vec::new();
-    columns.push("12".to_string());
-    columns.push("1".to_string());
+        Ok(())
+    }
 
-    let mut feature_names = Vec::new();
-    feature_names.push("0".to_string());
-    feature_names.push("1".to_string());
+    #[test]
+    #[should_panic]
+    fn test_find_swaps_panic() {
+        let mut columns = Vec::new();
+        columns.push("12".to_string());
+        columns.push("1".to_string());
 
-    let swaps = find_swaps(&feature_names, columns).unwrap();
+        let mut feature_names = Vec::new();
+        feature_names.push("0".to_string());
+        feature_names.push("1".to_string());
 
-    assert_eq!(swaps.len(), 1);
-}
+        let swaps = find_swaps(&feature_names, columns).unwrap();
 
-#[test]
-#[should_panic]
-fn test_find_swaps_panic_len() {
-    let mut columns = Vec::new();
-    columns.push("12".to_string());
-    columns.push("1".to_string());
-    columns.push("2".to_string());
+        assert_eq!(swaps.len(), 1);
+    }
 
-    let mut feature_names = Vec::new();
-    feature_names.push("0".to_string());
-    feature_names.push("1".to_string());
+    #[test]
+    #[should_panic]
+    fn test_find_swaps_panic_len() {
+        let mut columns = Vec::new();
+        columns.push("12".to_string());
+        columns.push("1".to_string());
+        columns.push("2".to_string());
 
-    let swaps = find_swaps(&feature_names, columns).unwrap();
+        let mut feature_names = Vec::new();
+        feature_names.push("0".to_string());
+        feature_names.push("1".to_string());
 
-    assert_eq!(swaps.len(), 1);
+        let swaps = find_swaps(&feature_names, columns).unwrap();
+
+        assert_eq!(swaps.len(), 1);
+    }
 }
