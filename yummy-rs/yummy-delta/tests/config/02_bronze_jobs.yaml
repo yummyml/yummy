@@ -1,0 +1,128 @@
+kind: config
+metadata: 
+  name: myconfig
+spec:
+  stores:
+    - name: local
+      path: "file://"
+    - name: gameplay_bronze
+      path: "abfss://gameplay-example/bronze/"
+      storage_options:
+        azure_storage_account_name: "${az2_account}"
+        azure_storage_access_key: "${az2_key}"
+        azure_storage_use_emulator: "0"
+---
+kind: job
+metadata: 
+  name: game_purchase_job
+spec:
+  source:
+    store: "local"
+    tables:
+      - name: "game_purchase_pq"
+        type: "parquet"
+        path: "/home/jovyan/yummy-recipes/yummy-gameplay-example/data/processed/fake_in_game_purchases_dataset_${date}.parquet"
+  sink:
+    name: "sink"
+    store: "gameplay_bronze"
+    table: "game_purchase"
+    saveMode: "Append"
+  sql: >
+    SELECT * FROM game_purchase_pq
+  dryRun: false
+---
+kind: job
+metadata: 
+  name: game_rating_job
+spec:
+  source:
+    store: "local"
+    tables:
+      - name: "game_rating_pq"
+        type: "parquet"
+        path: "/home/jovyan/yummy-recipes/yummy-gameplay-example/data/processed/fake_game_ratings_dataset_${date}.parquet"
+  sink:
+    name: "sink"
+    store: "gameplay_bronze"
+    table: "game_rating"
+    saveMode: "Append"
+  sql: >
+    SELECT * FROM game_rating_pq
+  dryRun: false
+---
+kind: job
+metadata: 
+  name: game_session_job
+spec:
+  source:
+    store: "local"
+    tables:
+      - name: "game_session_pq"
+        type: "parquet"
+        path: "/home/jovyan/yummy-recipes/yummy-gameplay-example/data/processed/fake_game_sessions_dataset_${date}.parquet"
+  sink:
+    name: "sink"
+    store: "gameplay_bronze"
+    table: "game_session"
+    saveMode: "Append"
+  sql: >
+    SELECT * FROM game_session_pq
+  dryRun: false
+---
+kind: job
+metadata: 
+  name: game_job
+spec:
+  source:
+    store: "local"
+    tables:
+      - name: "game_pq"
+        type: "parquet"
+        path: "/home/jovyan/yummy-recipes/yummy-gameplay-example/data/processed/fake_games_dataset_${date}.parquet"
+  sink:
+    name: "sink"
+    store: "gameplay_bronze"
+    table: "game"
+    saveMode: "Append"
+  sql: >
+    SELECT * FROM game_pq
+  dryRun: false
+---
+kind: job
+metadata: 
+  name: player_movement_job
+spec:
+  source:
+    store: "local"
+    tables:
+      - name: "player_movement_pq"
+        type: "parquet"
+        path: "/home/jovyan/yummy-recipes/yummy-gameplay-example/data/processed/fake_player_movements_dataset_${date}.parquet"
+  sink:
+    name: "sink"
+    store: "gameplay_bronze"
+    table: "player_movement"
+    saveMode: "Append"
+  sql: >
+    SELECT * FROM player_movement_pq
+  dryRun: false
+---
+kind: job
+metadata: 
+  name: player_job
+spec:
+  source:
+    store: "local"
+    tables:
+      - name: "player_pq"
+        type: "parquet"
+        path: "/home/jovyan/yummy-recipes/yummy-gameplay-example/data/processed/fake_players_dataset_${date}.parquet"
+  sink:
+    name: "sink"
+    store: "gameplay_bronze"
+    table: "player"
+    saveMode: "Append"
+  sql: >
+    SELECT * FROM player_pq
+  dryRun: false
+
