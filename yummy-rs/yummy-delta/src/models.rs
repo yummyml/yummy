@@ -164,13 +164,20 @@ pub struct JobResponse {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct UdfConfig {
+pub struct UdfSpec {
     pub name: String,
-    pub host: String,
     pub input_types: Vec<SchemaPrimitiveType>,
     pub return_type: SchemaPrimitiveType,
     pub volatility: Volatility,
+    pub config: UdfConfig,
 }
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(tag = "type", rename_all = "camelCase")]
+pub enum UdfConfig {
+    Dummy
+}
+
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 #[serde(tag = "type", rename_all = "camelCase")]

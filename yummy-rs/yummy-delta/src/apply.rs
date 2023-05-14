@@ -1,6 +1,6 @@
 use crate::config::DeltaConfig;
 use crate::delta::{DeltaCommands, DeltaJobs, DeltaManager};
-use crate::models::{CreateRequest, JobRequest, OptimizeRequest, UdfConfig, VacuumRequest};
+use crate::models::{CreateRequest, JobRequest, OptimizeRequest, UdfSpec, VacuumRequest};
 use crate::udf::UdfBuilder;
 use datafusion::physical_plan::udf::ScalarUDF;
 use serde::Deserialize;
@@ -46,7 +46,7 @@ pub enum DeltaObject {
     },
     Udf {
         metadata: Metadata,
-        spec: UdfConfig,
+        spec: UdfSpec,
     },
 }
 
@@ -90,8 +90,8 @@ impl DeltaApply {
     }
 
     fn build_udfs(&self) -> Result<Vec<ScalarUDF>> {
-        let udfs = Vec::new();
-        let mut udf_configs = HashMap::new();
+        let mut udfs = Vec::new();
+        let mut udf_specs = HashMap::new();
         let udf_objects: Vec<DeltaObject> = self
             .delta_objects
             .clone()
@@ -109,12 +109,19 @@ impl DeltaApply {
 
         for u in udf_objects {
             if let DeltaObject::Udf { metadata: _, spec } = u {
-                udf_configs.insert(spec.name.to_string(), spec);
+                udf_specs.insert(spec.name.to_string(), spec);
                 //udfs.push(spec.build()?);
             }
         }
 
-        UdfBuilder::init(udf_configs);
+        if !udf_specs.is_empty() {
+            UdfBuilder::init(udf_specs.clone());
+        }
+
+        let builder = UdfBuilder {};
+        for udf_spec in udf_specs {
+            udfs.push(builder.build(&udf_spec.0)?);
+        }
 
         Ok(udfs)
     }

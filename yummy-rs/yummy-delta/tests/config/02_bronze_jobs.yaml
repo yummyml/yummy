@@ -6,11 +6,21 @@ spec:
     - name: local
       path: "file://"
     - name: gameplay_bronze
-      path: "abfss://gameplay-example/bronze/"
-      storage_options:
-        azure_storage_account_name: "${az2_account}"
-        azure_storage_access_key: "${az2_key}"
-        azure_storage_use_emulator: "0"
+      path: "/tmp/test_apply_gameplay/"
+---
+kind: udf
+metadata: 
+  name: myudf
+spec:
+  name: myudf
+  inputTypes:
+    - type: double
+  returnType: 
+    type: double
+  volatility: 
+    type: immutable
+  config:
+    type: dummy
 ---
 kind: job
 metadata: 
@@ -21,14 +31,15 @@ spec:
     tables:
       - name: "game_purchase_pq"
         type: "parquet"
-        path: "/home/jovyan/yummy-recipes/yummy-gameplay-example/data/processed/fake_in_game_purchases_dataset_${date}.parquet"
+        path: "./tests/data/fake_in_game_purchases_dataset_${date}.parquet"
   sink:
     name: "sink"
     store: "gameplay_bronze"
     table: "game_purchase"
     saveMode: "Append"
   sql: >
-    SELECT * FROM game_purchase_pq
+    SELECT purchase_id, player_id, game_id, item_id, item_name, item_category, myudf(item_price), purchase_date
+    FROM game_purchase_pq
   dryRun: false
 ---
 kind: job
@@ -40,7 +51,7 @@ spec:
     tables:
       - name: "game_rating_pq"
         type: "parquet"
-        path: "/home/jovyan/yummy-recipes/yummy-gameplay-example/data/processed/fake_game_ratings_dataset_${date}.parquet"
+        path: "./tests/data/fake_game_ratings_dataset_${date}.parquet"
   sink:
     name: "sink"
     store: "gameplay_bronze"
@@ -59,7 +70,7 @@ spec:
     tables:
       - name: "game_session_pq"
         type: "parquet"
-        path: "/home/jovyan/yummy-recipes/yummy-gameplay-example/data/processed/fake_game_sessions_dataset_${date}.parquet"
+        path: "./tests/data/fake_game_sessions_dataset_${date}.parquet"
   sink:
     name: "sink"
     store: "gameplay_bronze"
@@ -78,7 +89,7 @@ spec:
     tables:
       - name: "game_pq"
         type: "parquet"
-        path: "/home/jovyan/yummy-recipes/yummy-gameplay-example/data/processed/fake_games_dataset_${date}.parquet"
+        path: "./tests/data/fake_games_dataset_${date}.parquet"
   sink:
     name: "sink"
     store: "gameplay_bronze"
@@ -97,7 +108,7 @@ spec:
     tables:
       - name: "player_movement_pq"
         type: "parquet"
-        path: "/home/jovyan/yummy-recipes/yummy-gameplay-example/data/processed/fake_player_movements_dataset_${date}.parquet"
+        path: "./tests/data/fake_player_movements_dataset_${date}.parquet"
   sink:
     name: "sink"
     store: "gameplay_bronze"
@@ -116,7 +127,7 @@ spec:
     tables:
       - name: "player_pq"
         type: "parquet"
-        path: "/home/jovyan/yummy-recipes/yummy-gameplay-example/data/processed/fake_players_dataset_${date}.parquet"
+        path: "./tests/data/fake_players_dataset_${date}.parquet"
   sink:
     name: "sink"
     store: "gameplay_bronze"

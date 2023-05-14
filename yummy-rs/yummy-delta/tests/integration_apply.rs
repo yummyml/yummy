@@ -1,6 +1,7 @@
-use yummy_delta::apply::DeltaApply;
-use yummy_core::common::Result;
 use std::fs;
+use yummy_core::common::Result;
+use yummy_delta::apply::DeltaApply;
+use yummy_delta::delta::DeltaRead;
 
 mod common;
 
@@ -8,7 +9,6 @@ mod common;
 async fn test_config_url() -> Result<()> {
     let path = "https://raw.githubusercontent.com/yummyml/yummy/yummy-rs-delta-0.7.0/yummy-rs/tests/delta/apply.yaml".to_string();
     let delta_apply = DeltaApply::new(&path).await?;
-    println!("{delta_apply:?}");
     Ok(())
 }
 
@@ -28,17 +28,27 @@ async fn test_apply_table() -> Result<()> {
 
 #[tokio::test]
 async fn test_apply_job() -> Result<()> {
-    let path = "../../examples/delta/gameplay_move_data.yaml".to_string();
-    //let delta_apply = DeltaApply::new(&path).await?;
-    //println!("{:?}", delta_apply);
+    let delta_path = "/tmp/test_apply_gameplay".to_string();
+    fs::create_dir_all(&delta_path)?;
 
-    //delta_apply.apply().await?;
+    let path = "./tests/config/01_bronze_tables.yaml".to_string();
+    let delta_apply = DeltaApply::new(&path).await?;
+    delta_apply.apply().await?;
 
-    //https://github.com/mackwic/colored/blob/master/src/color.rs
-    //
-    //println!("\x1b[91mError\x1b[0m");
-    //println!("\x1b[92mSuccess\x1b[0m");
-    //println!("\x1b[93mWarning\x1b[0m");
-    //assert_eq!(delta_apply.delta_objects.len(), 4);
+    std::env::set_var("date", "2023-04-23");
+    let path_jobs = "./tests/config/02_bronze_jobs.yaml".to_string();
+    let delta_jobs = DeltaApply::new(&path_jobs).await?;
+    delta_jobs.apply().await?;
+
+    let query = "select * from game_purchase".to_string();
+    let store = "gameplay_bronze".to_string();
+    let table = "game_purchase".to_string();
+    let batches = delta_apply.delta_manager()?
+        .query(&store, &table, &query, None, None)
+        .await?;
+    println!("BATCHES: {batches:?}");
+
+
+    fs::remove_dir_all(delta_path)?;
     Ok(())
 }

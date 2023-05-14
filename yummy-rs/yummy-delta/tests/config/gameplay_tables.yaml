@@ -4,13 +4,9 @@ metadata:
 spec:
   stores:
     - name: local
-      path: "/yummy-gameplay-example/gameplay_data/"
+      path: "./tests/data/"
     - name: gameplay_bronze
-      path: "abfss://gameplay-example/bronze"
-      storage_options:
-        azure_storage_account_name: "${az2_account}"
-        azure_storage_access_key: "${az2_key}"
-        azure_storage_use_emulator: "0"
+      path: "/tmp/integtation_apply_gameplay/bronze"
 ---
 kind: table
 metadata: 

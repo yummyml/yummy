@@ -1,5 +1,5 @@
 use crate::delta::read::map_array;
-use crate::models::UdfConfig;
+use crate::models::{UdfConfig, UdfSpec};
 use async_trait::async_trait;
 use datafusion::arrow::{
     array::{ArrayRef, Float64Array},
@@ -12,49 +12,49 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use yummy_core::common::Result;
 
-static UDF_CONFIGS: OnceCell<HashMap<String, UdfConfig>> = OnceCell::new();
+static UDF_SPECS: OnceCell<HashMap<String, UdfSpec>> = OnceCell::new();
 
 #[derive(Debug)]
 pub struct UdfBuilder {}
 
 impl UdfBuilder {
-    pub fn init(udf_configs: HashMap<String, UdfConfig>) {
-        UDF_CONFIGS.set(udf_configs).unwrap();
+    pub fn init(udf_specs: HashMap<String, UdfSpec>) {
+        UDF_SPECS.set(udf_specs).unwrap();
     }
 
-    pub fn get_udf_config(name: &str) -> Result<&'static UdfConfig> {
-        Ok(&UDF_CONFIGS.get().unwrap()[name])
+    pub fn get_udf_spec(name: &str) -> Result<&'static UdfSpec> {
+        Ok(&UDF_SPECS.get().unwrap()[name])
     }
 
     pub fn build(&self, udf_name: &str) -> Result<ScalarUDF> {
-        let udf_config: &'static UdfConfig = Self::get_udf_config(udf_name)?;
+        let udf_spec: &'static UdfSpec = Self::get_udf_spec(udf_name)?;
 
-        let pow = make_scalar_function(self.build_function(udf_config));
+        let pow = make_scalar_function(self.build_function(udf_spec));
 
-        let input_types: Vec<DataType> = udf_config
+        let input_types: Vec<DataType> = udf_spec
             .input_types
             .clone()
             .into_iter()
             .map(|x| -> Result<DataType> { x.try_into() })
             .collect::<Result<Vec<DataType>>>()?;
-        let return_type: DataType = udf_config.return_type.try_into()?;
+        let return_type: DataType = udf_spec.return_type.try_into()?;
         Ok(create_udf(
-            udf_config.name.as_str(),
+            udf_spec.name.as_str(),
             input_types,
             Arc::new(return_type),
-            udf_config.volatility.try_into()?,
+            udf_spec.volatility.try_into()?,
             pow,
         ))
     }
 
     fn build_function(
         &self,
-        mlconfig: &'static UdfConfig,
+        mlconfig: &'static UdfSpec,
     ) -> impl Fn(&[ArrayRef]) -> std::result::Result<ArrayRef, datafusion::error::DataFusionError>
     {
         |args: &[ArrayRef]| {
             let array: Float64Array = Float64Array::from(vec![1.0]);
-            let host = mlconfig.host.to_string();
+            //let host = mlconfig.host.to_string();
 
             for arg in args {
                 //TODO: map into EntityValue and call api
@@ -72,8 +72,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_init_and_get() -> Result<()> {
-        let udf_config = UdfConfig {
-            host: "https://localhost".to_string(),
+        let udf_config = UdfSpec {
+            config: UdfConfig::Dummy,
             input_types: vec![crate::models::SchemaPrimitiveType::Float],
             name: "test".to_string(),
             return_type: crate::models::SchemaPrimitiveType::Float,
@@ -84,7 +84,7 @@ mod tests {
             "test".to_string(),
             udf_config,
         )]));
-        let udf = UdfBuilder::get_udf_config(&"test".to_string())?;
+        let udf = UdfBuilder::get_udf_spec(&"test".to_string())?;
 
         let builder = UdfBuilder {};
 
