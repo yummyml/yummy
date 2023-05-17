@@ -6,21 +6,7 @@ spec:
     - name: local
       path: "file://"
     - name: gameplay_bronze
-      path: "/tmp/test_apply_gameplay/"
----
-kind: udf
-metadata: 
-  name: myudf
-spec:
-  name: myudf
-  inputTypes:
-    - type: double
-  returnType: 
-    type: double
-  volatility: 
-    type: immutable
-  config:
-    type: dummy
+      path: "/tmp/test_apply_gameplay/bronze/"
 ---
 kind: job
 metadata: 
@@ -38,8 +24,7 @@ spec:
     table: "game_purchase"
     saveMode: "Append"
   sql: >
-    SELECT purchase_id, player_id, game_id, item_id, item_name, item_category, myudf(item_price), purchase_date
-    FROM game_purchase_pq
+    SELECT * FROM game_purchase_pq
   dryRun: false
 ---
 kind: job

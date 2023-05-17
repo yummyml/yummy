@@ -4,7 +4,7 @@ metadata:
 spec:
   stores:
     - name: gameplay_bronze
-      path: "/tmp/test_apply_gameplay/"
+      path: "/tmp/test_apply_gameplay/bronze/"
 ---
 kind: table
 metadata: 
@@ -36,7 +36,7 @@ spec:
       nullable: true
     - name: purchase_date
       type: date
-      nullable: true
+      nullable: false
   partitionColumns: ["purchase_date"]
   comment: "Games purchases"
 ---
@@ -73,7 +73,7 @@ spec:
       nullable: true
     - name: rating_date
       type: date
-      nullable: true
+      nullable: false
   partitionColumns: ["rating_date"]
   comment: "Games ratings"
 ---
@@ -122,7 +122,7 @@ spec:
       nullable: true
     - name: session_date
       type: date
-      nullable: true
+      nullable: false
   partitionColumns: ["session_date"]
   comment: "Games sessions"
 ---
@@ -153,7 +153,7 @@ spec:
       nullable: true
     - name: release_date
       type: date
-      nullable: true
+      nullable: false
   partitionColumns: ["release_date"]
   comment: "Games"
 ---
@@ -211,7 +211,7 @@ spec:
       nullable: true
     - name: session_date
       type: date
-      nullable: true
+      nullable: false
   partitionColumns: ["session_date"]
   comment: "Player movements"
 ---
@@ -242,7 +242,7 @@ spec:
       nullable: true
     - name: registration_date
       type: date
-      nullable: true
+      nullable: false
   partitionColumns: ["registration_date"]
   comment: "Players"
 

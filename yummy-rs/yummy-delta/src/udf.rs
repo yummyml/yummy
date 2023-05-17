@@ -53,13 +53,20 @@ impl UdfBuilder {
     ) -> impl Fn(&[ArrayRef]) -> std::result::Result<ArrayRef, datafusion::error::DataFusionError>
     {
         |args: &[ArrayRef]| {
-            let array: Float64Array = Float64Array::from(vec![1.0]);
+
+
+            let arr: Vec<f64> = args[0].as_any().downcast_ref::<Float64Array>()
+            .unwrap().iter().map(|x| x.unwrap() + 10.0).collect();
+
+            let array: Float64Array = Float64Array::from(arr);
             //let host = mlconfig.host.to_string();
 
+            /*
             for arg in args {
                 //TODO: map into EntityValue and call api
                 let ev = map_array(arg).unwrap();
             }
+            */
 
             Ok(Arc::new(array) as ArrayRef)
         }

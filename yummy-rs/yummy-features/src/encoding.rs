@@ -88,6 +88,8 @@ pub fn serialize_entity_keys(
                         EntityValue::BOOL(v) => Ok(Value::value::Val::BoolVal(*v)),
                         EntityValue::STRING(v) => Ok(Value::value::Val::StringVal(v.clone())),
                         EntityValue::BYTES(v) => Ok(Value::value::Val::BytesVal(v.clone())),
+                        EntityValue::FLOAT64ARRAY(_) => todo!(),
+                        EntityValue::FLOAT32ARRAY(_) => todo!(),
                         EntityValue::None => Err(Box::new(EncodingError::WrongEntityValue)),
                     };
 
