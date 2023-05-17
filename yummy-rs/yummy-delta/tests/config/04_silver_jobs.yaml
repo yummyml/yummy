@@ -1,0 +1,141 @@
+kind: config
+metadata: 
+  name: myconfig
+spec:
+  stores:
+    - name: gameplay_bronze
+      path: "file:///tmp/test_apply_gameplay/bronze/"
+    - name: gameplay_silver
+      path: "/tmp/test_apply_gameplay/silver/"
+---
+kind: job
+metadata: 
+  name: game_purchase_job
+spec:
+  source:
+    store: "gameplay_bronze"
+    tables:
+      - name: "game_purchase_dlb"
+        type: "delta"
+        table: "game_purchase"
+  sink:
+    name: "sink"
+    store: "gameplay_silver"
+    table: "game_purchase"
+    saveMode: "Append"
+  sql: >
+    SELECT 
+    purchase_id, player_id, game_id, item_id, item_name, item_category, item_price, cast(purchase_date as date) as purchase_date 
+    FROM game_purchase_dlb 
+    where item_price > 0 and cast(purchase_date as date)=cast('${date}' as date)
+  dryRun: false
+---
+kind: job
+metadata: 
+  name: game_rating_job
+spec:
+  source:
+    store: "gameplay_bronze"
+    tables:
+      - name: "game_rating_dlb"
+        type: "delta"
+        table: "game_rating"
+  sink:
+    name: "sink"
+    store: "gameplay_silver"
+    table: "game_rating"
+    saveMode: "Append"
+  sql: >
+    SELECT 
+    rating_id, player_id, game_id, rating_score, title, review_text, playtime, device, cast(rating_date as date) as rating_date 
+    FROM game_rating_dlb where rating_score > 0 and cast(rating_date as date)=cast('${date}' as date)
+  dryRun: false
+---
+kind: job
+metadata: 
+  name: game_session_job
+spec:
+  source:
+    store: "gameplay_bronze"
+    tables:
+      - name: "game_session_dlb"
+        type: "delta"
+        table: "game_session"
+  sink:
+    name: "sink"
+    store: "gameplay_silver"
+    table: "game_session"
+    saveMode: "Append"
+  sql: >
+    SELECT 
+    session_id, player_id, game_id, start_time, end_time, duration, map_id, map_name, kills, deaths, score, game_mode, cast(session_date as date) as session_date 
+    FROM game_session_dlb where duration > 0 and cast(session_date as date)=cast('${date}' as date)
+  dryRun: false
+---
+kind: job
+metadata: 
+  name: game_job
+spec:
+  source:
+    store: "gameplay_bronze"
+    tables:
+      - name: "game_dlb"
+        type: "delta"
+        table: "game"
+  sink:
+    name: "sink"
+    store: "gameplay_silver"
+    table: "game"
+    saveMode: "Append"
+  sql: >
+    SELECT 
+    game_id, game_title, game_genre, developer, platform, game_version, cast(release_date as date) as release_date 
+    FROM game_dlb where cast(release_date as date)=cast('${date}' as date)
+  dryRun: false
+---
+kind: job
+metadata: 
+  name: player_movement_job
+spec:
+  source:
+    store: "gameplay_bronze"
+    tables:
+      - name: "player_movement_dlb"
+        type: "delta"
+        table: "player_movement"
+  sink:
+    name: "sink"
+    store: "gameplay_silver"
+    table: "player_movement"
+    saveMode: "Append"
+  sql: >
+    SELECT 
+    movement_id, session_id, player_id, game_id, timestamp, 
+    position_x, position_y, position_z, 
+    rotation_x, rotation_y, rotation_z, 
+    velocity_x, velocity_y, velocity_z, 
+    action, cast(session_date as date) as session_date 
+    FROM player_movement_dlb where cast(session_date as date)=cast('${date}' as date)
+  dryRun: false
+---
+kind: job
+metadata: 
+  name: player_job
+spec:
+  source:
+    store: "gameplay_bronze"
+    tables:
+      - name: "player_dlb"
+        type: "delta"
+        table: "player"
+  sink:
+    name: "sink"
+    store: "gameplay_silver"
+    table: "player"
+    saveMode: "Append"
+  sql: >
+    SELECT 
+    player_id, username, age, country, email, account_status, cast(registration_date as date) as registration_date  
+    FROM player_dlb where cast(registration_date as date)=cast('${date}' as date)
+  dryRun: false
+
