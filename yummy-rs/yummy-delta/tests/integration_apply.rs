@@ -57,15 +57,17 @@ async fn test_apply_job() -> Result<()> {
         delta_apply.apply().await?;
     }
 
-    /*
-    let query = "select cast(purchase_date as string) from game_purchase limit 2".to_string();
-    let store = "gameplay_bronze".to_string();
+    let query = "select cast(purchase_date as string) as data from game_purchase limit 2".to_string();
+    let store = "gameplay_silver".to_string();
     let table = "game_purchase".to_string();
+
+
+    let config = "./tests/config/04_silver_jobs.yaml";
+    let delta_apply = DeltaApply::new(&config.to_string()).await?;
     let batches = delta_apply.delta_manager()?
         .query(&store, &table, &query, None, None)
         .await?;
     println!("BATCHES: {batches:?}");
-    */
 
     fs::remove_dir_all(delta_path)?;
     Ok(())

@@ -17,7 +17,6 @@ class IcebergSource(YummyDataSource):
     def __init__(
         self,
         *,
-        event_timestamp_column: Optional[str] = None,
         created_timestamp_column: Optional[str] = None,
         field_mapping: Optional[Dict[str, str]] = None,
         date_partition_column: Optional[str] = None,
@@ -31,7 +30,6 @@ class IcebergSource(YummyDataSource):
         range_join: Optional[int] = None,
     ):
         super().__init__(
-            event_timestamp_column=event_timestamp_column,
             created_timestamp_column=created_timestamp_column,
             field_mapping=field_mapping,
             date_partition_column=date_partition_column,

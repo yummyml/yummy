@@ -6,8 +6,6 @@ import pandas as pd
 import pyarrow
 import pytz
 from feast import FileSource, OnDemandFeatureView
-from feast.data_source import DataSource
-from feast.errors import FeastJoinKeysDuringMaterialization
 from feast.feature_view import DUMMY_ENTITY_ID, DUMMY_ENTITY_VAL, FeatureView
 from feast.infra.offline_stores.offline_store import (
     OfflineStore,
@@ -17,12 +15,8 @@ from feast.infra.offline_stores.offline_store import (
 from feast.infra.offline_stores.offline_utils import (
     DEFAULT_ENTITY_DF_EVENT_TIMESTAMP_COL,
 )
-from feast.infra.provider import _get_requested_feature_views_to_features_dict
-from feast.registry import Registry
-from feast.repo_config import FeastConfigBaseModel, RepoConfig
 from feast.saved_dataset import SavedDatasetStorage
 from feast.usage import log_exceptions_and_usage
-from pydantic.typing import Literal
 from yummy.backends.backend import Backend, BackendType, BackendConfig
 
 class PolarsBackend(Backend):
@@ -95,7 +89,7 @@ class PolarsBackend(Backend):
         if not ascending:
             reverse = True
 
-        return entity_df.sort(by, reverse=reverse, nulls_last=nulls_last)
+        return entity_df.sort(by, descending=reverse, nulls_last=nulls_last)
 
     def run_field_mapping(
         self,
@@ -222,7 +216,7 @@ class PolarsRetrievalJob(RetrievalJob):
         return self._on_demand_feature_views
 
     @log_exceptions_and_usage
-    def _to_df_internal(self) -> pd.DataFrame:
+    def _to_df_internal(self, timeout: Optional[int] = None) -> pd.DataFrame:
         # Only execute the evaluation function to build the final historical retrieval dataframe at the last moment.
         df = self.evaluation_function().to_pandas()
         return df

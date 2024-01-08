@@ -42,7 +42,7 @@ def repo_config(tmp_dir: TemporaryDirectory, example_repo_path: str) -> RepoConf
     If we don't do this, all tests will run agains the same registry/online store
     instances, which is not possible with parallel test execution.
     """
-    repo_config = load_repo_config(repo_path=Path(example_repo_path))
+    repo_config = load_repo_config(repo_path=Path(example_repo_path), fs_yaml_file=Path(example_repo_path+"/feature_store.yaml"))
     repo_config.registry = str(Path(tmp_dir) / "registry.db")
     repo_config.online_store.path = str(Path(tmp_dir) / "online_store.db")
     return repo_config

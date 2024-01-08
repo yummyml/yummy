@@ -18,10 +18,10 @@ from feast.infra.offline_stores.offline_store import (
 from feast.infra.offline_stores.offline_utils import (
     DEFAULT_ENTITY_DF_EVENT_TIMESTAMP_COL,
 )
-from feast.infra.provider import (
+from feast.utils import (
     _get_requested_feature_views_to_features_dict,
 )
-from feast.registry import Registry
+from feast.infra.registry.base_registry import BaseRegistry
 from feast.repo_config import FeastConfigBaseModel, RepoConfig
 from feast.saved_dataset import SavedDatasetStorage
 from feast.usage import log_exceptions_and_usage
@@ -452,7 +452,7 @@ class YummyOfflineStore(OfflineStore):
         feature_views: List[FeatureView],
         feature_refs: List[str],
         entity_df: Union[pd.DataFrame, str],
-        registry: Registry,
+        registry: BaseRegistry,
         project: str,
         full_feature_names: bool = False,
     ) -> RetrievalJob:

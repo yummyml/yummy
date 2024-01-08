@@ -19,7 +19,6 @@ class YummyFileDataSource(YummyDataSource):
     def __init__(
         self,
         *,
-        event_timestamp_column: Optional[str] = None,
         created_timestamp_column: Optional[str] = None,
         field_mapping: Optional[Dict[str, str]] = None,
         date_partition_column: Optional[str] = None,
@@ -32,7 +31,6 @@ class YummyFileDataSource(YummyDataSource):
         s3_endpoint_override: Optional[str] = None,
     ):
         super().__init__(
-            event_timestamp_column=event_timestamp_column,
             created_timestamp_column=created_timestamp_column,
             field_mapping=field_mapping,
             date_partition_column=date_partition_column,
@@ -107,7 +105,6 @@ class ParquetSource(YummyFileDataSource):
     def __init__(
         self,
         *,
-        event_timestamp_column: Optional[str] = None,
         created_timestamp_column: Optional[str] = None,
         field_mapping: Optional[Dict[str, str]] = None,
         date_partition_column: Optional[str] = None,
@@ -120,7 +117,6 @@ class ParquetSource(YummyFileDataSource):
         s3_endpoint_override: Optional[str] = None,
     ):
         super().__init__(
-            event_timestamp_column=event_timestamp_column,
             created_timestamp_column=created_timestamp_column,
             field_mapping=field_mapping,
             date_partition_column=date_partition_column,
@@ -170,7 +166,6 @@ class CsvSource(YummyFileDataSource):
     def __init__(
         self,
         *,
-        event_timestamp_column: Optional[str] = None,
         created_timestamp_column: Optional[str] = None,
         field_mapping: Optional[Dict[str, str]] = None,
         date_partition_column: Optional[str] = None,
@@ -185,7 +180,6 @@ class CsvSource(YummyFileDataSource):
         header: Optional[bool] = True,
     ):
         super().__init__(
-            event_timestamp_column=event_timestamp_column,
             created_timestamp_column=created_timestamp_column,
             field_mapping=field_mapping,
             date_partition_column=date_partition_column,
@@ -357,8 +351,8 @@ class CsvSourceReader(ParquetSourceReader):
             return dd.read_csv(
                 data_source.path,
                 storage_options=self._storage_options(data_source),
-                parse_dates=True,
+                try_parse_dates=True,
                 has_header=data_source.header,
-                sep=data_source.delimiter,
+                separator=data_source.delimiter,
             )
 

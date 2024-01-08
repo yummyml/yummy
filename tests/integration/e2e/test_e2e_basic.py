@@ -17,9 +17,13 @@ def e2e_basic(feature_store: FeatureStore, tmp_dir: TemporaryDirectory, backend:
     This will test all backends with basic data stores (parquet and csv)
     """
     feature_store.config.offline_store.backend = backend
-
+    tmp_dir = str(tmp_dir)
     csv_fv, csv_fv_name = csv(tmp_dir)
     parquet_fv, parquet_fv_name = parquet(tmp_dir)
+
+
+    print("PATH!!!:"+tmp_dir)
+    print(csv_fv)
 
     entity = Generator.entity()
     feature_store.apply([entity, csv_fv, parquet_fv])
