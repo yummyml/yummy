@@ -36,6 +36,11 @@ jobs:
         run: pip install -e .[dev,ray,dask,feast]
       - name: Test Python - Polars
         run: python3 ./tests/run.py --polars
+      - name: Test Python - Ray
+        run: python3 ./tests/run.py --ray
+      - name: Test Python - Dask
+        run: python3 ./tests/run.py --dask
+
 
 
 
