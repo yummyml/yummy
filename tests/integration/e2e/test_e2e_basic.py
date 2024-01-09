@@ -21,13 +21,8 @@ def e2e_basic(feature_store: FeatureStore, tmp_dir: TemporaryDirectory, backend:
     csv_fv, csv_fv_name = csv(tmp_dir)
     parquet_fv, parquet_fv_name = parquet(tmp_dir)
 
-
-    print("PATH!!!:"+tmp_dir)
-    print(csv_fv)
-
     entity = Generator.entity()
     feature_store.apply([entity, csv_fv, parquet_fv])
-
 
     feature_vector = feature_store.get_historical_features(
         features=[
