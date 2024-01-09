@@ -1,0 +1,41 @@
+name: build
+
+on:
+  push:
+    branches: [master, "python-v*"]
+  pull_request:
+    branches: [master, "python-v*"]
+
+jobs:
+  unit-test-python:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.9" ]
+        os: [ ubuntu-latest ]
+    env:
+      OS: ${{ matrix.os }}
+      PYTHON: ${{ matrix.python-version }}
+      FEAST_USAGE: False 
+      IS_TEST: True
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Python
+        id: setup-python
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: x64
+      - name: Upgrade pip version
+        run: |
+          pip install --upgrade "pip>=21.3.1,<23.2"
+      - name: Install pip-tools
+        run: pip install pip-tools
+      - name: Install dependencies
+        run: pip install -e .[dev,ray,dask]
+      - name: Test Python - Polars
+        run: python3 ./tests/run.py --polars
+
+
+
