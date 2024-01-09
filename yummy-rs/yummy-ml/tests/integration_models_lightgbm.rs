@@ -1,7 +1,7 @@
-use yummy_ml::config::MLConfig;
 use std::error::Error;
-use yummy_ml::models::lightgbm_model::LightgbmModel;
 use yummy_core::common::EntityValue;
+use yummy_ml::config::MLConfig;
+use yummy_ml::models::lightgbm_model::LightgbmModel;
 use yummy_ml::models::MLModel;
 
 #[tokio::test]

@@ -1,9 +1,9 @@
-use yummy_delta::config::ColumnSchema;
-use yummy_delta::delta::{DeltaCommands, DeltaManager};
-use yummy_delta::models::{CreateRequest, SchemaPrimitiveType};
 use deltalake::arrow::datatypes::DataType;
 use std::error::Error;
 use std::fs;
+use yummy_delta::config::ColumnSchema;
+use yummy_delta::delta::{DeltaCommands, DeltaManager};
+use yummy_delta::models::{CreateRequest, SchemaPrimitiveType};
 
 pub async fn create_manager() -> Result<DeltaManager, Box<dyn Error>> {
     let path = "../tests/delta/config.yaml".to_string();
@@ -53,4 +53,3 @@ pub async fn drop_delta(table_name: &String) -> Result<(), Box<dyn Error>> {
     fs::remove_dir_all(format!("/tmp/delta-test-1/{table_name}"))?;
     Ok(())
 }
-

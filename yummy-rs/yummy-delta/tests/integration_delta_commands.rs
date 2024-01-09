@@ -1,11 +1,11 @@
 mod common;
 use common::delta::{create_delta, create_manager, drop_delta};
-use yummy_delta::delta::{DeltaCommands, DeltaWrite};
-use yummy_delta::models::{WriteRequest, OptimizeRequest, VacuumRequest};
 use deltalake::action::SaveMode;
 use std::collections::HashMap;
 use std::error::Error;
 use yummy_core::common::EntityValue;
+use yummy_delta::delta::{DeltaCommands, DeltaWrite};
+use yummy_delta::models::{OptimizeRequest, VacuumRequest, WriteRequest};
 
 #[tokio::test]
 async fn test_delta_create() -> Result<(), Box<dyn Error>> {

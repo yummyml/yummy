@@ -22,8 +22,8 @@ pub struct FeaturesError {
 
 impl error::ResponseError for FeaturesError {
     fn status_code(&self) -> StatusCode {
-        let status_code: StatusCode = StatusCode::from_u16(self.status_code)
-            .unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
+        let status_code: StatusCode =
+            StatusCode::from_u16(self.status_code).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
         status_code
     }
 }

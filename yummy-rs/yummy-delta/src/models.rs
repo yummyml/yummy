@@ -175,9 +175,8 @@ pub struct UdfSpec {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum UdfConfig {
-    Dummy
+    Dummy,
 }
-
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy)]
 #[serde(tag = "type", rename_all = "camelCase")]
