@@ -283,7 +283,7 @@ class DaskRetrievalJob(RetrievalJob):
         return df
 
     @log_exceptions_and_usage
-    def _to_arrow_internal(self):
+    def _to_arrow_internal(self, timeout: Optional[int] = None):
         # Only execute the evaluation function to build the final historical retrieval dataframe at the last moment.
         df = self.evaluation_function().compute()
         return pyarrow.Table.from_pandas(df)

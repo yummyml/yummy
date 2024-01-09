@@ -354,5 +354,4 @@ class CsvSourceReader(ParquetSourceReader):
                 try_parse_dates=True,
                 has_header=data_source.header,
                 separator=data_source.delimiter,
-            )
-
+            ).with_columns(dd.col(timestamp_field).cast(dd.Datetime("ns", "UTC")))

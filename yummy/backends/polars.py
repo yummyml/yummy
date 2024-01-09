@@ -179,7 +179,7 @@ class PolarsBackend(Backend):
         column_name: str,
         column_value: str,
     ) -> Union[pd.DataFrame, Any]:
-        return df_to_join.with_column(pl.lit(column_value).alias(column_name))
+        return df_to_join.with_columns(pl.lit(column_value).alias(column_name))
 
     def select(
         self,
@@ -222,7 +222,7 @@ class PolarsRetrievalJob(RetrievalJob):
         return df
 
     @log_exceptions_and_usage
-    def _to_arrow_internal(self):
+    def _to_arrow_internal(self, timeout: Optional[int] = None):
         # Only execute the evaluation function to build the final historical retrieval dataframe at the last moment.
         return self.evaluation_function().to_arrow()
 
