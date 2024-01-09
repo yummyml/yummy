@@ -33,7 +33,7 @@ jobs:
       - name: Install pip-tools
         run: pip install pip-tools
       - name: Install dependencies
-        run: pip install -e .[dev,ray,dask]
+        run: pip install -e .[dev,ray,dask,feast]
       - name: Test Python - Polars
         run: python3 ./tests/run.py --polars
 
