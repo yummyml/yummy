@@ -1,6 +1,5 @@
 use crate::types::{EntityKey, Value};
 use byteorder::{ByteOrder, LittleEndian, WriteBytesExt};
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::error::Error;
 use yummy_core::common::EntityValue;
@@ -60,7 +59,7 @@ pub fn serialize_key(
 }
 
 pub fn serialize_fields(fields: Vec<String>) -> Vec<Vec<u8>> {
-    fields.into_iter().map(|x| mmh3(format!("{x}"))).collect()
+    fields.into_iter().map(mmh3).collect()
 }
 
 pub fn serialize_entity_keys(
@@ -75,19 +74,22 @@ pub fn serialize_entity_keys(
         .map(|i| {
             let entity_values = join_keys
                 .to_owned()
-                .into_iter()
+                .iter()
+                .cloned()
                 .map(|k| {
                     let sf_v = protobuf::SpecialFields::new();
                     let ev = match &entities[&k][i] {
-                        EntityValue::INT64(v) => Ok(Value::value::Val::Int64Val(v.clone())),
-                        EntityValue::INT32(v) => Ok(Value::value::Val::Int32Val(v.clone())),
-                        EntityValue::INT16(v) => Ok(Value::value::Val::Int32Val(v.clone() as i32)),
-                        EntityValue::INT8(v) => Ok(Value::value::Val::Int32Val(v.clone() as i32)),
-                        EntityValue::FLOAT32(v) => Ok(Value::value::Val::FloatVal(v.clone())),
-                        EntityValue::FLOAT64(v) => Ok(Value::value::Val::DoubleVal(v.clone())),
-                        EntityValue::BOOL(v) => Ok(Value::value::Val::BoolVal(v.clone())),
+                        EntityValue::INT64(v) => Ok(Value::value::Val::Int64Val(*v)),
+                        EntityValue::INT32(v) => Ok(Value::value::Val::Int32Val(*v)),
+                        EntityValue::INT16(v) => Ok(Value::value::Val::Int32Val(*v as i32)),
+                        EntityValue::INT8(v) => Ok(Value::value::Val::Int32Val(*v as i32)),
+                        EntityValue::FLOAT32(v) => Ok(Value::value::Val::FloatVal(*v)),
+                        EntityValue::FLOAT64(v) => Ok(Value::value::Val::DoubleVal(*v)),
+                        EntityValue::BOOL(v) => Ok(Value::value::Val::BoolVal(*v)),
                         EntityValue::STRING(v) => Ok(Value::value::Val::StringVal(v.clone())),
                         EntityValue::BYTES(v) => Ok(Value::value::Val::BytesVal(v.clone())),
+                        EntityValue::FLOAT64ARRAY(_) => todo!(),
+                        EntityValue::FLOAT32ARRAY(_) => todo!(),
                         EntityValue::None => Err(Box::new(EncodingError::WrongEntityValue)),
                     };
 
@@ -136,34 +138,39 @@ pub fn parse_value(v: Value::Value) -> EntityValue {
     EntityValue::None
 }
 
-#[test]
-fn test_murmur3() {
-    //let sf = protobuf::SpecialFields::new();
-    //let ev = Value::value::Val::Int32Val(186);
-    //let val = Value::Value {
-    //    val: Some(ev),
-    //    special_fields: sf.clone(),
-    //};
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-    //let val = ValueProto(int32_val=186);
-    //let kp = EntityKey::EntityKey {
-    //    join_keys: vec!["entity_id".to_string()],
-    //    entity_values: vec![val],
-    //    special_fields: sf.clone(),
-    //};
+    #[test]
+    fn test_murmur3() {
+        //let sf = protobuf::SpecialFields::new();
+        //let ev = Value::value::Val::Int32Val(186);
+        //let val = Value::Value {
+        //    val: Some(ev),
+        //    special_fields: sf.clone(),
+        //};
 
-    //let bb = Value::value_type::Enum::STRING.to_string().as_bytes();
-    //let bb = "2".as_bytes();
-    //let kpp = LittleEndian::read_u32(&bb).to_be_bytes();
-    //println!("{:?}", &kpp);
-    //assert_eq!(&kpp, b"\x02\x00\x00\x00");
-    //assert_eq!(kpp, b"\x02\x00\x00\x00entity_id\x03\x00\x00\x00\x04\x00\x00\x00\xba\x00\x00\x00");
+        //let val = ValueProto(int32_val=186);
+        //let kp = EntityKey::EntityKey {
+        //    join_keys: vec!["entity_id".to_string()],
+        //    entity_values: vec![val],
+        //    special_fields: sf.clone(),
+        //};
 
-    //let kp = EntityKey(join_keys=vec!["entity_id"], entity_values=vec![ev]);
+        //let bb = Value::value_type::Enum::STRING.to_string().as_bytes();
+        //let bb = "2".as_bytes();
+        //let kpp = LittleEndian::read_u32(&bb).to_be_bytes();
+        //println!("{:?}", &kpp);
+        //assert_eq!(&kpp, b"\x02\x00\x00\x00");
+        //assert_eq!(kpp, b"\x02\x00\x00\x00entity_id\x03\x00\x00\x00\x04\x00\x00\x00\xba\x00\x00\x00");
 
-    //let key = "test";
-    //let hash = murmur3::hash32(key).to_be_bytes();
-    //println!("{hash:?}");
-    //assert_eq!(hash, [186, 107, 210, 19]);
-    //let val = LittleEndian::read_u32(&hash).to_be_bytes().to_vec();
+        //let kp = EntityKey(join_keys=vec!["entity_id"], entity_values=vec![ev]);
+
+        //let key = "test";
+        //let hash = murmur3::hash32(key).to_be_bytes();
+        //println!("{hash:?}");
+        //assert_eq!(hash, [186, 107, 210, 19]);
+        //let val = LittleEndian::read_u32(&hash).to_be_bytes().to_vec();
+    }
 }

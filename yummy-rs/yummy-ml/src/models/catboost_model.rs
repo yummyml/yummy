@@ -140,63 +140,68 @@ impl MLModel for CatboostModel {
     }
 }
 
-#[test]
-fn test_feature_names() -> Result<(), Box<dyn Error>> {
-    let path = "../tests/mlflow/catboost_model/my_model".to_string();
-    //let path = "../tests/mlflow/catboost_model/iris_my_model".to_string();
-    let config = MLConfig::new(&path)?;
-    println!("{config:?}");
-    let _catboost_model = CatboostModel::new(config)?;
-    Ok(())
-}
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-#[test]
-fn load_model_and_predict() -> Result<(), Box<dyn Error>> {
-    let path = "../tests/mlflow/catboost_model/my_model".to_string();
-    //let path = "../tests/mlflow/catboost_model/iris_my_model".to_string();
-    let config = MLConfig::new(&path)?;
-    println!("{config:?}");
-    let catboost_model = CatboostModel::new(config)?;
+    #[tokio::test]
+    async fn test_feature_names() -> Result<(), Box<dyn Error>> {
+        let path = "../tests/mlflow/catboost_model/my_model".to_string();
+        //let path = "../tests/mlflow/catboost_model/iris_my_model".to_string();
+        let config = MLConfig::new(&path).await?;
+        println!("{config:?}");
+        let _catboost_model = CatboostModel::new(config)?;
+        Ok(())
+    }
 
-    let mut columns = Vec::new();
-    let mut data = Vec::new();
+    #[tokio::test]
+    async fn load_model_and_predict() -> Result<(), Box<dyn Error>> {
+        let path = "../tests/mlflow/catboost_model/my_model".to_string();
+        //let path = "../tests/mlflow/catboost_model/iris_my_model".to_string();
+        let config = MLConfig::new(&path).await?;
+        println!("{config:?}");
+        let catboost_model = CatboostModel::new(config)?;
 
-    columns.push("age".to_string());
-    columns.push("workclass".to_string());
-    columns.push("fnlwgt".to_string());
-    columns.push("education".to_string());
-    columns.push("education-num".to_string());
-    columns.push("marital-status".to_string());
-    columns.push("occupation".to_string());
-    columns.push("relationship".to_string());
-    columns.push("race".to_string());
-    columns.push("sex".to_string());
-    columns.push("capital-gain".to_string());
-    columns.push("capital-loss".to_string());
-    columns.push("hours-per-week".to_string());
-    columns.push("native-country".to_string());
+        let mut columns = Vec::new();
+        let mut data = Vec::new();
 
-    let mut d = Vec::new();
-    d.push(EntityValue::FLOAT32(25.));
-    d.push(EntityValue::STRING("Private".to_string()));
-    d.push(EntityValue::FLOAT32(226_802.));
-    d.push(EntityValue::STRING("11th".to_string()));
-    d.push(EntityValue::FLOAT32(7.));
-    d.push(EntityValue::STRING("Never-married".to_string()));
-    d.push(EntityValue::STRING("Machine-op-inspct".to_string()));
-    d.push(EntityValue::STRING("Own-child".to_string()));
-    d.push(EntityValue::STRING("Black".to_string()));
-    d.push(EntityValue::STRING("Male".to_string()));
-    d.push(EntityValue::FLOAT32(0.));
-    d.push(EntityValue::FLOAT32(0.));
-    d.push(EntityValue::FLOAT32(40.));
-    d.push(EntityValue::STRING("United-States".to_string()));
+        columns.push("age".to_string());
+        columns.push("workclass".to_string());
+        columns.push("fnlwgt".to_string());
+        columns.push("education".to_string());
+        columns.push("education-num".to_string());
+        columns.push("marital-status".to_string());
+        columns.push("occupation".to_string());
+        columns.push("relationship".to_string());
+        columns.push("race".to_string());
+        columns.push("sex".to_string());
+        columns.push("capital-gain".to_string());
+        columns.push("capital-loss".to_string());
+        columns.push("hours-per-week".to_string());
+        columns.push("native-country".to_string());
 
-    data.push(d);
-    println!("{data:?}");
+        let mut d = Vec::new();
+        d.push(EntityValue::FLOAT32(25.));
+        d.push(EntityValue::STRING("Private".to_string()));
+        d.push(EntityValue::FLOAT32(226_802.));
+        d.push(EntityValue::STRING("11th".to_string()));
+        d.push(EntityValue::FLOAT32(7.));
+        d.push(EntityValue::STRING("Never-married".to_string()));
+        d.push(EntityValue::STRING("Machine-op-inspct".to_string()));
+        d.push(EntityValue::STRING("Own-child".to_string()));
+        d.push(EntityValue::STRING("Black".to_string()));
+        d.push(EntityValue::STRING("Male".to_string()));
+        d.push(EntityValue::FLOAT32(0.));
+        d.push(EntityValue::FLOAT32(0.));
+        d.push(EntityValue::FLOAT32(40.));
+        d.push(EntityValue::STRING("United-States".to_string()));
 
-    let predictions = catboost_model.predict(columns, data)?;
+        data.push(d);
+        println!("{data:?}");
 
-    println!("{predictions:?}");
-    Ok(())
+        let predictions = catboost_model.predict(columns, data)?;
+
+        println!("{predictions:?}");
+        Ok(())
+    }
 }

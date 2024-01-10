@@ -6,7 +6,7 @@ build-backend = "maturin"
 name = "yummy-delta"
 version = "0.0.10"
 requires-python = ">=3.7"
-description = "Yummy mlflow rust extensions"
+description = "Yummy delta"
 readme = "README.md"
 license = {file = "LICENSE"}
 classifiers = [

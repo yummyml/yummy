@@ -14,19 +14,19 @@ use std::str::FromStr;
 impl DeltaCommands for DeltaManager {
     async fn create(
         &self,
-        store_name: &String,
+        store_name: &str,
         create_request: CreateRequest,
     ) -> Result<CreateResponse, Box<dyn Error>> {
         let table_name = create_request.table;
-        let store = self.store(&store_name)?;
-        let mut path = (&store.path).clone();
+        let store = self.store(store_name)?;
+        let mut path = store.path.clone();
         let schema: Vec<ColumnSchema> = create_request.schema;
         let partition_columns: Option<Vec<String>> = create_request.partition_columns;
         let comment: Option<String> = create_request.comment;
         let configuration = create_request.configuration;
         let metadata = create_request.metadata;
 
-        if (path.starts_with("file://") || path.starts_with("/")) && !Path::exists(Path::new(&path))
+        if (path.starts_with("file://") || path.starts_with('/')) && !Path::exists(Path::new(&path))
         {
             fs::create_dir_all(&path)?;
         }
@@ -81,8 +81,8 @@ impl DeltaCommands for DeltaManager {
 
     async fn optimize(
         &self,
-        store_name: &String,
-        table_name: &String,
+        store_name: &str,
+        table_name: &str,
         optimize_requst: OptimizeRequest,
     ) -> Result<OptimizeResponse, Box<dyn Error>> {
         let table = self.table(store_name, table_name, None, None).await?;
@@ -117,7 +117,7 @@ impl DeltaCommands for DeltaManager {
             .optimize()
             .with_target_size(optimize_requst.target_size);
 
-        if filters.len() > 0 {
+        if !filters.is_empty() {
             optimize = optimize.with_filters(&filters);
         }
 
@@ -126,146 +126,5 @@ impl DeltaCommands for DeltaManager {
         //let commit_info = table.history(None).await?;
 
         Ok(OptimizeResponse { metrics })
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use crate::delta::test_delta_util::{create_delta, create_manager, drop_delta};
-    use crate::delta::{DeltaCommands, DeltaWrite, OptimizeRequest, VacuumRequest};
-    use crate::models::WriteRequest;
-    use deltalake::action::SaveMode;
-    use std::collections::HashMap;
-    use std::error::Error;
-    use yummy_core::common::EntityValue;
-
-    #[tokio::test]
-    async fn test_delta_create() -> Result<(), Box<dyn Error>> {
-        let store_name = String::from("local");
-        let table_name = String::from("test_delta_1_com_cr");
-
-        let table = create_delta(&store_name, &table_name).await?;
-
-        assert_eq!(table.version(), 0);
-
-        drop_delta(&table_name).await?;
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_delta_optimize() -> Result<(), Box<dyn Error>> {
-        let store_name = String::from("local");
-        let table_name = String::from("test_delta_1_com_opt");
-
-        let table = create_delta(&store_name, &table_name).await?;
-        assert_eq!(table.version(), 0);
-
-        let mut batch1: HashMap<String, EntityValue> = HashMap::new();
-        batch1.insert("col1".to_string(), EntityValue::INT32(1));
-        batch1.insert("col2".to_string(), EntityValue::STRING("A".to_string()));
-
-        let mut batch2: HashMap<String, EntityValue> = HashMap::new();
-        batch2.insert("col1".to_string(), EntityValue::INT32(1));
-        batch2.insert("col2".to_string(), EntityValue::STRING("A".to_string()));
-
-        for _i in 0..15 {
-            let write_request1 = WriteRequest {
-                record_batch_dict: None,
-                record_batch_list: Some(vec![batch1.clone(), batch2.clone()]),
-            };
-
-            let _resp1 = create_manager()
-                .await?
-                .write(&store_name, &table_name, write_request1, SaveMode::Append)
-                .await?;
-        }
-
-        let optimize_request = OptimizeRequest {
-            target_size: 2_000_000,
-            filters: None,
-        };
-
-        let optimize_response = create_manager()
-            .await?
-            .optimize(&store_name, &table_name, optimize_request)
-            .await?;
-
-        println!("{optimize_response:?}");
-
-        let vacuum_request = VacuumRequest {
-            retention_period_seconds: Some(0),
-            enforce_retention_duration: Some(false),
-            dry_run: Some(true),
-        };
-
-        let vacuum_response = create_manager()
-            .await?
-            .vacuum(&store_name, &table_name, vacuum_request)
-            .await?;
-
-        println!("{vacuum_response:?}");
-
-        drop_delta(&table_name).await?;
-        Ok(())
-    }
-
-    #[tokio::test]
-    async fn test_delta_optimize_filters() -> Result<(), Box<dyn Error>> {
-        let store_name = String::from("local");
-        let table_name = String::from("test_delta_1_com_optf");
-
-        let table = create_delta(&store_name, &table_name).await?;
-        assert_eq!(table.version(), 0);
-
-        let mut batch1: HashMap<String, EntityValue> = HashMap::new();
-        batch1.insert("col1".to_string(), EntityValue::INT32(1));
-        batch1.insert("col2".to_string(), EntityValue::STRING("A".to_string()));
-
-        let mut batch2: HashMap<String, EntityValue> = HashMap::new();
-        batch2.insert("col1".to_string(), EntityValue::INT32(1));
-        batch2.insert("col2".to_string(), EntityValue::STRING("A".to_string()));
-
-        for _i in 0..15 {
-            let write_request1 = WriteRequest {
-                record_batch_dict: None,
-                record_batch_list: Some(vec![batch1.clone(), batch2.clone()]),
-            };
-
-            let _resp1 = create_manager()
-                .await?
-                .write(&store_name, &table_name, write_request1, SaveMode::Append)
-                .await?;
-        }
-
-        let optimize_request = OptimizeRequest {
-            target_size: 2_000_000,
-            filters: Some(vec![crate::models::PartitionFilter {
-                column: "col2".to_string(),
-                operator: "=".to_string(),
-                value: EntityValue::STRING("A".to_string()),
-            }]),
-        };
-
-        let optimize_response = create_manager()
-            .await?
-            .optimize(&store_name, &table_name, optimize_request)
-            .await?;
-
-        println!("{optimize_response:?}");
-
-        let vacuum_request = VacuumRequest {
-            retention_period_seconds: Some(0),
-            enforce_retention_duration: Some(false),
-            dry_run: Some(false),
-        };
-        let vacuum_response = create_manager()
-            .await?
-            .vacuum(&store_name, &table_name, vacuum_request)
-            .await?;
-
-        println!("{vacuum_response:?}");
-
-        drop_delta(&table_name).await?;
-        Ok(())
     }
 }

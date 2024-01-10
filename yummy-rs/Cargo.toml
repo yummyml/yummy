@@ -6,8 +6,8 @@ members = [
     "yummy-delta-py",
     "yummy-features",
     "yummy-features-py",
-    "yummy-mlflow",
-    "yummy-mlflow-py",
+    "yummy-ml",
+    "yummy-ml-py",
 ]
 
 [workspace.package]

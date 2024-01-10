@@ -63,7 +63,7 @@ pub async fn details(
         .details(
             &store_name,
             &table_name,
-            details_query.table_version.clone(),
+            details_query.table_version,
             details_query.table_date.clone(),
         )
         .await?;
@@ -81,7 +81,7 @@ pub async fn query(
             &store_name,
             &table_name,
             &query_request.query,
-            query_request.table_version.clone(),
+            query_request.table_version,
             query_request.table_date.clone(),
         )
         .await?;

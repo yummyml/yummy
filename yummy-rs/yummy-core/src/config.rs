@@ -1,7 +1,16 @@
 use crate::common::{ReplaceTokens, Result};
 use serde::de::DeserializeOwned;
+use serde::Deserialize;
 use std::fs;
 use url::Url;
+
+#[derive(Deserialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct Metadata {
+    pub name: String,
+    pub store: Option<String>,
+    pub table: Option<String>,
+}
 
 pub async fn read_config_str(path: &String, replace_env: Option<bool>) -> Result<String> {
     let configuration_str = if Url::parse(path).is_ok() {

@@ -63,3 +63,5 @@ test-iceberg:
 				   --conf "spark.driver.memory=5g" \
 				   --conf "spark.executor.memory=5g" \
 				   ./tests/run.py --iceberg
+
+#source /home/jovyan/yummy/.env/bin/activate

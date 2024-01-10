@@ -1,0 +1,87 @@
+use serde::{Deserialize, Serialize};
+use std::error::Error;
+use std::fs;
+use std::path::PathBuf;
+use yummy_core::config::read_config_str;
+
+#[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
+pub struct MLConfig {
+    pub base_path: Option<String>,
+    pub artifact_path: String,
+    pub mlflow_version: String,
+    pub model_uuid: String,
+    pub run_id: String,
+    pub utc_time_created: String,
+    pub flavors: Flavours,
+}
+
+#[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
+pub struct Flavours {
+    pub catboost: Option<CatboostConfig>,
+    pub lightgbm: Option<LightgbmConfig>,
+}
+
+#[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
+pub struct CatboostConfig {
+    pub catboost_version: String,
+    pub data: String,
+    pub model_type: String,
+    pub save_format: String,
+}
+
+#[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
+pub struct LightgbmConfig {
+    pub data: String,
+    pub lgb_version: String,
+    pub model_class: String,
+}
+
+impl MLConfig {
+    pub async fn new(path: &String) -> Result<MLConfig, Box<dyn Error>> {
+        let config = if PathBuf::from(path).is_dir() {
+            let config_path = format!("{path}/MLmodel");
+            let s = fs::read_to_string(config_path)?;
+            let mut config: MLConfig = serde_yaml::from_str(&s)?;
+            config.base_path = Some(path.to_string());
+            config
+        } else {
+            let s = read_config_str(path, Some(true)).await?;
+            let mut config: MLConfig = serde_yaml::from_str(&s)?;
+            let path_vec = path.split('/').collect::<Vec<&str>>();
+            config.base_path = Some(path_vec[..path_vec.len() - 1].join("/"));
+            config
+        };
+
+        Ok(config)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn parse_config() -> Result<(), Box<dyn Error>> {
+        let path = "../tests/mlflow/catboost_model/my_model".to_string();
+        let config = MLConfig::new(&path).await?;
+        println!("{config:?}");
+
+        match config.flavors.catboost {
+            Some(CatboostConfig {
+                catboost_version,
+                data,
+                model_type,
+                save_format,
+            }) => {
+                assert_eq!(catboost_version, "1.1");
+                assert_eq!(data, "model.cb");
+                assert_eq!(model_type, "CatBoostClassifier");
+                assert_eq!(save_format, "cbm");
+            }
+            _ => panic!("wrong job destination"),
+        }
+        assert_eq!(config.base_path.unwrap(), path);
+        assert_eq!(config.artifact_path, "my_model");
+        Ok(())
+    }
+}

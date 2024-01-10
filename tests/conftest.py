@@ -10,6 +10,8 @@ from feast.driver_test_data import create_driver_hourly_stats_df
 from feast.repo_config import load_repo_config, RepoConfig
 from filelock import FileLock
 from datetime import datetime, timedelta
+from feast.infra.online_stores.sqlite import SqliteOnlineStoreConfig
+from yummy import YummyOfflineStore
 #from example_feature_repo.example import generate_example_data, example_data_exists
 
 
@@ -42,15 +44,23 @@ def repo_config(tmp_dir: TemporaryDirectory, example_repo_path: str) -> RepoConf
     If we don't do this, all tests will run agains the same registry/online store
     instances, which is not possible with parallel test execution.
     """
-    repo_config = load_repo_config(repo_path=Path(example_repo_path))
+    repo_config = load_repo_config(repo_path=Path(example_repo_path), fs_yaml_file=Path(example_repo_path+"/feature_store.yaml"))
     repo_config.registry = str(Path(tmp_dir) / "registry.db")
     repo_config.online_store.path = str(Path(tmp_dir) / "online_store.db")
     return repo_config
 
 @pytest.fixture(scope="function")
-def feature_store(repo_config: RepoConfig, example_repo_path: str) -> FeatureStore:
+def feature_store(tmp_dir: TemporaryDirectory, repo_config: RepoConfig, example_repo_path: str) -> FeatureStore:
     """Fixture that returns a feature store instance that can be used in parallel tests"""
-    feature_store = FeatureStore(config=repo_config)
-    feature_store.repo_path = str(example_repo_path)
+    feature_store = FeatureStore(
+        config=RepoConfig(
+            registry=str(Path(tmp_dir) / "registry.db"),
+            project="default",
+            provider="local",
+            offline_store=YummyOfflineStore(),
+            online_store=SqliteOnlineStoreConfig(path=str(Path(tmp_dir) / "online_store.db")),
+            entity_key_serialization_version=2,
+        )
+    )
     return feature_store
 

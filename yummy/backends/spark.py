@@ -17,8 +17,6 @@ from feast.infra.offline_stores.offline_store import (
 from feast.infra.offline_stores.offline_utils import (
     DEFAULT_ENTITY_DF_EVENT_TIMESTAMP_COL,
 )
-from feast.infra.provider import _get_requested_feature_views_to_features_dict
-from feast.registry import Registry
 from feast.repo_config import FeastConfigBaseModel, RepoConfig
 from feast.saved_dataset import SavedDatasetStorage
 from feast.usage import log_exceptions_and_usage
@@ -287,13 +285,13 @@ class SparkRetrievalJob(RetrievalJob):
         return self._on_demand_feature_views
 
     @log_exceptions_and_usage
-    def _to_df_internal(self) -> pd.DataFrame:
+    def _to_df_internal(self, timeout: Optional[int] = None) -> pd.DataFrame:
         # Only execute the evaluation function to build the final historical retrieval dataframe at the last moment.
         df = self.evaluation_function().toPandas()
         return df
 
     @log_exceptions_and_usage
-    def _to_arrow_internal(self):
+    def _to_arrow_internal(self, timeout: Optional[int] = None):
         # Only execute the evaluation function to build the final historical retrieval dataframe at the last moment.
         df = self.evaluation_function().toPandas()
         return pyarrow.Table.from_pandas(df)

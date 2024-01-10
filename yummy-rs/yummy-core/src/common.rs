@@ -47,6 +47,8 @@ pub enum EntityValue {
     BOOL(bool),
     STRING(String),
     BYTES(Vec<u8>),
+    FLOAT32ARRAY(Vec<f32>),
+    FLOAT64ARRAY(Vec<f64>),
 }
 
 impl TryFrom<&EntityValue> for String {
@@ -106,21 +108,21 @@ enum ReplaceTokensError {
 pub struct ReplaceTokens {}
 
 impl ReplaceTokens {
-    pub fn replace(template: &String) -> Result<String> {
-        let mut text = template.clone();
+    pub fn replace(template: &str) -> Result<String> {
+        let mut text = template.to_owned();
         let tokens = Self::find_tokens(template)?;
         for token in tokens {
             let from = format!("${{{}}}", &token);
-            let to = match env::var(&token) {
+            let to = match env::var(token) {
                 Ok(v) => v,
-                Err(error) => return Err(err!(ReplaceTokensError::NoEnv(token.to_string()))),
+                Err(_) => return Err(err!(ReplaceTokensError::NoEnv(token.to_string()))),
             };
             text = text.replace(&from, &to);
         }
         Ok(text)
     }
 
-    fn find_tokens(text: &String) -> Result<Vec<&str>> {
+    fn find_tokens(text: &str) -> Result<Vec<&str>> {
         let re = Regex::new(r"\$\{(?P<token>[a-zA-Z0-9_\-]+)\}").unwrap();
         let tokens: Vec<&str> = re
             .captures_iter(text)

@@ -1,4 +1,4 @@
-# Yummy-[MLflow](https://www.mlflow.org/) rust addons
+# Yummy-ML - [MLflow](https://www.mlflow.org/) rust addons
 
 This repository contains Yummy mlflow addon written in Rust.
 
@@ -11,16 +11,16 @@ The MLflow rust wrapper currently supports models:
 The implementation currently supports MLflow models kept on local path.
 To run the model run:
 
-`yummy_mlflow.model_serve(MODEL_PATH, HOST, POST, LOG_LEVEL)`
+`yummy_ml.model_serve(MODEL_PATH, HOST, POST, LOG_LEVEL)`
 
 example:
 ```python
-import yummy_mlflow
+import yummy_ml
 
-yummy_mlflow.model_serve(model_path, '0.0.0.0', 8080, 'error')
+yummy_ml.model_serve(model_path, '0.0.0.0', 8080, 'error')
 ```
 
-The `yummy-mlflow` will expose HTTP server. 
+The `yummy-ml` will expose HTTP server. 
 The request response is compatible with MLflow model serving API.
 
 Example:

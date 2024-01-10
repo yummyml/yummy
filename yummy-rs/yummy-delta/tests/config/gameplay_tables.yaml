@@ -1,0 +1,243 @@
+kind: config
+metadata: 
+  name: myconfig
+spec:
+  stores:
+    - name: local
+      path: "./tests/data/"
+    - name: gameplay_bronze
+      path: "/tmp/integtation_apply_gameplay/bronze"
+---
+kind: table
+metadata: 
+  name: game_purchase
+  store: gameplay_bronze
+spec:
+  table: "game_purchase"
+  schema:
+    - name: purchase_id
+      type: long
+      nullable: true
+    - name: player_id
+      type: long
+      nullable: true
+    - name: game_id
+      type: long
+      nullable: true
+    - name: item_id
+      type: string
+      nullable: true
+    - name: item_name
+      type: string
+      nullable: true
+    - name: item_category
+      type: string
+      nullable: true
+    - name: purchase_date
+      type: date
+      nullable: true
+    - name: item_price
+      type: double
+      nullable: true
+  partitionColumns: ["purchase_date"]
+  comment: "Games purchases"
+---
+kind: table
+metadata: 
+  name: game_rating
+  store: gameplay_bronze
+spec:
+  table: "game_rating"
+  schema:
+    - name: rating_id
+      type: long
+      nullable: true
+    - name: player_id
+      type: long
+      nullable: true
+    - name: game_id
+      type: long
+      nullable: true
+    - name: rating_score
+      type: long
+      nullable: true
+    - name: title
+      type: string
+      nullable: true
+    - name: review_text
+      type: string
+      nullable: true
+    - name: playtime
+      type: double
+      nullable: true
+    - name: device
+      type: string
+      nullable: true
+  partitionColumns: ["rating_date"]
+  comment: "Games ratings"
+---
+kind: table
+metadata: 
+  name: game_session
+  store: gameplay_bronze
+spec:
+  table: "game_session"
+  schema:
+    - name: session_id
+      type: long
+      nullable: true
+    - name: player_id
+      type: long
+      nullable: true
+    - name: game_id
+      type: long
+      nullable: true
+    - name: session_date
+      type: date
+    - name: start_time
+      type: timestamp
+      nullable: true
+    - name: end_time
+      type: timestamp
+      nullable: true
+    - name: duration
+      type: long
+      nullable: true
+    - name: map_id
+      type: string
+      nullable: true
+    - name: map_name
+      type: string
+      nullable: true
+    - name: kills
+      type: double
+      nullable: true
+    - name: deaths
+      type: double
+      nullable: true
+    - name: score
+      type: double
+      nullable: true
+    - name: game_mode
+      type: string
+      nullable: true
+  partitionColumns: ["session_date"]
+  comment: "Games sessions"
+---
+kind: table
+metadata: 
+  name: game
+  store: gameplay_bronze
+spec:
+  table: "game"
+  schema:
+    - name: game_id
+      type: long
+      nullable: true
+    - name: game_title
+      type: string
+      nullable: true
+    - name: game_genre
+      type: string
+      nullable: true
+    - name: release_date
+      type: date
+      nullable: true
+    - name: developer
+      type: string
+      nullable: true
+    - name: platform
+      type: string
+      nullable: true
+    - name: game_version
+      type: string
+      nullable: true
+  partitionColumns: ["release_date"]
+  comment: "Games"
+---
+kind: table
+metadata: 
+  name: player_movement
+  store: gameplay_bronze
+spec:
+  table: "player_movement"
+  schema:
+    - name: movement_id
+      type: long
+      nullable: true
+    - name: session_id
+      type: long
+      nullable: true
+    - name: player_id
+      type: long
+      nullable: true
+    - name: game_id
+      type: long
+      nullable: true
+    - name: timestamp
+      type: timestamp
+      nullable: true
+    - name: position_x
+      type: double
+      nullable: true
+    - name: position_y
+      type: double
+      nullable: true
+    - name: position_z
+      type: double
+      nullable: true
+    - name: rotation_x
+      type: double
+      nullable: true
+    - name: rotation_y
+      type: double
+      nullable: true
+    - name: rotation_z
+      type: double
+      nullable: true
+    - name: velocity_x
+      type: double
+      nullable: true
+    - name: velocity_y
+      type: double
+      nullable: true
+    - name: velocity_z
+      type: double
+      nullable: true
+    - name: action
+      type: string
+      nullable: true
+  partitionColumns: []
+  comment: "Player movements"
+---
+kind: table
+metadata: 
+  name: player
+  store: gameplay_bronze
+spec:
+  table: "player"
+  schema:
+    - name: player_id
+      type: long
+      nullable: true
+    - name: username
+      type: string
+      nullable: true
+    - name: age
+      type: long
+      nullable: true
+    - name: country
+      type: string
+      nullable: true
+    - name: registration_date
+      type: date
+      nullable: true
+    - name: email
+      type: string
+      nullable: true
+    - name: account_status
+      type: string
+      nullable: true
+  partitionColumns: ["registration_date"]
+  comment: "Players"
+

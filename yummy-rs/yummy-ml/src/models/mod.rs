@@ -44,6 +44,6 @@ fn catboost_model(config: MLConfig) -> Result<Box<dyn MLModel>, Box<dyn Error>> 
 }
 
 #[cfg(not(feature = "catboost"))]
-fn catboost_model(config: MLConfig) -> Result<Box<dyn MLModel>, Box<dyn Error>> {
-    return Err(Box::new(ModelFactoryError::WrongModelType));
+fn catboost_model(_config: MLConfig) -> Result<Box<dyn MLModel>, Box<dyn Error>> {
+    Err(Box::new(ModelFactoryError::WrongModelType))
 }

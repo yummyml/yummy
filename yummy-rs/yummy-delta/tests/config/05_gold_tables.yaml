@@ -1,0 +1,60 @@
+kind: config
+metadata: 
+  name: myconfig
+spec:
+  stores:
+    - name: gameplay_silver
+      path: "/tmp/test_apply_gameplay/silver/"
+    - name: gameplay_gold
+      path: "/tmp/test_apply_gameplay/gold/"
+---
+kind: table
+metadata: 
+  name: game_summary
+  store: gameplay_gold
+spec:
+  table: "game_summary"
+  schema:
+    - name: game_id
+      type: long
+      nullable: true
+    - name: game_title
+      type: string
+      nullable: true
+    - name: game_avg_rating
+      type: double
+      nullable: true
+    - name: game_purchases
+      type: long
+      nullable: true
+    - name: game_avg_session_duration
+      type: double
+      nullable: true
+  partitionColumns: []
+  comment: "Games summary"
+---
+kind: table
+metadata: 
+  name: player_summary
+  store: gameplay_gold
+spec:
+  table: "player_summary"
+  schema:
+    - name: player_id
+      type: long
+      nullable: true
+    - name: username
+      type: string
+      nullable: true
+    - name: game_avg_rating
+      type: double
+      nullable: true
+    - name: game_purchases
+      type: long
+      nullable: true
+    - name: game_avg_session_duration
+      type: double
+      nullable: true
+  partitionColumns: []
+  comment: "Players summary"
+

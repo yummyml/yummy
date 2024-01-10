@@ -1,17 +1,12 @@
 use crate::config::DeltaConfig;
-use crate::delta::{
-    read::map_record_batch, DeltaCommands, DeltaInfo, DeltaJobs, DeltaManager, DeltaRead,
-    DeltaWrite,
-};
-use crate::models::{CreateRequest, JobRequest, OptimizeRequest, VacuumRequest, WriteRequest};
-use datafusion::execution::context::SessionContext;
-use datafusion::prelude::*;
-use deltalake::DeltaOps;
+use crate::delta::{DeltaCommands, DeltaJobs, DeltaManager};
+use crate::models::{CreateRequest, JobRequest, OptimizeRequest, UdfSpec, VacuumRequest};
+use crate::udf::UdfBuilder;
+use datafusion::physical_plan::udf::ScalarUDF;
 use serde::Deserialize;
-use std::fs;
-use url::Url;
-use yummy_core::common::{ReplaceTokens, Result};
-use yummy_core::config::read_config_str;
+use std::collections::HashMap;
+use yummy_core::common::Result;
+use yummy_core::config::{read_config_str, Metadata};
 use yummy_core::err;
 
 #[derive(thiserror::Error, Debug)]
@@ -24,14 +19,6 @@ pub enum ApplyError {
     WrongOptimizeMetadata,
     #[error("Delta vacuum kind must contain store and table in metadata")]
     WrongVacuumMetadata,
-}
-
-#[derive(Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct Metadata {
-    pub name: String,
-    pub store: Option<String>,
-    pub table: Option<String>,
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -56,6 +43,10 @@ pub enum DeltaObject {
     Job {
         metadata: Metadata,
         spec: JobRequest,
+    },
+    Udf {
+        metadata: Metadata,
+        spec: UdfSpec,
     },
 }
 
@@ -94,17 +85,64 @@ impl DeltaApply {
                 config: c,
             })
         } else {
-            return Err(err!(ApplyError::NoConfig));
+            Err(err!(ApplyError::NoConfig))
         }
     }
 
-    pub async fn apply(&self) -> Result<()> {
+    fn build_udfs(&self) -> Result<Vec<ScalarUDF>> {
+        let mut udfs = Vec::new();
+        let mut udf_specs = HashMap::new();
+        let udf_objects: Vec<DeltaObject> = self
+            .delta_objects
+            .clone()
+            .into_iter()
+            .filter(|x| {
+                matches!(
+                    x,
+                    DeltaObject::Udf {
+                        metadata: _m,
+                        spec: _s,
+                    }
+                )
+            })
+            .collect();
+
+        for u in udf_objects {
+            if let DeltaObject::Udf { metadata: _, spec } = u {
+                udf_specs.insert(spec.name.to_string(), spec);
+                //udfs.push(spec.build()?);
+            }
+        }
+
+        if !udf_specs.is_empty() {
+            UdfBuilder::init(udf_specs.clone());
+        }
+
+        let builder = UdfBuilder {};
+        for udf_spec in udf_specs {
+            udfs.push(builder.build(&udf_spec.0)?);
+        }
+
+        Ok(udfs)
+    }
+
+    pub fn delta_manager(&self) -> Result<DeltaManager> {
         let conf = if let DeltaObject::Config { metadata: _, spec } = &self.config {
             spec.clone()
         } else {
             return Err(err!(ApplyError::NoConfig));
         };
-        let delta_manager = DeltaManager { config: conf };
+
+        let udfs = self.build_udfs()?;
+
+        Ok(DeltaManager {
+            config: conf,
+            udfs: if !udfs.is_empty() { Some(udfs) } else { None },
+        })
+    }
+
+    pub async fn apply(&self) -> Result<()> {
+        let delta_manager = self.delta_manager()?;
 
         for o in &self.delta_objects {
             match o {
@@ -190,6 +228,10 @@ impl DeltaApply {
                     metadata: _,
                     spec: _,
                 } => {}
+                DeltaObject::Udf {
+                    metadata: _,
+                    spec: _,
+                } => {}
                 DeltaObject::Job { metadata, spec } => {
                     match &delta_manager.job(spec.clone()).await {
                         Ok(r) => {
@@ -209,52 +251,23 @@ impl DeltaApply {
     }
 }
 
-#[tokio::test]
-async fn test_config_local() -> Result<()> {
-    let path = "../tests/delta/apply.yaml".to_string();
-    let delta_apply = DeltaApply::new(&path).await?;
-    println!("{delta_apply:?}");
-    Ok(())
-}
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-#[tokio::test]
-async fn test_config_url() -> Result<()> {
-    let path = "https://raw.githubusercontent.com/yummyml/yummy/yummy-rs-delta-0.7.0/yummy-rs/tests/delta/apply.yaml".to_string();
-    let delta_apply = DeltaApply::new(&path).await?;
-    println!("{delta_apply:?}");
-    Ok(())
-}
+    #[tokio::test]
+    async fn test_config_local() -> Result<()> {
+        let path = "../tests/delta/apply.yaml".to_string();
+        let delta_apply = DeltaApply::new(&path).await?;
+        println!("{delta_apply:?}");
+        Ok(())
+    }
 
-#[tokio::test]
-async fn test_apply_table() -> Result<()> {
-    let path = "../../examples/delta/gameplay_tables.yaml".to_string();
-    //let delta_apply = DeltaApply::new(&path).await?;
-    //println!("{delta_apply:?}");
-
-    //delta_apply.apply().await?;
-
-    //https://github.com/mackwic/colored/blob/master/src/color.rs
-    //
-    //println!("\x1b[91mError\x1b[0m");
-    //println!("\x1b[92mSuccess\x1b[0m");
-    //println!("\x1b[93mWarning\x1b[0m");
-    //assert_eq!(delta_apply.delta_objects.len(), 4);
-    Ok(())
-}
-
-#[tokio::test]
-async fn test_apply_job() -> Result<()> {
-    let path = "../../examples/delta/gameplay_move_data.yaml".to_string();
-    //let delta_apply = DeltaApply::new(&path).await?;
-    //println!("{:?}", delta_apply);
-
-    //delta_apply.apply().await?;
-
-    //https://github.com/mackwic/colored/blob/master/src/color.rs
-    //
-    //println!("\x1b[91mError\x1b[0m");
-    //println!("\x1b[92mSuccess\x1b[0m");
-    //println!("\x1b[93mWarning\x1b[0m");
-    //assert_eq!(delta_apply.delta_objects.len(), 4);
-    Ok(())
+    #[tokio::test]
+    async fn test_config_url() -> Result<()> {
+        let path = "https://raw.githubusercontent.com/yummyml/yummy/yummy-rs-delta-0.7.0/yummy-rs/tests/delta/apply.yaml".to_string();
+        let delta_apply = DeltaApply::new(&path).await?;
+        println!("{delta_apply:?}");
+        Ok(())
+    }
 }

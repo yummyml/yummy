@@ -33,9 +33,9 @@ def delta_cmd():
               )
 @click.option("--filename","-f",
               type=click.STRING,
-              default="delta.yaml",
+              default="config.yaml",
               show_default=True,
-              help='Configuration filename for the feature server.'
+              help='Configuration filename for the delta lake.'
               )
 @click.option("--log-level",
               type=click.STRING,
@@ -63,7 +63,7 @@ def delta_server_command(
               type=click.STRING,
               default="apply.yaml",
               show_default=True,
-              help='Configuration filename for the feature server.'
+              help='Configuration filename for the delta lake.'
               )
 @click.pass_context
 def delta_apply_command(
@@ -74,6 +74,47 @@ def delta_apply_command(
     try:
         import yummy_delta
         yummy_delta.run_apply(filename)
+    except ModuleNotFoundError:
+        package_installation_hint("yummy[delta]")
+
+
+@delta_cmd.command(name='get')
+@click.argument('otype', nargs=1)
+@click.option("--filename","-f",
+              type=click.STRING,
+              default="config.yaml",
+              show_default=True,
+              help='Configuration filename for the delta lake.'
+              )
+@click.option("--store","-s",
+              type=click.STRING,
+              required=False,
+              help='Store name'
+              )
+@click.option("--table","-t",
+              type=click.STRING,
+              required=False,
+              help='Table name'
+              )
+@click.pass_context
+def delta_get_command(
+    ctx: click.Context,
+    otype: str,
+    filename: str,
+    store: str,
+    table: str,
+):
+    """Delta get command"""
+    try:
+        import yummy_delta
+
+        if otype == "stores":
+            yummy_delta.run_pprint_stores(filename)
+        elif otype == "tables":
+            yummy_delta.run_pprint_tables(filename, store)
+        elif otype == "table":
+            yummy_delta.run_pprint_table(filename, store, table)
+
     except ModuleNotFoundError:
         package_installation_hint("yummy[delta]")
 

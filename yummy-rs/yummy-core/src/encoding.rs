@@ -1,6 +1,5 @@
-use byteorder::{ByteOrder, LittleEndian, WriteBytesExt};
+use byteorder::{ByteOrder, LittleEndian};
 use fasthash::murmur3;
-use serde::{Deserialize, Serialize};
 
 pub fn mmh3(key: String) -> Vec<u8> {
     let hash = murmur3::hash32(key).to_be_bytes();

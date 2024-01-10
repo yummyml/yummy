@@ -1,0 +1,87 @@
+kind: config
+metadata: 
+  name: myconfig
+spec:
+  stores:
+    - name: gameplay_silver
+      path: "/tmp/test_apply_gameplay/silver/"
+    - name: gameplay_gold
+      path: "/tmp/test_apply_gameplay/gold/"
+---
+kind: job
+metadata: 
+  name: game_summary_job
+spec:
+  source:
+    store: "gameplay_silver"
+    tables:
+      - name: "game_rating_dls"
+        type: "delta"
+        table: "game_rating"
+      - name: "game_purchase_dls"
+        type: "delta"
+        table: "game_purchase"
+      - name: "game_session_dls"
+        type: "delta"
+        table: "game_session"
+      - name: "game_dls"
+        type: "delta"
+        table: "game"
+  sink:
+    name: "sink"
+    store: "gameplay_gold"
+    table: "game_summary"
+    saveMode: "Overwrite"
+  sql: > 
+    SELECT 
+    g.game_id, 
+    g.game_title, 
+    avg(gr.rating_score) as game_avg_rating,
+    count(gp.purchase_id) as game_purchases,
+    avg(gs.duration) as game_avg_session_duration
+    FROM game_dls as g 
+    left join game_purchase_dls as gp on g.game_id = gp.game_id 
+    left join game_rating_dls as gr on g.game_id = gr.game_id 
+    left join game_session_dls as gs on g.game_id = gs.game_id 
+    group by g.game_id, g.game_title
+  dryRun: false
+---
+kind: job
+metadata: 
+  name: player_summary_job
+spec:
+  source:
+    store: "gameplay_silver"
+    tables:
+      - name: "game_rating_dls"
+        type: "delta"
+        table: "game_rating"
+      - name: "game_purchase_dls"
+        type: "delta"
+        table: "game_purchase"
+      - name: "game_session_dls"
+        type: "delta"
+        table: "game_session"
+      - name: "player_dls"
+        type: "delta"
+        table: "player"
+  sink:
+    name: "sink"
+    store: "gameplay_gold"
+    table: "player_summary"
+    saveMode: "Overwrite"
+  sql: > 
+    SELECT 
+    p.player_id, 
+    p.username, 
+    avg(gr.rating_score) as game_avg_rating,
+    count(gp.purchase_id) as game_purchases,
+    avg(gs.duration) as game_avg_session_duration
+    FROM player_dls as p 
+    left join game_purchase_dls as gp on p.player_id = gp.player_id 
+    left join game_rating_dls as gr on p.player_id = gr.player_id 
+    left join game_session_dls as gs on p.player_id = gs.player_id 
+    group by p.player_id, p.username
+  dryRun: false
+
+

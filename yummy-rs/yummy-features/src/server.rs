@@ -22,8 +22,8 @@ pub struct FeaturesError {
 
 impl error::ResponseError for FeaturesError {
     fn status_code(&self) -> StatusCode {
-        let status_code: StatusCode = StatusCode::from_u16((&self.status_code).clone())
-            .unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
+        let status_code: StatusCode =
+            StatusCode::from_u16(self.status_code).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
         status_code
     }
 }
@@ -139,12 +139,12 @@ pub fn prepare_response(
     let n_join_keys = &join_keys.len();
     let fields_names: Vec<String> = features
         .to_vec()
-        .into_iter()
+        .iter()
         .map(|x| {
             let f_name = if full_feature_names {
-                x.replace(":", "__")
+                x.replace(':', "__")
             } else {
-                x.split(":").collect::<Vec<&str>>()[1].to_string()
+                x.split(':').collect::<Vec<&str>>()[1].to_string()
             };
             f_name
         })
@@ -162,7 +162,7 @@ pub fn prepare_response(
         .collect();
 
     for (j, r) in result.iter().enumerate() {
-        for i in 0..n_join_keys.clone() {
+        for i in 0..*n_join_keys {
             response_results[i].event_timestamps.push(now.to_string());
             response_results[i].statuses.push("PRESENT".to_string());
 
@@ -172,7 +172,7 @@ pub fn prepare_response(
         }
 
         for (i, v) in r.iter().enumerate() {
-            let z = i + n_join_keys.clone();
+            let z = i + *n_join_keys;
             let vv: Value::Value = Message::parse_from_bytes(v).unwrap();
             response_results[z].event_timestamps.push(now.to_string());
             response_results[z].statuses.push("PRESENT".to_string());

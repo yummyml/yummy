@@ -24,5 +24,5 @@ publish-pypi: ## Publish to pipy
 
 test:
 	cargo test -- --show-output
-	#cd ../yummy-mlflow/ && cargo test -- models::lightgbm_model::load_model_and_predict_multiclass  --show-output
+	#cd ../yummy-ml/ && cargo test -- models::lightgbm_model::load_model_and_predict_multiclass  --show-output
 
