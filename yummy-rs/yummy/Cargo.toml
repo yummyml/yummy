@@ -16,7 +16,9 @@ rustflags = ["-C", "target-cpu=native"]
 [dependencies]
 clap = "4.2.1"
 yummy-delta = { version = "0.0.9",  path = "../yummy-delta", optional = true }
+yummy-ml = { version = "0.0.9",  path = "../yummy-ml", optional = true }
 tokio = { version = "1.20.0", features = ["full"] }
 
 [features]
 yummy-delta = ["dep:yummy-delta"]
+yummy-ml = ["dep:yummy-ml"]

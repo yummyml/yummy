@@ -24,7 +24,7 @@ pub async fn serve_ml_model(
             .app_data(web::Data::new(MLModelFactory::new(config.clone()).unwrap()))
             .app_data(web::Data::new(config.clone()))
             .wrap(Logger::default())
-            .route("/health", web::post().to(health))
+            .route("/health", web::get().to(health))
             .route("/invocations", web::post().to(invocations))
     })
     .bind((host, port))?
