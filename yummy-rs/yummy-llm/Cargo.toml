@@ -1,0 +1,38 @@
+[package]
+name = "yummy-llm"
+version.workspace = true
+edition = "2021"
+repository = "https://github.com/yummyml/yummy"
+description = "LLM of the yummy-rs library"
+license = "Apache-2.0"
+
+[dependencies]
+yummy-core = { path = "../yummy-core" }
+actix-web = "4"
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.9"
+async-trait = "0.1.57"
+tokio = "1.20.0"
+env_logger = "0.10.1"
+chrono = "0.4.22"
+derive_more = "0.99.17"
+thiserror = "1.0"
+#reqwest = "0.11.13"
+
+anyhow = { version = "1", features = ["backtrace"] }
+byteorder = "1.4.3"
+log = "0.4"
+num-traits = "0.2.15"
+rand = "0.8.5"
+safetensors = "0.3.1"
+serde_json = "1.0.99"
+tokenizers = { version = "0.13.4", features = ["unstable_wasm"], default-features = false}
+
+candle = { git = "https://github.com/huggingface/candle.git", branch = "main", version = "0.3.2", package = "candle-core" }
+candle-nn = { git = "https://github.com/huggingface/candle.git", branch = "main", version = "0.3.2" }
+candle-transformers = { git = "https://github.com/huggingface/candle.git", branch = "main", version = "0.3.2" }
+hf-hub = { version="0.3.0", features=["tokio"]}
+
+[features]
+catboost = []
+#catboost = ["dep:catboost"]

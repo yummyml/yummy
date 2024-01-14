@@ -6,6 +6,7 @@ members = [
     "yummy-delta-py",
     "yummy-features",
     "yummy-features-py",
+    "yummy-llm",
     "yummy-ml",
     "yummy-ml-py",
 ]
