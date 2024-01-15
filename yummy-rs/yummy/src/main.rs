@@ -44,6 +44,22 @@ fn cli() -> Command {
                         .arg_required_else_help(true),
                 ),
         )
+        .subcommand(
+            Command::new("llm")
+                .about("yummy llm")
+                .subcommand_required(true)
+                .subcommand(
+                    Command::new("serve")
+                        .about("yummy llm serve")
+                        .args(vec![
+                            arg!(--config <FILE> "config path"),
+                            arg!(--host <HOST> "host"),
+                            arg!(--port <PORT> "port"),
+                            arg!(--loglevel <LOGLEVEL> "log level"),
+                        ])
+                        .arg_required_else_help(true),
+                ),
+        )
 }
 
 #[tokio::main]
@@ -95,6 +111,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             _ => unreachable!(),
         },
+        Some(("llm", sub_matches)) => match sub_matches.subcommand() {
+            Some(("serve", sub_sub_matches)) => {
+                let config = sub_sub_matches
+                    .get_one::<String>("config")
+                    .expect("required");
+                let host = sub_sub_matches.get_one::<String>("host").expect("required");
+                let port = sub_sub_matches
+                    .get_one::<String>("port")
+                    .expect("required")
+                    .parse::<u16>()?;
+
+                let log_level = sub_sub_matches
+                    .get_one::<String>("loglevel")
+                    .expect("required");
+
+                llm_serve(config.clone(), host.clone(), port, log_level.clone()).await?
+            }
+            _ => unreachable!(),
+        },
+
         _ => unreachable!(),
     }
 
@@ -144,6 +180,26 @@ async fn ml_serve(
 #[cfg(not(feature = "yummy-ml"))]
 async fn ml_serve(
     _model: String,
+    _host: String,
+    _port: u16,
+    _log_level: String,
+) -> std::io::Result<()> {
+    unreachable!()
+}
+
+#[cfg(feature = "yummy-llm")]
+async fn llm_serve(
+    config: String,
+    host: String,
+    port: u16,
+    log_level: String,
+) -> std::io::Result<()> {
+    yummy_llm::serve_llm(config, host, port, log_level).await
+}
+
+#[cfg(not(feature = "yummy-llm"))]
+async fn llm_serve(
+    _config: String,
     _host: String,
     _port: u16,
     _log_level: String,

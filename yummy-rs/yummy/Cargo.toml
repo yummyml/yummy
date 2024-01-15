@@ -1,6 +1,6 @@
 [package]
 name = "yummy"
-version = "0.0.8"
+version.workspace = true
 edition = "2021"
 repository = "https://github.com/yummyml/yummy"
 description = "The yummy library"
@@ -17,8 +17,10 @@ rustflags = ["-C", "target-cpu=native"]
 clap = "4.2.1"
 yummy-delta = { version = "0.0.9",  path = "../yummy-delta", optional = true }
 yummy-ml = { version = "0.0.9",  path = "../yummy-ml", optional = true }
+yummy-llm = { version = "0.0.9",  path = "../yummy-llm", optional = true }
 tokio = { version = "1.20.0", features = ["full"] }
 
 [features]
 yummy-delta = ["dep:yummy-delta"]
 yummy-ml = ["dep:yummy-ml"]
+yummy-llm = ["dep:yummy-llm"]

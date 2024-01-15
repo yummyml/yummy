@@ -30,7 +30,12 @@ test-delta:
 run-ml-serve:
 	cargo run --features yummy-ml ml serve --model /home/jovyan/yummy/yummy-rs/tests/mlflow/lightgbm_model/lightgbm_my_model/ --port 8080 --host 0.0.0.0 --loglevel debug
 
+run-llm-serve-embeddings-e5:
+	cargo run --features yummy-llm llm serve --config /home/jovyan/yummy/yummy-rs/tests/llm/config.yaml --port 8080 --host 0.0.0.0 --loglevel debug
+
+
 run-delta-serve:
 	cargo run --features yummy-delta delta serve --config /home/jovyan/yummy/yummy-rs/tests/delta/apply.yaml --port 8080 --host 0.0.0.0 --loglevel debug
 
 
+#curl -d '{"input":["Elixir of Eternal Twilight: Grants visions of realms beyond the veil."]}' -H "Content-Type: application/json" -X POST http://localhost:8080/embeddings | python3 -mjson.tool
