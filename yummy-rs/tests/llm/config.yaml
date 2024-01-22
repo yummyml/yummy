@@ -1,7 +1,0 @@
-kind: embeddings
-metadata: 
-  name: jina-embeddings
-spec:
-  normalize_embeddings: true
-  model_type: E5
-

@@ -52,10 +52,27 @@ fn cli() -> Command {
                     Command::new("serve")
                         .about("yummy llm serve")
                         .args(vec![
-                            arg!(--config <FILE> "config path"),
-                            arg!(--host <HOST> "host"),
-                            arg!(--port <PORT> "port"),
-                            arg!(--loglevel <LOGLEVEL> "log level"),
+                            arg!(--config <FILE>)
+                                .required(true)
+                                .help("config file path"),
+                            arg!(--host <HOST> "host")
+                                .required(false)
+                                .help("host")
+                                .default_value("0.0.0.0"),
+                            arg!(--port <PORT> "port")
+                                .required(false)
+                                .help("port")
+                                .default_value("8080")
+                                .value_parser(clap::value_parser!(u16)),
+                            arg!(--loglevel <LOGLEVEL>)
+                                .required(false)
+                                .help("log level")
+                                .default_value("error"),
+                            arg!(--workers <WORKERS>)
+                                .required(false)
+                                .help("number of workers")
+                                .default_value("2")
+                                .value_parser(clap::value_parser!(usize)),
                         ])
                         .arg_required_else_help(true),
                 ),
@@ -117,16 +134,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .get_one::<String>("config")
                     .expect("required");
                 let host = sub_sub_matches.get_one::<String>("host").expect("required");
-                let port = sub_sub_matches
-                    .get_one::<String>("port")
-                    .expect("required")
-                    .parse::<u16>()?;
+                let port = sub_sub_matches.get_one::<u16>("port").expect("required");
 
-                let log_level = sub_sub_matches
-                    .get_one::<String>("loglevel")
-                    .expect("required");
+                let log_level = sub_sub_matches.get_one::<String>("loglevel");
+                let workers = sub_sub_matches.get_one::<usize>("workers");
 
-                llm_serve(config.clone(), host.clone(), port, log_level.clone()).await?
+                llm_serve(config.clone(), host.clone(), *port, log_level, workers).await?
             }
             _ => unreachable!(),
         },
@@ -192,9 +205,10 @@ async fn llm_serve(
     config: String,
     host: String,
     port: u16,
-    log_level: String,
+    log_level: Option<&String>,
+    workers: Option<&usize>,
 ) -> std::io::Result<()> {
-    yummy_llm::serve_llm(config, host, port, log_level).await
+    yummy_llm::serve_llm(config, host, port, log_level, workers).await
 }
 
 #[cfg(not(feature = "yummy-llm"))]
@@ -202,7 +216,8 @@ async fn llm_serve(
     _config: String,
     _host: String,
     _port: u16,
-    _log_level: String,
+    _log_level: Option<&String>,
+    _workers: Option<&usize>,
 ) -> std::io::Result<()> {
     unreachable!()
 }

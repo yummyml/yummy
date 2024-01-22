@@ -15,13 +15,17 @@ pub async fn serve_llm(
     model_path: String,
     host: String,
     port: u16,
-    log_level: String,
+    log_level: Option<&String>,
+    workers: Option<&usize>,
 ) -> std::io::Result<()> {
     let config = LLMConfig::new(&model_path).await.unwrap();
 
-    env_logger::init_from_env(env_logger::Env::new().default_filter_or(log_level));
+    if let Some(v) = log_level {
+        env_logger::init_from_env(env_logger::Env::new().default_filter_or(v));
+    }
+
     println!("Yummy llm server running on http://{host}:{port}");
-    HttpServer::new(move || {
+    let mut server = HttpServer::new(move || {
         let mut app = App::new()
             .app_data(web::Data::new(config.clone()))
             .wrap(Logger::default())
@@ -50,8 +54,11 @@ pub async fn serve_llm(
         }
 
         app
-    })
-    .bind((host, port))?
-    .run()
-    .await
+    });
+
+    if let Some(num_workers) = workers {
+        server = server.workers(*num_workers);
+    }
+
+    server.bind((host, port))?.run().await
 }

@@ -1,9 +1,10 @@
 pub mod e5_model;
-use std::path::PathBuf;
-
+pub mod jinabert_model;
 use crate::config::{LLMEndpoint, LLMSpec, ModelType};
 use e5_model::E5Model;
+use jinabert_model::JinaBertModel;
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 use yummy_core::common::Result;
 
 #[derive(thiserror::Error, Debug)]
@@ -31,10 +32,9 @@ pub struct LLMModelFactory {}
 impl LLMModelFactory {
     pub fn embedding_model(config: &LLMEndpoint) -> Result<Box<dyn EmbeddingsModel>> {
         if let LLMEndpoint::Embeddings { metadata: _, spec } = config {
-            if let ModelType::E5 = spec.model_type {
-                Ok(Box::new(E5Model::new(spec)?))
-            } else {
-                todo!()
+            match spec.model_type {
+                ModelType::E5 => Ok(Box::new(E5Model::new(spec)?)),
+                ModelType::JinaBert => Ok(Box::new(JinaBertModel::new(spec)?)),
             }
         } else {
             Err(Box::new(ModelFactoryError::WrongModelType))

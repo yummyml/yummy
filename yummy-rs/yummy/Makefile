@@ -31,8 +31,10 @@ run-ml-serve:
 	cargo run --features yummy-ml ml serve --model /home/jovyan/yummy/yummy-rs/tests/mlflow/lightgbm_model/lightgbm_my_model/ --port 8080 --host 0.0.0.0 --loglevel debug
 
 run-llm-serve-embeddings-e5:
-	cargo run --features yummy-llm llm serve --config /home/jovyan/yummy/yummy-rs/tests/llm/config.yaml --port 8080 --host 0.0.0.0 --loglevel debug
+	cargo run --features yummy-llm llm serve --config /home/jovyan/yummy/yummy-rs/tests/llm/config_embedding_e5.yaml --port 8080 --host 0.0.0.0 --loglevel debug
 
+run-llm-serve-embeddings-jinabert:
+	cargo run --release --features yummy-llm llm serve --config /home/jovyan/yummy/yummy-rs/tests/llm/config_embedding_jinabert.yaml --workers 1
 
 run-delta-serve:
 	cargo run --features yummy-delta delta serve --config /home/jovyan/yummy/yummy-rs/tests/delta/apply.yaml --port 8080 --host 0.0.0.0 --loglevel debug
