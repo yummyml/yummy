@@ -145,7 +145,7 @@ pub struct JobSink {
     pub name: String,
     pub store: String,
     pub table: String,
-    pub save_mode: deltalake::action::SaveMode,
+    pub save_mode: deltalake::protocol::SaveMode,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

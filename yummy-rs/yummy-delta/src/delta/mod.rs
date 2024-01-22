@@ -11,14 +11,16 @@ use crate::models::{
     QueryResponse, ResponseStore, ResponseTable, ResponseTables, VacuumRequest, VacuumResponse,
     WriteRequest, WriteResponse,
 };
+use arrow::datatypes::DataType;
 use async_trait::async_trait;
 use chrono::Duration;
 use datafusion::physical_plan::udf::ScalarUDF;
 use datafusion::physical_plan::SendableRecordBatchStream;
-use deltalake::arrow::{datatypes::DataType, record_batch::RecordBatch};
+use deltalake::arrow::record_batch::RecordBatch;
 use deltalake::operations::vacuum::VacuumBuilder;
 use deltalake::{
-    action::SaveMode, builder::DeltaTableBuilder, DeltaOps, DeltaTable, Schema, SchemaDataType,
+    protocol::SaveMode, table::builder::DeltaTableBuilder, DeltaOps, DeltaTable, Schema,
+    SchemaDataType,
 };
 use prettytable::{row, Table};
 use std::error::Error;

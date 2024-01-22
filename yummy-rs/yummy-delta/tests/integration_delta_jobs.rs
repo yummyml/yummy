@@ -1,6 +1,6 @@
 mod common;
 use common::delta::{create_delta, create_manager, drop_delta};
-use deltalake::action::SaveMode;
+use deltalake::protocol::SaveMode;
 use std::error::Error;
 use std::fs;
 use yummy_core::common::Result;

@@ -6,7 +6,7 @@ use crate::models::{
     WriteRequest,
 };
 use actix_web::{web, HttpResponse, Responder, Result};
-use deltalake::action::SaveMode;
+use deltalake::protocol::SaveMode;
 use std::error::Error;
 
 use crate::delta::error::DeltaError;
