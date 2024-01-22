@@ -93,11 +93,11 @@ mod tests {
             "test".to_string(),
             udf_config,
         )]));
-        let udf = UdfBuilder::get_udf_spec(&"test".to_string())?;
+        let udf = UdfBuilder::get_udf_spec("test")?;
 
         let builder = UdfBuilder {};
 
-        let scalar_udf = builder.build(&"test".to_string())?;
+        let _scalar_udf = builder.build("test")?;
 
         assert_eq!(udf.name, "test".to_string());
         Ok(())
