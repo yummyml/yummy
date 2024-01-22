@@ -1,0 +1,7 @@
+kind: embeddings
+metadata: 
+  name: e5-embeddings
+spec:
+  normalize_embeddings: true
+  model_type: E5
+

@@ -1,0 +1,17 @@
+
+POST http://localhost:8080/embeddings HTTP/1.1
+content-type: application/json
+
+{
+    "input":["Elixir of Eternal Twilight: Grants visions of realms beyond the veil."]
+}
+
+###
+
+POST http://localhost:8080/embeddings HTTP/1.1
+content-type: application/json
+
+{
+    "input":["Elixir of Eternal Twilight: Grants visions of realms beyond the veil.",
+             "Elixir of Eternal Twilight: Grants visions of realms beyond the veil."]
+}
