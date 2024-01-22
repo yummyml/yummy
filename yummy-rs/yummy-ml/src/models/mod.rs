@@ -25,7 +25,7 @@ pub trait MLModel {
 pub struct MLModelFactory {}
 
 impl MLModelFactory {
-    pub fn new(config: MLConfig) -> Result<Box<dyn MLModel>, Box<dyn Error>> {
+    pub fn build(config: MLConfig) -> Result<Box<dyn MLModel>, Box<dyn Error>> {
         let ml_model: Box<dyn MLModel> = if let Some(ref _config) = config.flavors.lightgbm {
             Box::new(LightgbmModel::new(config)?)
         } else if let Some(ref _config) = config.flavors.catboost {

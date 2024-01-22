@@ -2,7 +2,6 @@ use crate::delta::{DeltaJobs, DeltaManager, DeltaWrite};
 use crate::models::{JobRequest, JobResponse, JobTable};
 use async_trait::async_trait;
 use datafusion::execution::context::SessionContext;
-use datafusion::execution::object_store;
 use datafusion::prelude::*;
 use deltalake::{table::builder::DeltaTableBuilder, DeltaOps};
 use std::sync::Arc;

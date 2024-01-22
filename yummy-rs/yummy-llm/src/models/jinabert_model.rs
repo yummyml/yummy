@@ -42,7 +42,7 @@ impl JinaBertModel {
             tokenizer.with_padding(Some(pp));
         }
 
-        let vb = unsafe { VarBuilder::from_mmaped_safetensors(&[model], DType::F32, &device)? };
+        let vb = unsafe { VarBuilder::from_mmaped_safetensors(&[model], DType::F32, device)? };
         let model = BertModel::new(vb, &candle_config)?;
 
         Ok(JinaBertModel {

@@ -1,6 +1,4 @@
-use crate::delta::read::map_array;
-use crate::models::{UdfConfig, UdfSpec};
-use async_trait::async_trait;
+use crate::models::UdfSpec;
 use datafusion::arrow::{
     array::{ArrayRef, Float64Array},
     datatypes::DataType,
@@ -49,7 +47,7 @@ impl UdfBuilder {
 
     fn build_function(
         &self,
-        mlconfig: &'static UdfSpec,
+        _mlconfig: &'static UdfSpec,
     ) -> impl Fn(&[ArrayRef]) -> std::result::Result<ArrayRef, datafusion::error::DataFusionError>
     {
         |args: &[ArrayRef]| {
@@ -79,6 +77,7 @@ impl UdfBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::models::UdfConfig;
 
     #[tokio::test]
     async fn test_init_and_get() -> Result<()> {

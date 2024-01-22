@@ -22,7 +22,7 @@ pub trait OnlineStore {
 pub struct OnlineStoreFactory {}
 
 impl OnlineStoreFactory {
-    pub fn new(config: Config) -> Result<Box<dyn OnlineStore>, Box<dyn Error>> {
+    pub fn build(config: Config) -> Result<Box<dyn OnlineStore>, Box<dyn Error>> {
         let online_store: Box<dyn OnlineStore> = match config.online_store.store_type.as_str() {
             "redis" => Box::new(RedisOnlineStore::new(config)?),
             _ => return Err(Box::new(OnlineStoreFactoryError::WrongStoreType)),

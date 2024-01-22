@@ -25,7 +25,9 @@ pub async fn serve_ml_model(
     println!("Yummy ml server running on http://{host}:{port}");
     let mut server = HttpServer::new(move || {
         App::new()
-            .app_data(web::Data::new(MLModelFactory::new(config.clone()).unwrap()))
+            .app_data(web::Data::new(
+                MLModelFactory::build(config.clone()).unwrap(),
+            ))
             .app_data(web::Data::new(config.clone()))
             .wrap(Logger::default())
             .route("/health", web::get().to(health))
