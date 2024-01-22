@@ -50,12 +50,24 @@ fn run_apply(config_path: String) -> PyResult<String> {
 }
 
 #[pyfunction]
-fn run(config_path: String, host: String, port: u16, log_level: String) -> PyResult<String> {
+fn run(
+    config_path: String,
+    host: String,
+    port: u16,
+    log_level: String,
+    workers: usize,
+) -> PyResult<String> {
     tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()
         .unwrap()
-        .block_on(run_delta_server(config_path, host, port, log_level))
+        .block_on(run_delta_server(
+            config_path,
+            host,
+            port,
+            Some(&log_level),
+            Some(&workers),
+        ))
         .unwrap();
     Ok("Ok".to_string())
 }

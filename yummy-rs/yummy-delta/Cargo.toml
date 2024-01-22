@@ -36,6 +36,8 @@ anyhow = "1.0.69"
 url = "2.3"
 prettytable-rs = "^0.10"
 once_cell = "1.17.1"
+num-traits = "0.2.15"
+
 # Datafusion
 #datafusion = { version = "14" }
 #datafusion-expr = { version = "14" }

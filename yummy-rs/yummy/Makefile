@@ -36,6 +36,9 @@ run-llm-serve-embeddings-e5:
 run-llm-serve-embeddings-jinabert:
 	cargo run --release --features yummy-llm llm serve --config /home/jovyan/yummy/yummy-rs/tests/llm/config_embedding_jinabert.yaml --workers 1
 
+run-llm-serve-embeddings-jinabert1:
+	cargo run --release --features yummy-llm llm serve-embeddings --model jinabert --workers 1
+
 run-delta-serve:
 	cargo run --features yummy-delta delta serve --config /home/jovyan/yummy/yummy-rs/tests/delta/apply.yaml --port 8080 --host 0.0.0.0 --loglevel debug
 
