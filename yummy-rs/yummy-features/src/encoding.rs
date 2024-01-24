@@ -1,9 +1,9 @@
 use crate::types::{EntityKey, Value};
 use byteorder::{ByteOrder, LittleEndian, WriteBytesExt};
+use fasthash::murmur3;
 use std::collections::HashMap;
 use std::error::Error;
 use yummy_core::common::EntityValue;
-use yummy_core::encoding::mmh3;
 
 #[derive(thiserror::Error, Debug)]
 pub enum EncodingError {
@@ -138,9 +138,22 @@ pub fn parse_value(v: Value::Value) -> EntityValue {
     EntityValue::None
 }
 
+pub fn mmh3(key: String) -> Vec<u8> {
+    let hash = murmur3::hash32(key).to_be_bytes();
+    LittleEndian::read_u32(&hash).to_be_bytes().to_vec()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_mmh3() {
+        let key = "test";
+        let hash = murmur3::hash32(key).to_be_bytes();
+        println!("{hash:?}");
+        assert_eq!(hash, [186, 107, 210, 19]);
+    }
 
     #[test]
     fn test_murmur3() {
