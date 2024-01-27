@@ -26,7 +26,7 @@ pub async fn serve_wrapper(
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(
-                OnlineStoreFactory::new(config.clone()).unwrap(),
+                OnlineStoreFactory::build(config.clone()).unwrap(),
             ))
             .app_data(web::Data::new(config.clone()))
             .app_data(web::Data::new(registry.clone()))

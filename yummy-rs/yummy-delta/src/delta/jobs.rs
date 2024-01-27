@@ -3,7 +3,7 @@ use crate::models::{JobRequest, JobResponse, JobTable};
 use async_trait::async_trait;
 use datafusion::execution::context::SessionContext;
 use datafusion::prelude::*;
-use deltalake::{builder::DeltaTableBuilder, DeltaOps};
+use deltalake::{table::builder::DeltaTableBuilder, DeltaOps};
 use std::sync::Arc;
 use url::Url;
 use yummy_core::common::Result;

@@ -2,9 +2,9 @@ use crate::config::ColumnSchema;
 use crate::delta::{DeltaCommands, DeltaManager};
 use crate::models::{CreateRequest, CreateResponse, OptimizeRequest, OptimizeResponse};
 use async_trait::async_trait;
-use deltalake::delta_config::DeltaConfigKey;
+use deltalake::table::config::DeltaConfigKey;
 use deltalake::PartitionFilter;
-use deltalake::{builder::DeltaTableBuilder, DeltaOps, SchemaDataType, SchemaField};
+use deltalake::{table::builder::DeltaTableBuilder, DeltaOps, SchemaDataType, SchemaField};
 use std::error::Error;
 use std::fs;
 use std::path::Path;
@@ -104,14 +104,14 @@ impl DeltaCommands for DeltaManager {
 
         let filters = filter_params
             .iter()
-            .map(|f| -> Result<PartitionFilter<&str>, Box<dyn Error>> {
+            .map(|f| -> Result<PartitionFilter, Box<dyn Error>> {
                 Ok(PartitionFilter::try_from((
                     f.0.as_str(),
                     f.1.as_str(),
                     f.2.as_str(),
                 ))?)
             })
-            .collect::<Result<Vec<PartitionFilter<&str>>, Box<dyn Error>>>()?;
+            .collect::<Result<Vec<PartitionFilter>, Box<dyn Error>>>()?;
 
         let mut optimize = DeltaOps(table)
             .optimize()

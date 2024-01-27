@@ -11,6 +11,7 @@ use crate::output::PrettyOutput;
 use actix_web::middleware::Logger;
 use actix_web::{web, App, HttpServer};
 use apply::DeltaApply;
+use num_traits::Zero;
 use server::{
     append, create_table, details, health, list_stores, list_tables, optimize, overwrite,
     query_stream, vacuum,
@@ -73,9 +74,13 @@ pub async fn run_delta_server(
     config_path: String,
     host: String,
     port: u16,
-    log_level: String,
+    log_level: Option<&String>,
+    workers: Option<&usize>,
 ) -> std::io::Result<()> {
-    env_logger::init_from_env(env_logger::Env::new().default_filter_or(log_level));
+    if let Some(v) = log_level {
+        env_logger::init_from_env(env_logger::Env::new().default_filter_or(v));
+    }
+
     println!("Yummy delta server running on http://{host}:{port}");
     let delta_manager = DeltaApply::new(&config_path.clone())
         .await
@@ -83,7 +88,7 @@ pub async fn run_delta_server(
         .delta_manager()
         .unwrap();
 
-    let _ = HttpServer::new(move || {
+    let mut server = HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(delta_manager.clone()))
             .route("/health", web::get().to(health))
@@ -107,10 +112,13 @@ pub async fn run_delta_server(
                 ),
             )
             .wrap(Logger::default())
-    })
-    .bind((host, port))?
-    .run()
-    .await;
+    });
 
-    Ok(())
+    if let Some(num_workers) = workers {
+        if !num_workers.is_zero() {
+            server = server.workers(*num_workers);
+        }
+    }
+
+    server.bind((host, port))?.run().await
 }

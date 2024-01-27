@@ -10,7 +10,7 @@ use deltalake::arrow::{
     },
     datatypes::{DataType, Field, Schema as ArrowSchema},
 };
-use deltalake::{action::SaveMode, DeltaOps};
+use deltalake::{protocol::SaveMode, DeltaOps};
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::Arc;

@@ -2,7 +2,7 @@ use crate::delta::error::DeltaError;
 use crate::delta::{DeltaInfo, DeltaManager};
 use crate::models::{ResponseStore, ResponseTable, ResponseTables};
 use async_trait::async_trait;
-use deltalake::builder::DeltaTableBuilder;
+use deltalake::table::builder::DeltaTableBuilder;
 use futures::future;
 use futures::stream::StreamExt;
 use itertools::Itertools;
