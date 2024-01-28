@@ -136,3 +136,4 @@ dmypy.json
 yummy-rs/protos
 yummy-rs/yummy-core/protos
 Cargo.lock
+.benchmark
