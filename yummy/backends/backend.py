@@ -434,7 +434,7 @@ class YummyDataSourceReader(ABC):
         elif backend_type in [BackendType.ray, BackendType.dask]:
             return [(k,str(v)) for (k,v) in df.dtypes.to_dict().items()]
         elif backend_type == BackendType.polars:
-            return [(k,v.__name__.lower()) for (k,v) in df.schema.items()]
+            return [(k,str(v).lower()) for (k,v) in df.schema.items()]
 
 
 class YummyOfflineStoreConfig(BackendConfig):
