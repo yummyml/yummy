@@ -34,6 +34,3 @@ candle-transformers = { git = "https://github.com/huggingface/candle.git", branc
 hf-hub = { git = "https://github.com/yummyml/hf-hub.git", branch = "main", version="0.3.0", features=["tokio"] }
 
 
-[features]
-catboost = []
-#catboost = ["dep:catboost"]
